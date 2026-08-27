@@ -1,0 +1,79 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Firestore security rules — 06 §3.1, 05 §1, 05 §6.
+//
+// The public site's queries already filter `status == 'published'`
+// (core/services/firestore-collection.ts). These rules are what make that
+// filter a guarantee rather than a convention: without them, anyone could open
+// a console and read drafts directly, and "unpublished" would mean nothing more
+// than "not linked in the nav" — exactly what 05 §6 forbids.
+//
+// Single-admin by design (05 §1, 09 §3). There is no role model, no claims
+// check, no second tier of user. Any signed-in account is the admin, because
+// there is exactly one account and no public sign-up flow anywhere on the site
+// (06 §3.3). Adding "just in case" user infrastructure here is scope creep.
+// ─────────────────────────────────────────────────────────────────────────────
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null;
+    }
+
+    // A document is publicly readable only if it says it is published.
+    // Note this is evaluated per-document against a LIST query too: Firestore
+    // rejects any query whose results could include a document failing this
+    // condition, which is why the client query must carry the same filter.
+    function isPublished() {
+      return resource.data.status == 'published';
+    }
+
+    // Narrative content — carries the draft/publish workflow (04 §12).
+    match /profile/{id} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /projects/{slug} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+
+      // Media inherits its parent project's state (04 §6): it has no `status`
+      // of its own, so it is guarded by the fact that a draft project is never
+      // readable and therefore never yields a slug to query media under.
+      match /media/{mediaId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+    }
+
+    match /experience/{id} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Reference data — public, no publish workflow (04 §12 scopes the workflow
+    // to Project / Experience / Profile). These hold no unreleased narrative:
+    // a skill name or a follower count is either correct or absent.
+    match /skills/{id}          { allow read: if true; allow write: if isAdmin(); }
+    match /socialPlatforms/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /socialVideos/{id}    { allow read: if true; allow write: if isAdmin(); }
+    match /businessVentures/{id}{ allow read: if true; allow write: if isAdmin(); }
+    match /proofPoints/{id}     { allow read: if true; allow write: if isAdmin(); }
+
+    // Education carries `visible` instead of `status` (04 §10) — same intent,
+    // enforced the same way: hidden must mean unreadable, not merely unrendered.
+    match /education/{id} {
+      allow read: if resource.data.visible == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Anything not matched above is denied. Listed explicitly so that adding a
+    // collection later is a deliberate act rather than an inherited default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
