@@ -112,12 +112,9 @@ New employees now go through a structured, self-paced onboarding path instead of
 
 ## 6. Compact Tier Notes
 
-Brief pointers only — full write-ups happen in `04-content-model.md`.
+Full write-ups below — each now sourced from Discovery, not placeholder pointers.
 
-- **FreshCart**: capstone project for the Angular course; real, live API (not mocked) — worth noting explicitly since it separates it from a typical tutorial clone.
-- **Nutella Digital Menu**: unprompted — Muhammed noticed a real, physical 221-item / 16-category menu was hard to use, scraped and restructured it himself into a QR-based digital menu, now actually in use at the café. This is the clearest "builds without being asked" evidence in the whole project set (brief §17) and should be framed that way even at compact depth.
-
-### 6.1 Cyber50 Dashboard (Compact — now sourced from README)
+### 6.1 Cyber50 Dashboard (Compact — sourced from README)
 
 **Snapshot**
 - Interactive cyber-incident analytics dashboard, built as a technical assessment for a cybersecurity company that had extended Muhammed an offer and wanted to see him build something real
@@ -134,6 +131,42 @@ A full multi-view dashboard: bar charts and timelines for attack types, a sector
 
 **Outcome**
 Delivered as a complete, working multi-view analytics dashboard within the assessment window — shipped under real time pressure, not a take-home template. Post-assessment hiring-process details are not part of this project's story and stay off the page; the outcome here is scoped to what was built and delivered, not to what happened afterward.
+
+### 6.2 FreshCart
+
+**Snapshot**
+- eCommerce web application, built as the capstone project for the Angular course Muhammed was taking
+- Stack: Angular 17, SSR via Express, JWT authentication, Tailwind CSS + Flowbite
+- Live: freshcarteco.netlify.app/login
+- GitHub: z-ateeqiii/eCommerceAngular
+
+**The Problem**
+As a capstone assignment, the brief was to build a complete eCommerce flow — browsing, cart, checkout — against a real backend rather than static or mocked data, which is what separates a capstone from a course exercise.
+
+**The Build**
+Built entirely against FreshCart's live, real REST API — actual network requests, JWT-based authentication, and real response handling, not a simplified teaching dataset. The app is server-side rendered via Express, going beyond the course's baseline requirements. This is the project where the foundational REST API integration skill used across every other project in this set was first proven.
+
+**Outcome**
+A completed, deployed capstone demonstrating full front-to-back integration against a real external API, with SSR handled correctly. There isn't a dramatic before/after story here the way there is with the operational dashboards — its value in this set is as evidence of solid fundamentals, not a business outcome.
+
+### 6.3 Nutella Digital Menu
+
+**Snapshot**
+- QR-based digital menu for a café Muhammed frequents as a regular customer, built entirely unprompted
+- 221 items across 16 categories, restructured from a printed menu into a digital experience
+- Bilingual (English/Arabic) with full RTL support
+- Stack: Angular 19, Signals
+- GitHub: z-ateeqiii/Nutella-
+- Live: nutella-one.vercel.app
+
+**The Problem**
+Nobody asked for this. The café's printed menu crammed 221 items across 16 categories onto a page — cluttered and slow to scan for both Arabic- and English-speaking customers. Muhammed noticed the friction as a regular and decided to solve it himself.
+
+**The Build**
+Scraped and restructured the entire printed menu into a JSON-driven data model, then built a clean, QR-accessible digital menu organized by category — built bilingually from the start, with proper RTL layout for Arabic rather than a bolted-on translation. The site is genuinely in use at the café today — not a portfolio mockup, a real tool customers interact with.
+
+**Outcome**
+Live at the café, with positive feedback from customers and staff. Of everything in this project set, this is the clearest evidence of Muhammed building a solution without being asked (per brief §17) — pure initiative, not a work assignment or paid engagement.
 
 ---
 
@@ -155,5 +188,6 @@ Two figures from Discovery need honest framing before publishing, per brand doc 
 ## 9. What's Deferred
 
 - Exact JSON/data schema per project (fields, media arrays, ordering) → `04-content-model.md`
-- Cybersecurity Dashboard full write-up, pending README review
 - Final on-page copy/wording (this document organizes the truth, not the final sentences)
+
+All five projects now have full write-ups above — nothing project-level is deferred anymore.

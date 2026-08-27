@@ -9,6 +9,9 @@ import { Project, Skill, SocialPlatform } from '../../src/app/core/models';
  * The prose is verbatim from 03: those are Muhammed's own sentences about his
  * own work, and 09 §2.4 says not to rewrite their substance.
  *
+ * All five projects are now seeded: 03 §6.2 and §6.3 supplied the FreshCart and
+ * Nutella write-ups that were previously blocked.
+ *
  * Several entities from 04-content-model.md are absent because the facts they
  * need do not exist anywhere in docs 00-10. Writing them would mean inventing
  * a fact on a credibility site, which 09 §3 rules out as the one thing not to
@@ -105,6 +108,58 @@ export const PROJECTS: readonly ProjectSeed[] = [
       'The incident dataset itself is AI-generated dummy data, not live or real security data. The value being demonstrated is the ability to model, filter, and visualize complex data — not access to real threat intelligence.',
     outcome:
       'Delivered as a complete, working multi-view analytics dashboard within the assessment window — shipped under real time pressure, not a take-home template.',
+    featuredOnHome: false,
+  },
+
+  // -- Compact (03 §3, §6.2) -------------------------------------------------
+  {
+    slug: 'freshcart',
+    name: 'FreshCart',
+    tagline:
+      'eCommerce web application, built as the capstone project for the Angular course Muhammed was taking',
+    tier: 'compact',
+    order: 4,
+    // 03 §6.2's Snapshot names no role and no duration. Left empty rather than
+    // inferred from "capstone project" - 04 §1.2 renders around a gap, and a
+    // guessed "Sole builder" would be a claim the source does not make.
+    role: '',
+    timeframe: '',
+    stack: ['Angular 17', 'SSR (Express)', 'JWT Authentication', 'Tailwind CSS', 'Flowbite'],
+    liveUrl: 'https://freshcarteco.netlify.app/login',
+    githubUrl: 'https://github.com/z-ateeqiii/eCommerceAngular',
+    problem:
+      'As a capstone assignment, the brief was to build a complete eCommerce flow — browsing, cart, checkout — against a real backend rather than static or mocked data, which is what separates a capstone from a course exercise.',
+    // No approach block: compact tier folds it into Problem/Build (03 §3).
+    build:
+      'Built entirely against FreshCart’s live, real REST API — actual network requests, JWT-based authentication, and real response handling, not a simplified teaching dataset. The app is server-side rendered via Express, going beyond the course’s baseline requirements. This is the project where the foundational REST API integration skill used across every other project in this set was first proven.',
+    outcome:
+      'A completed, deployed capstone demonstrating full front-to-back integration against a real external API, with SSR handled correctly. There isn’t a dramatic before/after story here the way there is with the operational dashboards — its value in this set is as evidence of solid fundamentals, not a business outcome.',
+    featuredOnHome: false,
+  },
+
+  // -- Compact (03 §3, §6.3) -------------------------------------------------
+  {
+    slug: 'nutella-digital-menu',
+    name: 'Nutella Digital Menu',
+    tagline:
+      'QR-based digital menu for a café Muhammed frequents as a regular customer, built entirely unprompted',
+    tier: 'compact',
+    order: 5,
+    // Directly supported by 03 §6.3: "built entirely unprompted" and
+    // "decided to solve it himself". This is the one project in the set whose
+    // self-initiation IS the story (brief §17), so the role field carries it.
+    role: 'Sole builder, self-initiated',
+    timeframe: '',
+    stack: ['Angular 19', 'Signals'],
+    liveUrl: 'https://nutella-one.vercel.app',
+    // Trailing hyphen is part of the actual repository name, not a typo.
+    githubUrl: 'https://github.com/z-ateeqiii/Nutella-',
+    problem:
+      'Nobody asked for this. The café’s printed menu crammed 221 items across 16 categories onto a page — cluttered and slow to scan for both Arabic- and English-speaking customers. Muhammed noticed the friction as a regular and decided to solve it himself.',
+    build:
+      'Scraped and restructured the entire printed menu into a JSON-driven data model, then built a clean, QR-accessible digital menu organized by category — built bilingually from the start, with proper RTL layout for Arabic rather than a bolted-on translation. The site is genuinely in use at the café today — not a portfolio mockup, a real tool customers interact with.',
+    outcome:
+      'Live at the café, with positive feedback from customers and staff. Of everything in this project set, this is the clearest evidence of Muhammed building a solution without being asked (per brief §17) — pure initiative, not a work assignment or paid engagement.',
     featuredOnHome: false,
   },
 ];
@@ -247,16 +302,6 @@ export const UNSEEDED: readonly { entity: string; blockedOn: string }[] = [
     entity: 'Profile (04 §2)',
     blockedOn:
       'heroStatement is still unlocked (10 §2 - brand doc §5 left four directions open); bioShort and bioLong have never been written; contactEmail, contactLinkedIn, contactGitHub, socialInstagram and socialFacebook appear nowhere in docs 00-10. Blocks the Hero and the Contact page in Phase 3.',
-  },
-  {
-    entity: 'Project: FreshCart (03 §6)',
-    blockedOn:
-      'Only a one-line pointer exists ("capstone project for the Angular course; real, live API, not mocked"). No Problem / Build / Outcome prose has been written, and 03 §9 defers final on-page copy. Facts available from projects/FreshCart/README.md: Angular 17 with SSR via Express, JWT auth, cart, Tailwind + Flowbite, repo github.com/muhammed-alateeqi1/eCommerceAngular.',
-  },
-  {
-    entity: 'Project: Nutella Digital Menu (03 §6)',
-    blockedOn:
-      'Same as FreshCart - real facts, no authored case-study prose. Facts available: 221 items across 16 categories, bilingual EN/AR with full RTL, Angular 19 standalone + signals, JSON-driven, now in use at the cafe. 03 §6 notes this is the clearest "builds without being asked" evidence in the whole set and should be framed that way even at compact depth.',
   },
   {
     entity: 'Experience (04 §4)',
