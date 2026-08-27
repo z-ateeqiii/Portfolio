@@ -20,7 +20,11 @@ Thumbs.db
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
-.firebaserc
+
+# .firebaserc is deliberately NOT ignored. It holds only the project alias
+# ("ateeqi-portfolio"), which is already public in the tracked web config and
+# in every deployed URL. Ignoring it would mean anyone cloning the repo cannot
+# deploy without re-running `firebase use --add`, for no security gain.
 
 # Service-account keys and any local Angular environment file holding secrets.
 # The web config in src/app/core/firebase/firebase.config.ts is NOT secret and
