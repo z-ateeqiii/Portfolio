@@ -61,6 +61,26 @@ New questions that came up while building and are not covered anywhere in `00`�
 
 ---
 
+## 4b. Content Gaps Blocking the Phase 2 Seed (2026-08-27)
+
+Phase 2's data layer, security rules and seed content are built. Writing the seed against `03`/`04` surfaced a clear split: **three of five projects have real, written case-study prose, and the rest of the content model does not.** Nothing below was filled in with a plausible-sounding placeholder (`09` §3, `08` §5) — each gap is a specific missing sentence or fact, and it is recorded in code as well, in `site/tools/seed/seed-data.ts`'s `UNSEEDED` array, which the seed script prints on every run.
+
+**Seeded and ready** — verbatim from `03` §4–6: Scholarship Operation Dashboard (featured, all six blocks), ST Employees Portal (standard), Cyber50 Dashboard (compact, with its data-honesty note). Plus the full categorised skill list from brief §11 and both social follower counts from brief §20.
+
+Blocking, roughly in the order Phase 3 will hit them:
+
+- [ ] **`Profile` cannot be seeded at all.** `heroStatement` is still unlocked (§2 above), `bioShort` / `bioLong` have never been written, and **no contact details exist anywhere in `00`–`10`** — no email, no LinkedIn URL, no GitHub URL, no Instagram or Facebook URL. `02` §3 puts Email/LinkedIn/GitHub in the footer of every page, so this blocks the Hero, the Contact page and the footer.
+- [ ] **FreshCart and Nutella Digital Menu have facts but no prose.** `03` §6 gives one pointer line each and defers the write-ups to `04`, which never wrote them; `03` §9 separately defers "final on-page copy." Both READMEs supply real technical detail (see `UNSEEDED` for what's usable). Two compact-tier write-ups are needed — and per `03` §6, Nutella's should be framed as the clearest "builds without being asked" evidence in the set.
+- [ ] **`Experience` records were never captured.** Smart Technology recurs throughout as the ST Portal's context and `04` §4 names it as the `linkedProjectSlug` example, but no role title, timeframe or summary exists for it or any other engagement.
+- [ ] **Skill *levels* are placeholders.** Names and categories are real (brief §11), but the brief states no proficiency per skill, and `04` §5's Strong/Good/Learning/Interested framing comes from Discovery, which isn't reproduced in `00`–`10`. Everything except the aspirational "Expanding Toward" group is seeded `good` as a marked placeholder. Needs one editorial pass — guessing `strong` would assert a proficiency Muhammed hasn't asserted (`01` §9, Rule 4).
+- [ ] **Social profile URLs missing.** Counts are verified; the Instagram and Facebook URLs are recorded nowhere, so `/beyond/social` can state reach but can't link out.
+- [ ] **`BusinessVenture` summary missing.** The metrics are verified and usable ("80+ laptops", "~80,000 EGP net proceeds"), but the customer-first laptop narrative `04` §9 calls for hasn't been written.
+- [ ] **`Education` entries live only in Discovery**, and `10` §2's certificate-date check still applies before any reach the page.
+- [ ] **`ProofPoint` deliberately left empty**, not blocked — `04` §11 frames it as a curated subset, so which numbers earn a slot on Home is an editorial call in the dashboard, not something to seed by dumping every available figure.
+- [ ] **Media not uploaded.** Five Scholarship screenshots exist under `projects/ScholarshipOperationDashboard/Media/`, but `04` §6 stores a URL, so they need to go to Storage first (`06` §3.2). None of the other four projects has media. Missing media never blocks a case study going live (brief §32).
+
+---
+
 ## 5. Post-v1 / Not Blocking Launch
 
 Safe to leave until after the site is live:
