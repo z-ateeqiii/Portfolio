@@ -1,0 +1,243 @@
+<div class="container-wide py-16 md:py-24">
+  <!-- Header -->
+  <header class="mb-24">
+    <ui-eyebrow index="Phase 1">Design tokens &amp; shared components</ui-eyebrow>
+    <h1 class="font-display text-display-1 mt-4 max-w-4xl">The system, before it multiplies</h1>
+    <p class="text-body-lg text-fg-muted mt-6 max-w-2xl">
+      Every colour role, type role and primitive built from
+      <span class="text-fg">07-design-system.md</span>'s written rules alone — no visual references
+      used. This page is scaffolding for review, not a site page.
+    </p>
+    <div class="mt-8 flex flex-wrap items-center gap-6">
+      <ui-status-dot label="Phase 1 complete" />
+      <span class="font-mono text-label text-fg-muted uppercase"
+        >Delete src/app/dev/ before launch</span
+      >
+    </div>
+  </header>
+
+  <!-- Resolved pre-build decisions -->
+  <section class="mb-24">
+    <ui-eyebrow index="00">Pre-build decisions, resolved</ui-eyebrow>
+    <h2 class="font-display text-display-2 mt-4">What got locked in</h2>
+    <div class="mt-8 grid gap-6 md:grid-cols-2">
+      <ui-card>
+        <h3 class="font-display text-display-3">Orange accent scope</h3>
+        <p class="text-body text-fg-muted mt-4">
+          <span class="text-fg">Option A — strict.</span> #FF6B00 marks interactive elements only:
+          buttons, links, focus rings. The mockups used it on section eyebrows, the "in plain
+          English" label and the positioning pill; those have been rolled back to white and muted
+          grey, with the monospace face carrying their distinctiveness instead.
+        </p>
+        <p class="text-caption text-fg-muted mt-4">
+          07 §2 stays as written. No doc amendment needed.
+        </p>
+      </ui-card>
+      <ui-card>
+        <h3 class="font-display text-display-3">Hero location line</h3>
+        <p class="text-body text-fg-muted mt-4">
+          Shape confirmed as
+          <span class="text-fg">remote availability only</span> — no city or country. The exact
+          wording is still outstanding, so nothing has been written into any component. The invented
+          "Kuwait — remote friendly" line is gone and has not been replaced with a guess.
+        </p>
+        <p class="text-caption text-fg-muted mt-4">Blocks the Hero in Phase 3, not Phase 1.</p>
+      </ui-card>
+    </div>
+  </section>
+
+  <!-- Colour -->
+  <section class="mb-24">
+    <ui-eyebrow index="01">Colour roles</ui-eyebrow>
+    <h2 class="font-display text-display-2 mt-4">Seven roles, one palette</h2>
+    <p class="text-body text-fg-muted mt-4 max-w-2xl">
+      Tokens are named by role, not by hue —
+      <code class="font-mono">action</code> means "act on this",
+      <code class="font-mono">live</code> means "confirmed and working". Misuse is visible at the
+      call site. Contrast ratios are measured, and every one clears WCAG AA for normal text,
+      including the two spots 07 §8 flagged as likely to fail.
+    </p>
+
+    <div class="mt-8 space-y-4">
+      @for (s of swatches; track s.token) {
+        <ui-card>
+          <div class="flex flex-col gap-6 md:flex-row md:items-start">
+            <div
+              class="h-20 w-20 flex-none rounded-md border border-fg/12"
+              [style.background-color]="s.hex"
+            ></div>
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                <span class="font-mono text-label text-fg uppercase">{{ s.token }}</span>
+                <span class="font-mono text-caption text-fg-muted">{{ s.hex }}</span>
+              </div>
+              <p class="font-display text-display-3 mt-2">{{ s.role }}</p>
+              <p class="text-body text-fg-muted mt-2">{{ s.rule }}</p>
+            </div>
+            <div class="flex-none md:w-48">
+              <p class="font-mono text-label text-fg-muted uppercase">Contrast</p>
+              <p class="font-mono text-caption text-fg mt-2">on bg — {{ s.onBg }}</p>
+              <p class="font-mono text-caption text-fg">on surface — {{ s.onSurface }}</p>
+            </div>
+          </div>
+        </ui-card>
+      }
+    </div>
+  </section>
+
+  <!-- Typography -->
+  <section class="mb-24">
+    <ui-eyebrow index="02">Typography</ui-eyebrow>
+    <h2 class="font-display text-display-2 mt-4">Three faces, three jobs</h2>
+    <p class="text-body text-fg-muted mt-4 max-w-2xl">
+      Display carries confidence in headlines and never touches body copy. Body disappears so the
+      writing can do the work. Mono appears in the same fixed handful of places sitewide — tags,
+      dates, stat labels, eyebrows — which is what makes it read as a system rather than a third
+      font.
+    </p>
+
+    <div class="mt-8 space-y-8">
+      @for (t of typeSpecs; track t.token) {
+        <div class="border-t border-fg/12 pt-6">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <span class="font-mono text-label text-fg uppercase">{{ t.token }}</span>
+            <span class="font-mono text-caption text-fg-muted">{{ t.face }}</span>
+          </div>
+          <p class="text-caption text-fg-muted mt-1">{{ t.use }}</p>
+          <p [class]="t.cls" class="mt-4">Understand the problem before you build the thing</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Spacing -->
+  <section class="mb-24">
+    <ui-eyebrow index="03">Spacing rhythm</ui-eyebrow>
+    <h2 class="font-display text-display-2 mt-4">The 8px scale</h2>
+    <p class="text-body text-fg-muted mt-4 max-w-2xl">
+      Tailwind's default 4px base is left untouched, because it expresses every step of 07 §4's 8px
+      rhythm exactly. Redefining the base would silently change what every utility class means for
+      whoever reads this code in two years. Use the even steps; avoid the odd ones.
+    </p>
+    <div class="mt-8 space-y-3">
+      @for (s of spacing; track s.step) {
+        <div class="flex items-center gap-6">
+          <span class="font-mono text-label text-fg-muted w-16 flex-none uppercase"
+            >{{ s.px }}px</span
+          >
+          <span class="font-mono text-caption text-fg w-16 flex-none">p-{{ s.step }}</span>
+          <span class="bg-action h-2 rounded-xs" [style.width.px]="s.px"></span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Components -->
+  <section class="mb-24">
+    <ui-eyebrow index="04">Shared components</ui-eyebrow>
+    <h2 class="font-display text-display-2 mt-4">Built once, reused everywhere</h2>
+
+    <div class="mt-8 grid gap-6 lg:grid-cols-2">
+      <ui-card>
+        <h3 class="font-display text-display-3">Button</h3>
+        <p class="text-body text-fg-muted mt-4">
+          Attribute selector, so the host stays a real
+          <code class="font-mono">&lt;button&gt;</code> or
+          <code class="font-mono">&lt;a&gt;</code> — semantics and keyboard behaviour come from the
+          platform. One primary per section.
+        </p>
+        <div class="mt-6 flex flex-wrap items-center gap-4">
+          <button uiButton type="button">View Work</button>
+          <button uiButton variant="secondary" type="button">Resume</button>
+          <button uiButton type="button" disabled>Disabled</button>
+        </div>
+        <div class="mt-4 flex flex-wrap items-center gap-4">
+          <a uiButton variant="secondary" href="#main">Anchor, same component</a>
+        </div>
+        <p class="text-caption text-fg-muted mt-6">
+          Tab to any of these to see the focus ring — orange is correct there, focus is an
+          interactive affordance.
+        </p>
+      </ui-card>
+
+      <ui-card>
+        <h3 class="font-display text-display-3">Tag</h3>
+        <p class="text-body text-fg-muted mt-4">
+          Monospace, muted, hairline border. Supporting information that must never compete with a
+          headline. Deliberately not interactive — that is what keeps orange meaningful.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-2">
+          @for (tech of demoStack; track tech) {
+            <ui-tag>{{ tech }}</ui-tag>
+          }
+        </div>
+        <p class="text-caption text-fg-muted mt-6">
+          Real stack from the Scholarship Operation Dashboard (03 §4) — demo content should not
+          invent technologies either.
+        </p>
+      </ui-card>
+
+      <ui-card>
+        <h3 class="font-display text-display-3">Status dot</h3>
+        <p class="text-body text-fg-muted mt-4">
+          The signature element (07 §6). Borrowed from Muhammed's own dashboards, where a status dot
+          means something real. It has no colour or tone input, so it can only ever mean "live" —
+          the rule enforced in code rather than left for a reviewer to catch.
+        </p>
+        <div class="mt-6 space-y-4">
+          <div><ui-status-dot label="Live" /></div>
+          <div><ui-status-dot label="Available for opportunities" /></div>
+          <div class="flex items-center gap-3">
+            <ui-status-dot />
+            <span class="text-body">Bare dot, beside text that carries the meaning</span>
+          </div>
+        </div>
+        <p class="text-caption text-fg-muted mt-6">
+          The pulse disappears under prefers-reduced-motion; the dot still reads as live. Only the
+          movement is removed, not the meaning.
+        </p>
+      </ui-card>
+
+      <ui-card>
+        <h3 class="font-display text-display-3">Eyebrow &amp; card</h3>
+        <p class="text-body text-fg-muted mt-4">
+          Eyebrows are white and muted grey, not orange — the Option A rollback. Cards get depth
+          from the surface shift, never from stacked shadows.
+        </p>
+        <div class="mt-6 space-y-4">
+          <div><ui-eyebrow index="01">The Problem</ui-eyebrow></div>
+          <div><ui-eyebrow>In plain English</ui-eyebrow></div>
+          <ui-card [interactive]="true">
+            <p class="font-mono text-label text-fg-muted uppercase">Interactive card</p>
+            <p class="text-body mt-2">
+              Hover warms the border. The card is not itself a control — the link inside stays the
+              focus target.
+            </p>
+          </ui-card>
+        </div>
+      </ui-card>
+    </div>
+  </section>
+
+  <!-- Surfaces -->
+  <section>
+    <ui-eyebrow index="05">Surfaces side by side</ui-eyebrow>
+    <h2 class="font-display text-display-2 mt-4">Black against warm near-black</h2>
+    <p class="text-body text-fg-muted mt-4 max-w-2xl">
+      The whole reason the palette avoids the flat dark-mode default: #140A03 carries a trace of
+      warmth, so a raised surface reads as a different material rather than a lighter grey.
+    </p>
+    <div class="mt-8 grid gap-6 md:grid-cols-2">
+      <div class="bg-bg rounded-md border border-fg/12 p-8">
+        <p class="font-mono text-label text-fg-muted uppercase">--color-bg</p>
+        <p class="font-display text-display-3 mt-2">Page ground</p>
+        <p class="text-body text-fg-muted mt-2">Most of the site sits here.</p>
+      </div>
+      <div class="bg-surface rounded-md border border-fg/12 p-8">
+        <p class="font-mono text-label text-fg-muted uppercase">--color-surface</p>
+        <p class="font-display text-display-3 mt-2">Raised surface</p>
+        <p class="text-body text-fg-muted mt-2">Cards, panels, project rows.</p>
+      </div>
+    </div>
+  </section>
+</div>

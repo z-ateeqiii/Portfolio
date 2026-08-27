@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Muhammed Al-Ateeqi</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+    <!-- Keeps mobile browser chrome from flashing white against the black page.
+         The one hex outside styles.css: a meta tag cannot read a CSS variable.
+         Must stay in sync with --color-bg in src/styles.css. -->
+    <meta name="theme-color" content="#000000" />
+
+    <!--
+      Typefaces per 07 §3: Clash Display (display), General Sans (body),
+      JetBrains Mono (utility/data). Loaded from CDNs for now — final
+      licensing / self-hosting is an open item (10 §4). Swapping to
+      self-hosted @font-face later only touches this block and the three
+      --font-* tokens in styles.css.
+    -->
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f%5B%5D=clash-display@600,700&f%5B%5D=general-sans@400,500,600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
+</html>

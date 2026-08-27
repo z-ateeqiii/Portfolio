@@ -1,0 +1,162 @@
+/* ---------------------------------------------------------------------------
+   Design tokens — implements docs/07-design-system.md §2 (color), §3 (type),
+   §4 (layout & spacing), §5 (motion), §8 (accessibility floor).
+
+   Rules encoded here, not merely described:
+   - Color tokens are named by ROLE, not by hue. `action` means "act on this";
+     `live` means "confirmed / working". Misuse is visible at the call site.
+   - No raw hex may appear in any template or component style (docs/09 §5).
+     Every hex in the entire codebase lives in the @theme block below.
+--------------------------------------------------------------------------- */
+
+@import 'tailwindcss';
+
+@theme {
+  /* --- Color roles (07 §2) — the exact palette from 00 §23. Nothing added,
+         nothing dropped. --- */
+
+  /* Backgrounds */
+  --color-bg: #000000; /* primary background — most of the site sits here */
+  --color-surface: #140a03; /* warm near-black: cards, panels, raised sections */
+
+  /* Foregrounds */
+  --color-fg: #ffffff; /* headlines, primary body copy */
+  --color-fg-muted: #888888; /* captions, metadata, tags — supporting info only */
+
+  /* Primary accent — "ACT ON THIS": CTAs, links, focus rings.
+     Scope resolved per 08 §2 as OPTION A (strict): interactive elements only.
+     NOT for section eyebrows, small labels, or the positioning pill. */
+  --color-action: #ff6b00;
+  --color-action-hover: #e59400; /* hover/active only — never a standalone color */
+
+  /* Functional accent — "THIS IS LIVE / VERIFIED / WORKING" (07 §2, §6).
+     Never decorative. If it is on screen, it is telling the visitor something. */
+  --color-live: #00d68f;
+
+  /* --- Typography (07 §3) — three roles, each with a distinct job --- */
+  --font-display: 'Clash Display', 'General Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'General Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', monospace;
+
+  /* Display — headlines and section openers only. Large sizes, never body copy. */
+  --text-display-1: clamp(2.75rem, 7vw, 5.5rem);
+  --text-display-1--line-height: 1;
+  --text-display-1--letter-spacing: -0.012em;
+  --text-display-1--font-weight: 600;
+
+  --text-display-2: clamp(2rem, 4.5vw, 3.5rem);
+  --text-display-2--line-height: 1.06;
+  --text-display-2--letter-spacing: -0.012em;
+  --text-display-2--font-weight: 600;
+
+  --text-display-3: clamp(1.5rem, 2.75vw, 2.25rem);
+  --text-display-3--line-height: 1.15;
+  --text-display-3--letter-spacing: -0.008em;
+  --text-display-3--font-weight: 600;
+
+  /* Body — long-form reading (Story page, case-study prose) */
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.7;
+  --text-body: 1rem;
+  --text-body--line-height: 1.7;
+  --text-caption: 0.875rem;
+  --text-caption--line-height: 1.6;
+
+  /* Utility / data — monospace. Stack tags, stat labels, dates, eyebrows.
+     Appears in the same handful of places sitewide so it reads as a system. */
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.4;
+  --text-label--letter-spacing: 0.12em;
+
+  /* --- Layout (07 §4) --- */
+  --container-content: 44rem; /* single readable column: Story, case studies */
+  --container-wide: 78rem; /* Home sections, Work grid */
+
+  /* --- Motion (07 §5) — durations are a system, not a per-component guess.
+         Every use must respect prefers-reduced-motion (enforced globally below). */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+}
+
+/* ---------------------------------------------------------------------------
+   Spacing note (07 §4): the 8px rhythm is 8/16/24/32/48/64/96. Tailwind's
+   default 4px base expresses every one of those exactly — 2/4/6/8/12/16/24 —
+   so the base is deliberately left alone rather than redefined. Redefining
+   --spacing would silently change what every utility class means for anyone
+   reading this code later: a poor trade on a site meant to last years (00 §34).
+   Use the even steps above; avoid odd steps (p-3, p-5, p-7).
+--------------------------------------------------------------------------- */
+
+@layer base {
+  html {
+    background-color: var(--color-bg);
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Focus states (07 §8) — visible on EVERY interactive element, no exceptions.
+     Orange is correct here: focus is an interactive affordance, which is
+     precisely what the accent is reserved for under Option A. */
+  :focus-visible {
+    outline: 2px solid var(--color-action);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Strip the default ring only where :focus-visible is supported, so keyboard
+     users never lose focus indication in engines that lack it. */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background-color: var(--color-action);
+    color: var(--color-bg);
+  }
+
+  /* Reduced motion (07 §5, §8) — a hard requirement, applied globally so that
+     no component added later can opt out of it by forgetting. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* --- Layout primitives (07 §4) --- */
+
+@utility container-content {
+  width: 100%;
+  max-width: var(--container-content);
+  margin-inline: auto;
+  padding-inline: --spacing(6);
+}
+
+@utility container-wide {
+  width: 100%;
+  max-width: var(--container-wide);
+  margin-inline: auto;
+  padding-inline: --spacing(6);
+}
+
+/* Hairline borders. Derived from the foreground token rather than introducing
+   a grey that is not in the palette (07 §2: nothing added, nothing dropped). */
+@utility hairline {
+  border: 1px solid --alpha(var(--color-fg) / 12%);
+}
