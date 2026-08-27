@@ -14,3 +14,18 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Firebase — CLI artifacts and credentials
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebaserc
+
+# Service-account keys and any local Angular environment file holding secrets.
+# The web config in src/app/core/firebase/firebase.config.ts is NOT secret and
+# is deliberately tracked; these patterns cover the ones that are.
+*serviceAccount*.json
+*-firebase-adminsdk-*.json
+src/environments/environment.local.ts
+site/src/environments/environment.local.ts
