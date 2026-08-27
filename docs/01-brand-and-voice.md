@@ -92,36 +92,19 @@ The website needs a short statement that answers:
 
 > "Who is Muhammed?"
 
-The final wording is NOT locked yet.
+**FINAL — locked 2026-08-27.** This is the Hero copy, not a direction. It supersedes the four conceptual directions (A–D) that previously sat here; they were exploratory and have been removed so nothing downstream builds against them by mistake.
 
-The direction should communicate:
+**Headline**
 
-- Software Engineering
-- Building
-- Problem solving
-- Bigger-picture thinking
+> Building practical software for problems I live with
 
-Possible conceptual directions:
+**Subline**
 
-### Direction A
+> I'm Muhammed, a software engineer and builder. I'm usually the one stuck in the problem myself — so I scope it, build the interface, wire it to real data, and ship it end to end.
 
-> I build software solutions for real-world problems.
+Why this wording carries the brand: it communicates all four required signals — software engineering, building, problem solving, bigger-picture thinking — without asserting any of them as an adjective. "Problems I live with" is evidence-shaped rather than claim-shaped (per §9, Rule 1: evidence over adjectives), and it is literally true of the project set: the Nutella menu came from being a customer, the ST portal from watching onboarding fail around him. The subline's verb sequence ("scope it, build the interface, wire it to real data, ship it") is the §4 process made concrete rather than listed as a numbered philosophy.
 
-### Direction B
-
-> I'm a software engineer who thinks beyond the code.
-
-### Direction C
-
-> I see the bigger picture, then build the solution.
-
-### Direction D
-
-> Software engineer. Builder. Problem solver.
-
-These are directions, not final copy.
-
-The final Hero statement should be decided during the design/content phase.
+**Storage note:** the headline seeds into `Profile.heroStatement` and the subline into `Profile.heroSubline` — a field added to `04-content-model.md` §2 when this copy was locked, since the schema had modelled the identity statement as a single line. See `10` §4a.
 
 ---
 

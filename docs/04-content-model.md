@@ -24,7 +24,8 @@ Singleton entity — one record, edited not created/deleted.
 | Field | Type | Notes |
 |---|---|---|
 | `name` | string | "Muhammed Al-Ateeqi" |
-| `heroStatement` | string | The one-line identity statement (brand doc §5) |
+| `heroStatement` | string | The Hero headline — the one-line identity statement (brand doc §5, locked 2026-08-27) |
+| `heroSubline` | string? | **Added 2026-08-27.** The Hero's supporting paragraph. When brand doc §5 was locked it resolved to a headline *plus* a subline, and this schema had modelled the identity statement as a single line. Kept as its own field rather than concatenated into `heroStatement`: they are two distinct display roles (display face vs body face, per `07` §3), and merging them would force the Hero component to split a string back apart on a separator. Optional, so the Hero still renders on headline alone (`§1.2`) |
 | `positioning` | string | "Software Engineer & Builder" |
 | `bioShort` | string | Used in meta tags, previews |
 | `bioLong` | rich text | Full About/Story narrative content |

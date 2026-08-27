@@ -1,4 +1,4 @@
-import { Project, Skill, SocialPlatform } from '../../src/app/core/models';
+import { Profile, Project, Skill, SocialPlatform } from '../../src/app/core/models';
 
 /**
  * Phase 2 seed content (08 §3, 08 §4).
@@ -20,8 +20,43 @@ import { Project, Skill, SocialPlatform } from '../../src/app/core/models';
  * ---------------------------------------------------------------------------
  */
 
-/** A project as authored here: status and timestamps are applied at write time. */
-export type ProjectSeed = Omit<Project, 'status' | 'updatedAt' | 'publishedAt'>;
+/** An entity as authored here: status and timestamps are applied at write time. */
+type Seed<T> = Omit<T, 'status' | 'updatedAt' | 'publishedAt'>;
+
+export type ProjectSeed = Seed<Project>;
+
+/**
+ * Profile — the singleton (04 §2). Every field is final as of 2026-08-27.
+ *
+ * The Hero copy is the locked wording from 01 §5, headline and subline kept as
+ * two fields rather than one string (see 04 §2's note on `heroSubline`).
+ *
+ * `resumeFile` is absent, not empty-stringed: no resume file has been uploaded
+ * to Storage yet, and 10 §3 has not settled PDF-only vs inline preview. 04 §2
+ * makes it optional so the site renders without a resume link rather than
+ * offering a broken one.
+ *
+ * No availability or location line, deliberately. 04 §2 has no such field, the
+ * locked Hero copy does not use one, and 10 §1 is explicit that adding it is a
+ * schema change to raise rather than slip in. This is the field the mockup pass
+ * invented "Kuwait — remote friendly" for (08 §2).
+ */
+export const PROFILE: Seed<Profile> = {
+  name: 'Muhammed Al-Ateeqi',
+  heroStatement: 'Building practical software for problems I live with',
+  heroSubline:
+    'I’m Muhammed, a software engineer and builder. I’m usually the one stuck in the problem myself — so I scope it, build the interface, wire it to real data, and ship it end to end.',
+  positioning: 'Software Engineer & Builder',
+  bioShort:
+    'Software engineer and builder who finds real problems and builds the software that solves them — five shipped projects, most designed, built and deployed solo.',
+  bioLong:
+    'Muhammed’s relationship with computers started with gaming as a kid, then video editing at 14, then programming in high school with C++. Through university he balanced coursework with freelancing, content creation, and building Ateeqi Tech — a laptop reselling business built on understanding customer needs, not just selling hardware. A personal setback interrupted that momentum for a period; he rebuilt from it by finishing his degree, leading his graduation project, and moving into professional software engineering.\n\nToday he works primarily in Angular and TypeScript, starting every project with the actual problem rather than the technology — from serverless operational dashboards used by real teams, to a digital menu he built for a café simply because the printed one was hard to use. He’s expanding into backend development next.',
+  contactEmail: 'mu.alateeqi@gmail.com',
+  contactLinkedIn: 'https://www.linkedin.com/in/zateeqi/',
+  contactGitHub: 'https://github.com/z-ateeqiii',
+  socialInstagram: 'https://www.instagram.com/muhammed.alateeqi/',
+  socialFacebook: 'https://www.facebook.com/3t3ota1/',
+};
 
 export const PROJECTS: readonly ProjectSeed[] = [
   // -- Featured (03 §3, §4) --------------------------------------------------
@@ -299,9 +334,9 @@ export const SOCIAL_PLATFORMS: readonly Omit<SocialPlatform, 'url'>[] = [
  */
 export const UNSEEDED: readonly { entity: string; blockedOn: string }[] = [
   {
-    entity: 'Profile (04 §2)',
+    entity: 'Profile.resumeFile (04 §2)',
     blockedOn:
-      'heroStatement is still unlocked (10 §2 - brand doc §5 left four directions open); bioShort and bioLong have never been written; contactEmail, contactLinkedIn, contactGitHub, socialInstagram and socialFacebook appear nowhere in docs 00-10. Blocks the Hero and the Contact page in Phase 3.',
+      'Every other Profile field is final as of 2026-08-27. Only the resume is outstanding: no file has been uploaded to Storage (06 §3.2), and 10 §3 has not settled PDF-only download vs an inline preview on /resume. The field is optional, so the site renders without a resume link rather than offering a broken one - but 02 §3 puts Resume in the header AND footer as a top-priority recruiter exit path (brief §28), so this is worth closing before launch.',
   },
   {
     entity: 'Experience (04 §4)',

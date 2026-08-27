@@ -3,8 +3,8 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { Timestamp, doc, getFirestore, writeBatch } from 'firebase/firestore';
 
 import { firebaseConfig, isFirebaseConfigured } from '../../src/app/core/firebase/firebase.config';
-import { COLLECTIONS } from '../../src/app/core/services/firestore-collection';
-import { PROJECTS, SKILLS, SOCIAL_PLATFORMS, UNSEEDED } from './seed-data';
+import { COLLECTIONS, PROFILE_DOC_ID } from '../../src/app/core/services/firestore-collection';
+import { PROFILE, PROJECTS, SKILLS, SOCIAL_PLATFORMS, UNSEEDED } from './seed-data';
 
 /**
  * Phase 2 seed runner (08 §3).
@@ -63,6 +63,15 @@ async function main(): Promise<void> {
   const batch = writeBatch(store);
   const now = Timestamp.now();
 
+  // Profile is a singleton at a fixed document id (04 §2): it is edited, never
+  // created or deleted, so re-running the seed updates the one record.
+  batch.set(doc(store, COLLECTIONS.profile, PROFILE_DOC_ID), {
+    ...PROFILE,
+    status: 'published',
+    updatedAt: now,
+    publishedAt: now,
+  });
+
   // Projects are seeded as PUBLISHED: this is real, reviewed content from
   // 03 §4-6, not scaffolding. Anything not ready to be public is absent from
   // seed-data.ts entirely rather than parked here as a draft.
@@ -90,7 +99,7 @@ async function main(): Promise<void> {
   await batch.commit();
 
   console.log(
-    `Seeded ${PROJECTS.length} projects, ${SKILLS.length} skills, ` +
+    `Seeded profile, ${PROJECTS.length} projects, ${SKILLS.length} skills, ` +
       `${SOCIAL_PLATFORMS.length} social platforms.`,
   );
   reportGaps();

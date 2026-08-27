@@ -9,14 +9,29 @@ import { Editable } from './content-status';
  * is a schema change to raise deliberately (09 §2.3) rather than slip in.
  * The shape has since been confirmed as "remote availability only, no city or
  * country", but the exact wording is still outstanding — so no field is added
- * here yet. It blocks the Hero in Phase 3, not this model.
+ * here yet.
+ *
+ * This no longer blocks the Hero: the locked 01 §5 copy carries no availability
+ * line, so the Hero renders complete without one. If an availability line is
+ * wanted later — 07 §6 suggests pairing it with the status dot — it is a
+ * deliberate field addition, not a gap to fill in with a plausible line.
  *
  * Excluded on purpose (04 §2, brief §27): WhatsApp and Calendly.
  */
 export interface Profile extends Editable {
   readonly name: string;
-  /** The one-line identity statement (01 §5). Still unlocked — see 10 §2. */
+  /** Hero headline — the one-line identity statement (01 §5, locked 2026-08-27). */
   readonly heroStatement: string;
+  /**
+   * Hero subline (04 §2, field added 2026-08-27).
+   *
+   * Separate from `heroStatement` rather than concatenated into it: the two
+   * are different display roles — headline in the display face, subline in the
+   * body face (07 §3) — and merging them would make the Hero component split a
+   * string back apart on a separator to render it. Optional, so the Hero still
+   * renders on the headline alone (04 §1.2).
+   */
+  readonly heroSubline?: string;
   readonly positioning: string;
   /** Short bio for meta tags and link previews. */
   readonly bioShort: string;
