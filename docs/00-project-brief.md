@@ -284,10 +284,16 @@ Current technical focus:
 
 ### Expanding Toward
 
-- .NET
+**Learning** — course basics completed, not yet applied in a real project:
 - C#
-- SQL Server
+- .NET
+- SQL Server Databases
+
+**Interested in** — clear next step, not yet started:
+- Node.js
 - AI-assisted development tools
+
+This split matters: the serverless/Firebase architecture chosen for full-stack projects (e.g. the Scholarship Operation Dashboard) was a deliberate scope decision made in part because backend depth is still developing — not a limitation to hide, but a reasoned engineering choice consistent with the professional philosophy in §10.
 
 Technical information should be kept current through the dashboard rather than hardcoded into the website.
 

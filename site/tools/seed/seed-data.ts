@@ -112,25 +112,60 @@ export const PROJECTS: readonly ProjectSeed[] = [
 /**
  * Skills (04 §5), from the categorised stack in brief §11.
  *
- * The names and categories are real and complete. `level` is NOT: brief §11
- * lists every skill by category without stating a proficiency, and 04 §5's
- * four levels come from a Discovery framing that is not reproduced in docs
- * 00-10. Only the "Expanding Toward" group has a level the source supports -
- * the brief labels it aspirational, which maps cleanly onto `interested`.
+ * --- Where `level` comes from, field by field ------------------------------
+ * brief §11 splits into two parts, and they support different amounts:
  *
- * Everything else is seeded `good` as an explicit placeholder, not a claim.
- * Guessing `strong` would have Muhammed asserting a proficiency he has not
- * asserted - the exact failure mode 01 §9 Rule 4 is about - and guessing
- * `learning` would understate real experience. This is the one field in this
- * file that is not verified, it is listed in UNSEEDED, and it needs one pass
- * in the dashboard before the Skills section goes live.
+ *  - "Current technical focus" (the first six groups) is stated as current and
+ *    actively used, but the brief draws no line between `strong` and `good`
+ *    within it. These seed as `good`: a floor the source supports, not a claim
+ *    it does not. Promoting any of them to `strong` would have Muhammed
+ *    asserting a proficiency he has not asserted (01 §9, Rule 4).
+ *
+ *  - "Expanding Toward" is now explicitly two-tier in the brief, and those
+ *    tiers map exactly onto 04 §5's bottom two levels:
+ *      "Learning - course basics completed, not yet applied in a real
+ *      project"  ->  `learning`
+ *      "Interested in - clear next step, not yet started"  ->  `interested`
+ *    Seeded as that literal split. Collapsing it back into one blended tier
+ *    would erase a distinction the brief makes deliberately: §11 ties it to the
+ *    serverless/Firebase scope decision on the Scholarship dashboard, which was
+ *    a reasoned engineering choice made partly because backend depth is still
+ *    developing - "not a limitation to hide" (brief §11, §10). "Course basics
+ *    done" and "not yet started" are different claims and must stay different.
+ *
+ * So the only thing still unverified here is which current-focus skills are
+ * `strong` rather than `good`. That narrower gap is what UNSEEDED now records.
+ * ---------------------------------------------------------------------------
+ *
+ * Categories for the Expanding Toward entries are inferred: the brief lists
+ * that group under one heading without sub-categories, unlike the current-focus
+ * groups whose headings map 1:1 onto 04 §5's enum. These are classifications of
+ * the technologies themselves, not claims about Muhammed.
  */
+/**
+ * The id becomes the Firestore document id, so it has to survive punctuation
+ * that a naive slug would silently eat: "C#" would collapse to "c" and ".NET"
+ * to "net". Both are lossy, and one is ambiguous against a future "C". Ids are
+ * effectively permanent once seeded - changing one later orphans a document
+ * rather than renaming it - so the substitutions happen before slugifying.
+ * "+" is handled for the same reason, ahead of a C++ entry that brief §9's
+ * history makes plausible.
+ */
+const slugify = (name: string): string =>
+  name
+    .toLowerCase()
+    .replace(/^\./, 'dot-')
+    .replace(/#/g, '-sharp')
+    .replace(/\+/g, '-plus')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
 const skill = (
   name: string,
   category: Skill['category'],
   level: Skill['level'] = 'good',
 ): Skill => ({
-  id: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+  id: slugify(name),
   name,
   category,
   level,
@@ -168,10 +203,16 @@ export const SKILLS: readonly Skill[] = [
   ...['Git', 'GitHub', 'CI Workflows', 'Postman', 'Figma', 'Netlify', 'Agile / Scrum', 'SDLC'].map(
     (n) => skill(n, 'tooling'),
   ),
-  // "Expanding Toward" (brief §11) - explicitly aspirational in the source.
-  ...['.NET', 'C#', 'SQL Server', 'AI-assisted development tools'].map((n) =>
-    skill(n, 'tooling', 'interested'),
-  ),
+  // -- "Expanding Toward", tier 1 (brief §11) -------------------------------
+  // "Learning - course basics completed, not yet applied in a real project."
+  skill('C#', 'language', 'learning'),
+  skill('.NET', 'framework', 'learning'),
+  skill('SQL Server Databases', 'state-data', 'learning'),
+
+  // -- "Expanding Toward", tier 2 (brief §11) -------------------------------
+  // "Interested in - clear next step, not yet started."
+  skill('Node.js', 'framework', 'interested'),
+  skill('AI-assisted development tools', 'tooling', 'interested'),
 ];
 
 /**
@@ -238,9 +279,9 @@ export const UNSEEDED: readonly { entity: string; blockedOn: string }[] = [
       'Follower counts are verified; the Instagram and Facebook profile URLs are recorded nowhere. Both records seed without `url`, so /beyond/social can state reach but cannot yet link out.',
   },
   {
-    entity: 'Skill levels (04 §5)',
+    entity: 'Skill levels: `strong` vs `good` (04 §5)',
     blockedOn:
-      'Names and categories are seeded from brief §11. Proficiency is not stated there for any skill except the aspirational "Expanding Toward" group, so every other record carries a placeholder `good`. Needs one editorial pass before the Skills section is published.',
+      'NARROWED, not closed. brief §11 now states the bottom two levels outright - "Learning" (C#, .NET, SQL Server Databases) and "Interested in" (Node.js, AI-assisted development tools) - and both are seeded as that literal split. What the brief still does not state is which "Current technical focus" skills are `strong` rather than `good`; all 34 of them seed as `good`, a floor the source supports. Needs one editorial pass before the Skills section is published.',
   },
   {
     entity: 'ProofPoint (04 §11)',
