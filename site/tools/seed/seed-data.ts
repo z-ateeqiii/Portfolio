@@ -1,4 +1,10 @@
-import { Profile, Project, Skill, SocialPlatform } from '../../src/app/core/models';
+import {
+  BusinessVenture,
+  Profile,
+  Project,
+  Skill,
+  SocialPlatform,
+} from '../../src/app/core/models';
 
 /**
  * Phase 2 seed content (08 §3, 08 §4).
@@ -200,38 +206,72 @@ export const PROJECTS: readonly ProjectSeed[] = [
 ];
 
 /**
- * Skills (04 §5), from the categorised stack in brief §11.
+ * Skills (04 §5). Names and categories from brief §11; levels assigned
+ * 2026-08-28.
  *
- * --- Where `level` comes from, field by field ------------------------------
- * brief §11 splits into two parts, and they support different amounts:
+ * --- How `level` is decided ------------------------------------------------
+ * The criterion for `strong` is evidence, not self-assessment: a skill is
+ * strong when it was actually used in one of the five shipped projects, which
+ * means every one of them can be checked against a real case study rather than
+ * taken on trust (01 §9, Rule 1 - evidence over adjectives). PROVEN_IN_PROJECTS
+ * below is that set, written out explicitly so the claim stays auditable.
  *
- *  - "Current technical focus" (the first six groups) is stated as current and
- *    actively used, but the brief draws no line between `strong` and `good`
- *    within it. These seed as `good`: a floor the source supports, not a claim
- *    it does not. Promoting any of them to `strong` would have Muhammed
- *    asserting a proficiency he has not asserted (01 §9, Rule 4).
+ * The lower three levels were re-mapped on 2026-08-28 and now differ from the
+ * tier labels in brief §11's "Expanding Toward" prose. The underlying facts did
+ * not change - only which 04 §5 enum value each maps to:
  *
- *  - "Expanding Toward" is now explicitly two-tier in the brief, and those
- *    tiers map exactly onto 04 §5's bottom two levels:
- *      "Learning - course basics completed, not yet applied in a real
- *      project"  ->  `learning`
- *      "Interested in - clear next step, not yet started"  ->  `interested`
- *    Seeded as that literal split. Collapsing it back into one blended tier
- *    would erase a distinction the brief makes deliberately: §11 ties it to the
- *    serverless/Firebase scope decision on the Scholarship dashboard, which was
- *    a reasoned engineering choice made partly because backend depth is still
- *    developing - "not a limitation to hide" (brief §11, §10). "Course basics
- *    done" and "not yet started" are different claims and must stay different.
+ *   `good`       C#, .NET, SQL Server Databases - course basics completed,
+ *                real knowledge, not yet applied in a shipped project
+ *   `learning`   Node.js - familiar from the JS/TS background, not formally
+ *                studied yet (brief §11 previously had it as "not yet started",
+ *                which understated it)
+ *   `interested` AI-assisted development tools
  *
- * So the only thing still unverified here is which current-focus skills are
- * `strong` rather than `good`. That narrower gap is what UNSEEDED now records.
+ * brief §11 has been updated to match, so the document and the data do not
+ * contradict each other.
+ *
+ * --- The one thing still unresolved ----------------------------------------
+ * Skills in brief §11 that were NOT named in the strong list stay at `good`.
+ * That is a genuine tension worth naming rather than hiding: `good` now carries
+ * the sense "real knowledge, not yet applied in a shipped project", and several
+ * of these clearly WERE applied - Netlify hosts FreshCart, Responsive Design
+ * and Lazy Loading are claimed in the project READMEs. They are not promoted
+ * here because the strong list was given explicitly and inferring past it would
+ * be exactly the self-assessment the criterion above avoids. Listed in UNSEEDED
+ * for one editorial pass.
  * ---------------------------------------------------------------------------
  *
- * Categories for the Expanding Toward entries are inferred: the brief lists
- * that group under one heading without sub-categories, unlike the current-focus
- * groups whose headings map 1:1 onto 04 §5's enum. These are classifications of
- * the technologies themselves, not claims about Muhammed.
+ * Categories for entries outside brief §11's six current-focus groups are
+ * inferred - those groups map 1:1 onto 04 §5's enum, the rest do not. These are
+ * classifications of the technologies themselves, not claims about Muhammed.
  */
+
+/**
+ * Skills proven by one of the five shipped projects (03 §4-6).
+ *
+ * Firebase and Firestore are not in brief §11's list but are named here: they
+ * are the Scholarship dashboard's actual backend (03 §4, and its seeded
+ * `stack`), so the evidence for them is stronger than for several skills the
+ * brief does list. Added as new records rather than left out.
+ */
+const PROVEN_IN_PROJECTS = new Set<string>([
+  'HTML5',
+  'CSS3',
+  'JavaScript (ES6+)',
+  'TypeScript',
+  'Angular 17+',
+  'Tailwind CSS',
+  'RxJS',
+  'Angular Signals',
+  'REST API Integration',
+  'JWT Authentication',
+  'Firebase',
+  'Firestore',
+  'D3.js',
+  'Chart.js',
+  'Git',
+  'GitHub',
+]);
 /**
  * The id becomes the Firestore document id, so it has to survive punctuation
  * that a naive slug would silently eat: "C#" would collapse to "c" and ".NET"
@@ -253,7 +293,8 @@ const slugify = (name: string): string =>
 const skill = (
   name: string,
   category: Skill['category'],
-  level: Skill['level'] = 'good',
+  /** Defaults to the evidence rule: proven in a shipped project => `strong`. */
+  level: Skill['level'] = PROVEN_IN_PROJECTS.has(name) ? 'strong' : 'good',
 ): Skill => ({
   id: slugify(name),
   name,
@@ -278,6 +319,9 @@ export const SKILLS: readonly Skill[] = [
     'REST API Integration',
     'JSON',
     'JWT Authentication',
+    // Not in brief §11, but the Scholarship dashboard's actual backend (03 §4).
+    'Firebase',
+    'Firestore',
   ].map((n) => skill(n, 'state-data')),
   ...['D3.js', 'Chart.js'].map((n) => skill(n, 'data-viz')),
   ...[
@@ -293,15 +337,15 @@ export const SKILLS: readonly Skill[] = [
   ...['Git', 'GitHub', 'CI Workflows', 'Postman', 'Figma', 'Netlify', 'Agile / Scrum', 'SDLC'].map(
     (n) => skill(n, 'tooling'),
   ),
-  // -- "Expanding Toward", tier 1 (brief §11) -------------------------------
-  // "Learning - course basics completed, not yet applied in a real project."
-  skill('C#', 'language', 'learning'),
-  skill('.NET', 'framework', 'learning'),
-  skill('SQL Server Databases', 'state-data', 'learning'),
+  // -- Course basics completed, real knowledge, not yet in a shipped project --
+  skill('C#', 'language', 'good'),
+  skill('.NET', 'framework', 'good'),
+  skill('SQL Server Databases', 'state-data', 'good'),
 
-  // -- "Expanding Toward", tier 2 (brief §11) -------------------------------
-  // "Interested in - clear next step, not yet started."
-  skill('Node.js', 'framework', 'interested'),
+  // -- Familiar from the JS/TS background, not formally studied yet ----------
+  skill('Node.js', 'framework', 'learning'),
+
+  // -- Clear direction, not yet started -------------------------------------
   skill('AI-assisted development tools', 'tooling', 'interested'),
 ];
 
@@ -317,12 +361,51 @@ export const SKILLS: readonly Skill[] = [
  * field, which exists so a stale number stays visible rather than silently
  * aging into a false claim.
  *
- * `url` is absent from both records - no profile URL appears anywhere in docs
- * 00-10. See UNSEEDED.
+ * Profile URLs supplied 2026-08-28; they match Profile.socialInstagram and
+ * socialFacebook, which is intentional — 04 §7 models the platform as a record
+ * with its own reach data, while 04 §2 holds the same link as a contact channel
+ * for the footer (02 §3). Two different jobs, same URL.
  */
-export const SOCIAL_PLATFORMS: readonly Omit<SocialPlatform, 'url'>[] = [
-  { platform: 'instagram', followerCount: 100_000, lastVerifiedDate: new Date('2026-08-27') },
-  { platform: 'facebook', followerCount: 886_000, lastVerifiedDate: new Date('2026-08-27') },
+export const SOCIAL_PLATFORMS: readonly SocialPlatform[] = [
+  {
+    platform: 'instagram',
+    url: 'https://www.instagram.com/muhammed.alateeqi/',
+    followerCount: 100_000,
+    lastVerifiedDate: new Date('2026-08-27'),
+  },
+  {
+    platform: 'facebook',
+    url: 'https://www.facebook.com/3t3ota1/',
+    followerCount: 886_000,
+    lastVerifiedDate: new Date('2026-08-27'),
+  },
+];
+
+/**
+ * Business ventures (04 §9). Summary supplied 2026-08-28.
+ *
+ * Name is "Ateeqi Tech", never the Arabic form — an explicit correction logged
+ * in 02, 04 and 10 §6, and 09 §2.1 puts logged corrections above everything.
+ *
+ * Metrics stay as labeled pairs rather than being left inside the prose, so
+ * each number is individually editable and attributable (04 §9). Both are
+ * Muhammed-verified and usable exactly as stated (03 §8): "80+" and
+ * "~80,000 EGP" keep their qualifiers, since the source says "more than 80" and
+ * "roughly 80,000" — rounding those into "80" and "80,000 EGP" would turn a
+ * careful claim into a precise one that nobody made.
+ */
+export const BUSINESS_VENTURES: readonly BusinessVenture[] = [
+  {
+    id: 'ateeqi-tech',
+    name: 'Ateeqi Tech',
+    summary:
+      'Ateeqi Tech began in Muhammed’s third year of university, driven by a practical need — he wanted to take a course costing around 10,000 EGP, while his income at the time (from content creation) was irregular. He borrowed roughly 25,000 EGP and launched the business, advertising through Facebook and Instagram. Unlike a typical resale operation, it started with the customer’s actual needs — understanding what someone needed a laptop for and their budget, then sourcing the right machine and shipping it to them. Over about a year, Muhammed sold more than 80 laptops, growing the business to roughly 80,000 EGP in net proceeds, while living independently in Cairo.',
+    metrics: [
+      { label: 'Laptops sold', value: '80+' },
+      { label: 'Net proceeds', value: '~80,000 EGP' },
+      { label: 'Duration', value: '~1 year' },
+    ],
+  },
 ];
 
 /**
@@ -349,19 +432,9 @@ export const UNSEEDED: readonly { entity: string; blockedOn: string }[] = [
       'Entries live in Discovery, not in docs 00-10. 10 §2 additionally flags that a 2026-dated Coursera certificate needs a sanity check before any of these reach the Education page.',
   },
   {
-    entity: 'BusinessVenture: Ateeqi Tech (04 §9)',
+    entity: 'Skill levels: the 20 skills left at `good` (04 §5)',
     blockedOn:
-      'Metrics are verified and usable ("80+ laptops", "~80,000 EGP net proceeds" per 03 §8), but the customer-first laptop business narrative that 04 §9 calls for as `summary` has not been written. Name is "Ateeqi Tech", never the Arabic form (09 §2.1).',
-  },
-  {
-    entity: 'SocialPlatform URLs (04 §7)',
-    blockedOn:
-      'Follower counts are verified; the Instagram and Facebook profile URLs are recorded nowhere. Both records seed without `url`, so /beyond/social can state reach but cannot yet link out.',
-  },
-  {
-    entity: 'Skill levels: `strong` vs `good` (04 §5)',
-    blockedOn:
-      'NARROWED, not closed. brief §11 now states the bottom two levels outright - "Learning" (C#, .NET, SQL Server Databases) and "Interested in" (Node.js, AI-assisted development tools) - and both are seeded as that literal split. What the brief still does not state is which "Current technical focus" skills are `strong` rather than `good`; all 34 of them seed as `good`, a floor the source supports. Needs one editorial pass before the Skills section is published.',
+      'NARROWED, not closed. 16 skills are `strong` on the stated evidence rule (used in a shipped project), and C#/.NET/SQL Server Databases, Node.js and AI-assisted development tools have their levels set explicitly. The remaining 20 brief §11 skills were not named in any tier and stay at `good` - but `good` now means "real knowledge, not yet applied in a shipped project", which is demonstrably wrong for at least Netlify (hosts FreshCart), Responsive Design and Lazy Loading (both claimed in project READMEs), and arguably Reactive Forms, JSON, Component Architecture and Accessibility. Not promoted here because the strong list was given explicitly and inferring past it would be the self-assessment the evidence rule exists to avoid. One editorial pass needed before the Skills section publishes.',
   },
   {
     entity: 'ProofPoint (04 §11)',

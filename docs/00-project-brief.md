@@ -284,14 +284,20 @@ Current technical focus:
 
 ### Expanding Toward
 
-**Learning** — course basics completed, not yet applied in a real project:
+**Good** — course basics completed, real knowledge, not yet applied in a shipped project:
 - C#
 - .NET
 - SQL Server Databases
 
-**Interested in** — clear next step, not yet started:
+**Learning** — familiar from the JavaScript/TypeScript background, not formally studied yet:
 - Node.js
+
+**Interested in** — clear direction, not yet started:
 - AI-assisted development tools
+
+> **Level mapping updated 2026-08-28.** These tiers now use the exact `level` values from `04-content-model.md` §5 (`strong` / `good` / `learning` / `interested`), so the brief and the seeded `Skill` records cannot drift apart. Two things changed from the previous wording: C#/.NET/SQL Server moved from "Learning" to **Good** (the underlying description — course basics done, not yet shipped — is unchanged; only the label it maps to), and Node.js moved from "Interested in" to **Learning**, since "not yet started" understated an existing JS/TS foundation.
+>
+> The skills in "Current technical focus" above are not all one level either: those **used in one of the five shipped projects** are `strong` — evidence via a real case study rather than self-assessment (per `01` §9, Rule 1). Firebase and Firestore are `strong` on the same rule despite not being listed above; they are the Scholarship dashboard's actual backend (`03` §4). Skills in the list that were not named in that set remain `good` pending one editorial pass — see `10` §4b.
 
 This split matters: the serverless/Firebase architecture chosen for full-stack projects (e.g. the Scholarship Operation Dashboard) was a deliberate scope decision made in part because backend depth is still developing — not a limitation to hide, but a reasoned engineering choice consistent with the professional philosophy in §10.
 

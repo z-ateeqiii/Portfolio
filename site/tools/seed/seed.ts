@@ -4,7 +4,14 @@ import { Timestamp, doc, getFirestore, writeBatch } from 'firebase/firestore';
 
 import { firebaseConfig, isFirebaseConfigured } from '../../src/app/core/firebase/firebase.config';
 import { COLLECTIONS, PROFILE_DOC_ID } from '../../src/app/core/services/firestore-collection';
-import { PROFILE, PROJECTS, SKILLS, SOCIAL_PLATFORMS, UNSEEDED } from './seed-data';
+import {
+  BUSINESS_VENTURES,
+  PROFILE,
+  PROJECTS,
+  SKILLS,
+  SOCIAL_PLATFORMS,
+  UNSEEDED,
+} from './seed-data';
 
 /**
  * Phase 2 seed runner (08 §3).
@@ -96,11 +103,16 @@ async function main(): Promise<void> {
     });
   }
 
+  for (const venture of BUSINESS_VENTURES) {
+    batch.set(doc(store, COLLECTIONS.businessVentures, venture.id), venture);
+  }
+
   await batch.commit();
 
   console.log(
     `Seeded profile, ${PROJECTS.length} projects, ${SKILLS.length} skills, ` +
-      `${SOCIAL_PLATFORMS.length} social platforms.`,
+      `${SOCIAL_PLATFORMS.length} social platforms, ` +
+      `${BUSINESS_VENTURES.length} business venture(s).`,
   );
   reportGaps();
 }

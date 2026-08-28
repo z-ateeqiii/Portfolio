@@ -24,7 +24,8 @@ Singleton entity — one record, edited not created/deleted.
 | Field | Type | Notes |
 |---|---|---|
 | `name` | string | "Muhammed Al-Ateeqi" |
-| `heroStatement` | string | The one-line identity statement (brand doc §5) |
+| `heroStatement` | string | The locked Hero headline — final copy, per `01` §5 |
+| `heroSubline` | string | The locked Hero subline — separate field, not concatenated into `heroStatement`, since headline and subline render in different type roles (display vs body face, per `07` §3). Added when the Hero copy was locked; this row was previously dropped from this doc by mistake during an unrelated edit and is restored here |
 | `positioning` | string | "Software Engineer & Builder" |
 | `bioShort` | string | Used in meta tags, previews |
 | `bioLong` | rich text | Full About/Story narrative content |
