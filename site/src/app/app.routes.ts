@@ -3,6 +3,7 @@ import { ResolveFn, Routes } from '@angular/router';
 
 import { BusinessVenture, Media, Project, ProofPoint, SocialPlatform } from './core/models';
 import { ContentService } from './core/services';
+import { authGuard, guestGuard } from './core/auth/auth.guard';
 import { transferred } from './core/services/transfer';
 
 /**
@@ -129,6 +130,42 @@ export const routes: Routes = [
     path: 'contact',
     title: 'Contact — Muhammed Al-Ateeqi',
     loadComponent: () => import('./features/contact/contact').then((m) => m.Contact),
+  },
+
+  /**
+   * Dashboard (05, 06 §5). A lazily-loaded, auth-guarded route group inside the
+   * same app rather than a separate application: one codebase, one deploy, one
+   * Firebase config, and the same 04 models shared by both sides so the shape
+   * of the data cannot drift between them (06 §5).
+   *
+   * Excluded from SSR and from the sitemap — it is authenticated, never
+   * crawled, never shared as a link (05 §6, 06 §2, §4).
+   */
+  {
+    path: 'admin',
+    children: [
+      {
+        path: 'login',
+        canActivate: [guestGuard],
+        title: 'Sign in',
+        loadComponent: () => import('./features/admin/login/login').then((m) => m.AdminLogin),
+      },
+      {
+        path: '',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/admin/admin-shell/admin-shell').then((m) => m.AdminShell),
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            title: 'Overview',
+            loadComponent: () =>
+              import('./features/admin/overview/overview').then((m) => m.AdminOverview),
+          },
+        ],
+      },
+    ],
   },
 
   /**

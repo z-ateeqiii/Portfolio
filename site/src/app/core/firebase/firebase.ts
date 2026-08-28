@@ -22,7 +22,14 @@ import { firebaseConfig, isFirebaseConfigured } from './firebase.config';
 
 const APP_NAME = 'ateeqi-portfolio';
 
-function app(): FirebaseApp | null {
+/**
+ * The shared Firebase app instance, or null while unconfigured.
+ *
+ * Exported because Auth needs the same app as Firestore (core/auth) — creating
+ * a second app would give the two SDKs separate sessions, so an admin signed in
+ * for Auth would still be anonymous to Firestore's security rules.
+ */
+export function firebaseApp(): FirebaseApp | null {
   if (!isFirebaseConfigured()) return null;
   return getApps().some((a) => a.name === APP_NAME)
     ? getApp(APP_NAME)
@@ -37,6 +44,6 @@ function app(): FirebaseApp | null {
  * page down with it.
  */
 export function db(): Firestore | null {
-  const instance = app();
+  const instance = firebaseApp();
   return instance ? getFirestore(instance) : null;
 }

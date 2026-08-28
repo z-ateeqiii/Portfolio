@@ -120,6 +120,25 @@ Phase 3 built Home, About/Story, Beyond Code hub + all three subpages, and Conta
 
 ---
 
+## 4e. Blocking Phase 5: the draft model can't express what `05` §2 asks for (2026-08-28)
+
+Phase 5's auth foundation is built — sign-in, route guard, client-rendered `/admin`, the shell, and an overview. Building the first content screen surfaced a **genuine conflict between two documents**, not a gap:
+
+- **`05` §2 requires:** "any change (new project, edited bio, updated skill list) saves as a draft. **The live site is unaffected.**"
+- **`04` §12 provides:** one `status` field per document (`draft | published`), and `06` §3.1 restates it — public queries filter `status == 'published'`.
+
+A single `status` field on a single document **cannot represent both states at once.** Editing a live project means flipping it to `draft`, which removes it from the public site until republished — the opposite of "the live site is unaffected". The current model works for *new* content going live for the first time; it breaks the moment Muhammed edits something already published, which is the ordinary case two years from now (`05` §0's own test).
+
+This blocks every entity screen, the Preview step, and the Overview's "what's in draft" column, so it is being raised rather than guessed (`09` §2.3, §4.3). Three options:
+
+- **A — separate `drafts/` collection (recommended).** A pending edit is written to `drafts/{collection}/{id}`; the live document is untouched until Publish copies the draft over it and deletes it. Satisfies `05` §2 *and* `05` §6, because `drafts/` gets admin-only read rules — draft content is genuinely unreachable, not merely unrendered. Cost: one extra collection, a merge-on-publish step, and an addition to `04` §12.
+- **B — a `draft` map field on the same document.** Simplest to write, but **fails `05` §6**: Firestore rules grant or deny whole documents and cannot hide a field, so anything in `draft` would be readable by any visitor who opens a console. Recorded here so it is rejected on the record rather than rediscovered later.
+- **C — keep `04` §12 exactly as written.** Editing a live entity takes it off the public site until republished. Honest to the current schema, but it contradicts `05` §2 and makes routine edits risky on a site whose whole premise is credibility.
+
+Preview is already cheap under any of these: the public page components take their data through `input()`, so `/admin/preview/...` can render the real `CaseStudy` or `Home` component with draft data passed in — no duplicate "preview version" of any template.
+
+---
+
 ## 5. Post-v1 / Not Blocking Launch
 
 Safe to leave until after the site is live:
