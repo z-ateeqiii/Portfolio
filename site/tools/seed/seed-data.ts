@@ -231,14 +231,18 @@ export const PROJECTS: readonly ProjectSeed[] = [
  * contradict each other.
  *
  * --- The one thing still unresolved ----------------------------------------
- * Skills in brief §11 that were NOT named in the strong list stay at `good`.
- * That is a genuine tension worth naming rather than hiding: `good` now carries
- * the sense "real knowledge, not yet applied in a shipped project", and several
- * of these clearly WERE applied - Netlify hosts FreshCart, Responsive Design
- * and Lazy Loading are claimed in the project READMEs. They are not promoted
- * here because the strong list was given explicitly and inferring past it would
- * be exactly the self-assessment the criterion above avoids. Listed in UNSEEDED
- * for one editorial pass.
+ * A second pass on 2026-08-28 confirmed seven more skills directly - Responsive
+ * Design, Lazy Loading, Reactive Forms, JSON, Component Architecture,
+ * Accessibility and Netlify - plus Vercel as a new record. All eight are
+ * confirmed, not inferred from the project READMEs, which matters: the whole
+ * point of the evidence rule is that a `strong` claim traces to something real
+ * rather than to a reviewer's reading.
+ *
+ * 13 brief §11 skills remain at `good` because they were never named in any
+ * tier. `good` now carries the sense "real knowledge, not yet applied in a
+ * shipped project", so for some of them that may still understate the truth.
+ * They are not promoted by inference - that is the self-assessment this rule
+ * exists to avoid. Listed in UNSEEDED for a final pass.
  * ---------------------------------------------------------------------------
  *
  * Categories for entries outside brief §11's six current-focus groups are
@@ -263,14 +267,22 @@ const PROVEN_IN_PROJECTS = new Set<string>([
   'Tailwind CSS',
   'RxJS',
   'Angular Signals',
+  'Reactive Forms',
   'REST API Integration',
+  'JSON',
   'JWT Authentication',
   'Firebase',
   'Firestore',
   'D3.js',
   'Chart.js',
+  'Component Architecture',
+  'Lazy Loading',
+  'Responsive Design',
+  'Accessibility',
   'Git',
   'GitHub',
+  'Netlify',
+  'Vercel',
 ]);
 /**
  * The id becomes the Firestore document id, so it has to survive punctuation
@@ -310,7 +322,6 @@ export const SKILLS: readonly Skill[] = [
     'Tailwind CSS',
     'Bootstrap 5',
     'jQuery',
-    'Responsive Design',
   ].map((n) => skill(n, 'framework')),
   ...[
     'RxJS',
@@ -333,10 +344,25 @@ export const SKILLS: readonly Skill[] = [
     'Web Performance Optimization',
     'Clean and documented code',
     'Code Reviews',
+    // Moved out of brief §11's "Frameworks & UI" group: categorised as a
+    // practice on 2026-08-28. It describes how something is built, not a
+    // library used to build it.
+    'Responsive Design',
   ].map((n) => skill(n, 'practice')),
-  ...['Git', 'GitHub', 'CI Workflows', 'Postman', 'Figma', 'Netlify', 'Agile / Scrum', 'SDLC'].map(
-    (n) => skill(n, 'tooling'),
-  ),
+  ...[
+    'Git',
+    'GitHub',
+    'CI Workflows',
+    'Postman',
+    'Figma',
+    'Netlify',
+    // Not in brief §11, added 2026-08-28: Vercel hosts the live demos for both
+    // the Scholarship Operation Dashboard and the Nutella Digital Menu, so it
+    // is evidenced by two seeded `liveUrl` values rather than by assertion.
+    'Vercel',
+    'Agile / Scrum',
+    'SDLC',
+  ].map((n) => skill(n, 'tooling')),
   // -- Course basics completed, real knowledge, not yet in a shipped project --
   skill('C#', 'language', 'good'),
   skill('.NET', 'framework', 'good'),
@@ -432,9 +458,9 @@ export const UNSEEDED: readonly { entity: string; blockedOn: string }[] = [
       'Entries live in Discovery, not in docs 00-10. 10 §2 additionally flags that a 2026-dated Coursera certificate needs a sanity check before any of these reach the Education page.',
   },
   {
-    entity: 'Skill levels: the 20 skills left at `good` (04 §5)',
+    entity: 'Skill levels: the 13 skills left at `good` (04 §5)',
     blockedOn:
-      'NARROWED, not closed. 16 skills are `strong` on the stated evidence rule (used in a shipped project), and C#/.NET/SQL Server Databases, Node.js and AI-assisted development tools have their levels set explicitly. The remaining 20 brief §11 skills were not named in any tier and stay at `good` - but `good` now means "real knowledge, not yet applied in a shipped project", which is demonstrably wrong for at least Netlify (hosts FreshCart), Responsive Design and Lazy Loading (both claimed in project READMEs), and arguably Reactive Forms, JSON, Component Architecture and Accessibility. Not promoted here because the strong list was given explicitly and inferring past it would be the self-assessment the evidence rule exists to avoid. One editorial pass needed before the Skills section publishes.',
+      'NARROWED TWICE, not closed. 24 skills are `strong` on the stated evidence rule (used in a shipped project), after a second confirmed pass on 2026-08-28 added Responsive Design, Lazy Loading, Reactive Forms, JSON, Component Architecture, Accessibility, Netlify and a new Vercel record. C#/.NET/SQL Server Databases (`good`), Node.js (`learning`) and AI-assisted development tools (`interested`) are set explicitly. What remains: 13 brief §11 skills never named in any tier - Angular Material, Bootstrap 5, jQuery, Reusable Components, Cross-Browser Compatibility, Web Performance Optimization, Clean and documented code, Code Reviews, CI Workflows, Postman, Figma, Agile / Scrum, SDLC. They stay at `good`, which may understate some of them, but promoting by inference is the self-assessment the evidence rule exists to avoid.',
   },
   {
     entity: 'ProofPoint (04 §11)',
