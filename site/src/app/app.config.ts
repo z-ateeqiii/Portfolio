@@ -4,11 +4,12 @@ import {
   provideBrowserGlobalErrorListeners,
   inject,
 } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 import { routes } from './app.routes';
 import { SiteState } from './core/services/site-state';
+import { SiteTitleStrategy } from './core/services/title-strategy';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,6 +22,13 @@ export const appConfig: ApplicationConfig = {
      */
     provideRouter(routes, withComponentInputBinding()),
     provideClientHydration(withEventReplay()),
+
+    /**
+     * Per-project case-study titles. A `title` ResolveFn cannot see resolved
+     * data (it runs in the same step), so the title is derived after
+     * resolution instead — see SiteTitleStrategy.
+     */
+    { provide: TitleStrategy, useClass: SiteTitleStrategy },
 
     /**
      * The Profile singleton is loaded once, before the first route renders,

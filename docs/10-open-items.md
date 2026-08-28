@@ -98,10 +98,25 @@ Phase 3 built Home, About/Story, Beyond Code hub + all three subpages, and Conta
 
 **Open:**
 
-- [ ] **`/work` and `/work/:slug` do not exist yet (Phase 4).** The header, footer and Home all link to `/work` because `02` §3 puts it in the primary nav — those links currently fall through to the catch-all and redirect Home. Deliberately not stubbed: a "coming soon" page on the single most important route for a recruiter (`02` §11) is worse than an honest gap during development. **This is the first thing Phase 4 closes.**
+- [x] **`/work` and `/work/:slug` — built (Phase 4, 2026-08-28).** Every nav link now resolves. One template drives all five case studies; the tier system needs no branching, since a compact project simply has no `approach` field.
 - [ ] **445 kB of Firestore SDK ships in the initial browser bundle** (measured: `chunk-7QQ67RC2.js`; initial total 768 kB against a 500 kB budget). With SSR + TransferState the browser does not need Firestore for the first paint, but the imports are static so it is bundled anyway. The fix is to load the SDK through a dynamic `import()` behind the data layer, which requires `ContentService` to stop importing `where`/`orderBy` at module scope and pass query descriptors instead. Real work, not a one-liner — flagged for the Phase 8 performance pass rather than done at the end of Phase 3. Relevant to `06` §7 and brief §37, point 10.
 - [ ] **Section framings are not in the content model.** `02` §4 asks Home for framing copy per section (Featured Work, How I Work, Story teaser, Beyond teaser, Contact) that `04` has no field for. These live in `src/app/core/content/site-copy.ts`, each traced to the doc line it derives from, alongside the brief §10 process and brief §8 journey arc. No fact about Muhammed is in that file — those all still come from Firestore. If any of it should become dashboard-editable, that is a `04` change to raise (`09` §2.3). `03` §9 also still defers final on-page wording, so treat these as reviewable defaults rather than locked copy.
 - [ ] **`/beyond/teaching` is the thinnest page on the site, by necessity.** `04` has no Teaching entity and docs `00`–`10` carry no specifics — no courses, institutions, dates. brief §22 lists "300+ students taught" as a *potential* proof point and then says numbers must be verified before publication; it never was, so it is not rendered. The page says what brief §21 actually states and stops. `02` §8.3 asks for this to stay "proportionate," so thin is correct here rather than a gap to pad — but real material would improve it.
+
+---
+
+## 4d. Surfaced During Phase 4 (2026-08-28)
+
+`/work` and `/work/:slug` built and verified over SSR: all five case studies, both tiers' block ordering, the not-found path, and every `<title>`.
+
+**Corrected while building:**
+
+- [x] **Per-project `<title>` was silently falling back.** A `title:` ResolveFn on the route runs in the *same* resolve step as the data resolvers, so it could not read them — `route.data['project']` was still empty and every case study came out titled "Case study — Muhammed Al-Ateeqi". Caught by grepping the served HTML rather than trusting the route config. Replaced with a `TitleStrategy`, which runs after resolution. This is not cosmetic: `02` §6 requires a case study to stand alone as a forwardable link, and brief §29 makes search presence a first-class goal — the `<title>` is what a search result and a link preview lead with. Verified: all five now carry their project name; the not-found page stays generic so a guessed slug is never confirmed as an existing draft (`05` §6).
+
+**Open:**
+
+- [ ] **The not-found case study returns HTTP 200, not 404.** `/work/<anything>` matches the route and resolves to `null`, so the component renders a proper not-found view — but the status line still says 200. That is a "soft 404", which search engines treat poorly and which conflicts with brief §29's discoverability goal. Fixing it means setting the response status from inside SSR. **Belongs with the Phase 6 SEO work**, alongside meta/OG tags and the sitemap.
+- [ ] **A transient Firestore `permission-denied` was observed once during SSR** (server log: `[firestore] read failed for "projects"`), on the first request after a server restart. Not reproducible — the same four queries ran 3/3 clean immediately afterward, and the page rendered fully on the next request. `ContentService` caught it and returned `[]`, which is the designed degradation (`04` §1.2), so nothing crashed. **But that is exactly the risk worth naming:** a transient read failure produces a page that is silently missing a section — a Home with no Featured Work — with only a line in a server log to say so. Worth a retry-once on read failure, or at minimum log-based alerting, in the Phase 8 pass.
 
 ---
 

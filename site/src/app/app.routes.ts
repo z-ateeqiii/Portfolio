@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { ResolveFn, Routes } from '@angular/router';
 
-import { BusinessVenture, Project, ProofPoint, SocialPlatform } from './core/models';
+import { BusinessVenture, Media, Project, ProofPoint, SocialPlatform } from './core/models';
 import { ContentService } from './core/services';
 import { transferred } from './core/services/transfer';
 
@@ -34,6 +34,31 @@ const socialPlatforms: ResolveFn<SocialPlatform[]> = transferred('socialPlatform
 const businessVentures: ResolveFn<BusinessVenture[]> = transferred('businessVentures', () =>
   inject(ContentService).businessVentures(),
 );
+const allProjects: ResolveFn<Project[]> = transferred('projects', () =>
+  inject(ContentService).projects(),
+);
+
+/**
+ * A single case study. Keyed per slug so two different case studies visited in
+ * one session do not collide in the transfer cache.
+ *
+ * Resolves to `null` for an unknown OR unpublished slug — the component renders
+ * a not-found view for both, which is deliberate: from the outside a draft must
+ * be indistinguishable from a typo (05 §6).
+ */
+const caseStudy: ResolveFn<Project | null> = (route) => {
+  const slug = route.paramMap.get('slug') ?? '';
+  return transferred(`project:${slug}`, () => inject(ContentService).project(slug))(
+    route,
+    {} as never,
+  );
+};
+
+const caseStudyMedia: ResolveFn<Media[]> = (route) => {
+  const slug = route.paramMap.get('slug') ?? '';
+  return transferred(`media:${slug}`, () => inject(ContentService).media(slug))(route, {} as never);
+};
+
 
 export const routes: Routes = [
   {
@@ -42,6 +67,27 @@ export const routes: Routes = [
     title: 'Muhammed Al-Ateeqi — Software Engineer & Builder',
     loadComponent: () => import('./features/home/home').then((m) => m.Home),
     resolve: { featured: featuredProjects, proofPoints },
+  },
+  {
+    path: 'work',
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        title: 'Work — Muhammed Al-Ateeqi',
+        loadComponent: () =>
+          import('./features/work/work-index/work-index').then((m) => m.WorkIndex),
+        resolve: { projects: allProjects },
+      },
+      {
+        path: ':slug',
+        loadComponent: () =>
+          import('./features/work/case-study/case-study').then((m) => m.CaseStudy),
+        resolve: { project: caseStudy, media: caseStudyMedia },
+        // Title comes from SiteTitleStrategy, which can see the resolved
+        // project; a `title` ResolveFn here could not.
+      },
+    ],
   },
   {
     path: 'about',
@@ -96,13 +142,13 @@ export const routes: Routes = [
   },
 
   /**
-   * NOT YET BUILT: `/work` and `/work/:slug` (Phase 4, 08 §3).
+   * Unmatched paths fall back to Home.
    *
-   * The header, footer and Home all link to `/work` because 02 §3 puts it in
-   * the primary nav — those links will not resolve until Phase 4 adds the
-   * route. Deliberately left unhandled rather than given a placeholder page: a
-   * "coming soon" stub on the single most important route for a recruiter
-   * (02 §11) would be worse than an honest 404 during development.
+   * Note this does NOT catch an unknown project slug: `/work/:slug` matches any
+   * slug and resolves to `null`, so the case-study component renders its own
+   * not-found view instead. That is the better outcome — it keeps the visitor
+   * on the route they asked for and offers a way back to /work, rather than
+   * silently teleporting them to the homepage.
    */
   { path: '**', redirectTo: '' },
 ];
