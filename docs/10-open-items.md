@@ -87,6 +87,24 @@ Blocking, roughly in the order Phase 3 will hit them:
 
 ---
 
+## 4c. Surfaced During Phase 3 (2026-08-28)
+
+Phase 3 built Home, About/Story, Beyond Code hub + all three subpages, and Contact, against the live seeded content. All seven routes were verified by fetching them from the SSR server and grepping the returned HTML for real values — hero copy, project names, the ~986K combined figure, the Ateeqi Tech metrics, contact channels — not by checking that the build succeeded.
+
+**Corrected while building:**
+
+- [x] **Render mode was wrong.** `app.routes.server.ts` had `RenderMode.Prerender` for `**`, which runs every Firestore read at *build* time and bakes the result into static HTML. `06` §2 rules that out directly — "new projects or bio edits published through the dashboard need to appear without a full rebuild/redeploy cycle." Changed to `RenderMode.Server`, which keeps real HTML in the first response (brief §29) while letting a dashboard publish appear on the next request rather than the next deploy (brief §30–31).
+- [x] **Resolver results now cross to the client via `TransferState`.** Angular's hydration transfer cache only covers `HttpClient`, and the Firestore SDK does not use it — so nothing was carried over and the browser would re-read Firestore right after hydrating HTML that already had the answer. `06` §7 asks for minimal reads per page load.
+
+**Open:**
+
+- [ ] **`/work` and `/work/:slug` do not exist yet (Phase 4).** The header, footer and Home all link to `/work` because `02` §3 puts it in the primary nav — those links currently fall through to the catch-all and redirect Home. Deliberately not stubbed: a "coming soon" page on the single most important route for a recruiter (`02` §11) is worse than an honest gap during development. **This is the first thing Phase 4 closes.**
+- [ ] **445 kB of Firestore SDK ships in the initial browser bundle** (measured: `chunk-7QQ67RC2.js`; initial total 768 kB against a 500 kB budget). With SSR + TransferState the browser does not need Firestore for the first paint, but the imports are static so it is bundled anyway. The fix is to load the SDK through a dynamic `import()` behind the data layer, which requires `ContentService` to stop importing `where`/`orderBy` at module scope and pass query descriptors instead. Real work, not a one-liner — flagged for the Phase 8 performance pass rather than done at the end of Phase 3. Relevant to `06` §7 and brief §37, point 10.
+- [ ] **Section framings are not in the content model.** `02` §4 asks Home for framing copy per section (Featured Work, How I Work, Story teaser, Beyond teaser, Contact) that `04` has no field for. These live in `src/app/core/content/site-copy.ts`, each traced to the doc line it derives from, alongside the brief §10 process and brief §8 journey arc. No fact about Muhammed is in that file — those all still come from Firestore. If any of it should become dashboard-editable, that is a `04` change to raise (`09` §2.3). `03` §9 also still defers final on-page wording, so treat these as reviewable defaults rather than locked copy.
+- [ ] **`/beyond/teaching` is the thinnest page on the site, by necessity.** `04` has no Teaching entity and docs `00`–`10` carry no specifics — no courses, institutions, dates. brief §22 lists "300+ students taught" as a *potential* proof point and then says numbers must be verified before publication; it never was, so it is not rendered. The page says what brief §21 actually states and stops. `02` §8.3 asks for this to stay "proportionate," so thin is correct here rather than a gap to pad — but real material would improve it.
+
+---
+
 ## 5. Post-v1 / Not Blocking Launch
 
 Safe to leave until after the site is live:

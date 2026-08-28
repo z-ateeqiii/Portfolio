@@ -4,6 +4,10 @@
   >Skip to content</a
 >
 
+<app-header [name]="profile()?.name ?? ''" [resumeUrl]="profile()?.resumeFile" />
+
 <main id="main">
   <router-outlet />
 </main>
+
+<app-footer [profile]="profile()" />

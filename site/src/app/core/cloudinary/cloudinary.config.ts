@@ -49,7 +49,7 @@ export const cloudinaryConfig = {
  * Cloudinary can be derived from its project rather than looked up.
  */
 export function projectFolder(slug: string): string {
-  return `${cloudinaryConfig.rootFolder}/projects/${slug}`;
+  return `${cloudinaryConfig.rootFolder}/projects/${slug}`; 
 }
 
 /** The unsigned upload endpoint for images (06 §3.2). */
