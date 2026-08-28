@@ -163,6 +163,37 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/admin/overview/overview').then((m) => m.AdminOverview),
           },
+          {
+            path: 'profile',
+            title: 'Profile',
+            loadComponent: () =>
+              import('./features/admin/profile/profile-editor').then((m) => m.AdminProfileEditor),
+          },
+          {
+            path: 'projects',
+            pathMatch: 'full',
+            title: 'Projects',
+            loadComponent: () =>
+              import('./features/admin/projects/projects-list').then((m) => m.AdminProjectsList),
+          },
+          {
+            path: 'projects/:slug',
+            title: 'Edit project',
+            loadComponent: () =>
+              import('./features/admin/projects/project-editor').then((m) => m.AdminProjectEditor),
+          },
+          {
+            path: 'skills',
+            title: 'Skills',
+            loadComponent: () =>
+              import('./features/admin/skills/skills-editor').then((m) => m.AdminSkillsEditor),
+          },
+          {
+            path: 'preview/:entity/:id',
+            title: 'Draft preview',
+            loadComponent: () =>
+              import('./features/admin/preview/preview').then((m) => m.AdminPreview),
+          },
         ],
       },
     ],

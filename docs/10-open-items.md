@@ -120,7 +120,7 @@ Phase 3 built Home, About/Story, Beyond Code hub + all three subpages, and Conta
 
 ---
 
-## 4e. Blocking Phase 5: the draft model can't express what `05` §2 asks for (2026-08-28)
+## 4e. RESOLVED — the draft model (2026-08-28)
 
 Phase 5's auth foundation is built — sign-in, route guard, client-rendered `/admin`, the shell, and an overview. Building the first content screen surfaced a **genuine conflict between two documents**, not a gap:
 
@@ -129,13 +129,28 @@ Phase 5's auth foundation is built — sign-in, route guard, client-rendered `/a
 
 A single `status` field on a single document **cannot represent both states at once.** Editing a live project means flipping it to `draft`, which removes it from the public site until republished — the opposite of "the live site is unaffected". The current model works for *new* content going live for the first time; it breaks the moment Muhammed edits something already published, which is the ordinary case two years from now (`05` §0's own test).
 
-This blocks every entity screen, the Preview step, and the Overview's "what's in draft" column, so it is being raised rather than guessed (`09` §2.3, §4.3). Three options:
+**Resolved: option A.** A pending edit lives in `/drafts/{entity}__{docId}`, admin-only for read and write; Publish copies it over the live document and deletes the draft. Recorded in `04` §12.1 and verified live — an unauthenticated client gets `permission-denied` both listing `drafts/` and reading a specific draft. The three options considered:
 
 - **A — separate `drafts/` collection (recommended).** A pending edit is written to `drafts/{collection}/{id}`; the live document is untouched until Publish copies the draft over it and deletes it. Satisfies `05` §2 *and* `05` §6, because `drafts/` gets admin-only read rules — draft content is genuinely unreachable, not merely unrendered. Cost: one extra collection, a merge-on-publish step, and an addition to `04` §12.
 - **B — a `draft` map field on the same document.** Simplest to write, but **fails `05` §6**: Firestore rules grant or deny whole documents and cannot hide a field, so anything in `draft` would be readable by any visitor who opens a console. Recorded here so it is rejected on the record rather than rediscovered later.
 - **C — keep `04` §12 exactly as written.** Editing a live entity takes it off the public site until republished. Honest to the current schema, but it contradicts `05` §2 and makes routine edits risky on a site whose whole premise is credibility.
 
 Preview is already cheap under any of these: the public page components take their data through `input()`, so `/admin/preview/...` can render the real `CaseStudy` or `Home` component with draft data passed in — no duplicate "preview version" of any template.
+
+---
+
+## 4f. Phase 5 status — what the dashboard does and does not have yet (2026-08-28)
+
+**Built and building clean:** sign-in (email/password + Google), route guard, client-rendered `/admin`, the shell, Overview, **Profile editor**, **Projects list + editor**, **Skills editor**, **Preview**, and the whole Draft → Preview → Publish machine in `AdminService`.
+
+Verified against live Firestore, unauthenticated: `drafts/` refuses both list and read; writes to `drafts/`, `projects/`, `profile/` and `skills/` are all refused. `/admin` and `/admin/login` return only the app shell from the server, with no dashboard markup.
+
+- [ ] **The authenticated write path has never been executed.** Every check above proves what a *signed-out* client cannot do. Saving a draft, publishing, and discarding have only been type-checked and built — not run against the live project, because that needs the admin credentials. **First thing to do: sign in at `/admin`, edit the Profile, Save draft → Preview → Publish, and confirm the change appears on `/about`.**
+- [ ] **Five entity screens still to build** (`05` §3): Experience (§3.5, draftable), Social Platforms (§3.7, including the stale-`lastVerifiedDate` warning), Business Ventures (§3.9), Education (§3.10), Proof Points (§3.11). All are list + form over flat records and follow the Skills screen's pattern; Experience follows Profile's, since it is draftable.
+- [ ] **Media upload is not built** (`05` §3.4, §4). The Cloudinary config and the `Media` model with required `publicId`/`alt` are ready, but there is no upload UI — so no case study has images yet. Needs multi-file drag-and-drop per `05` §3.4. This is the biggest remaining gap in the phase.
+- [ ] **Project ordering is a number field, not drag-and-drop** (`05` §3.3). It writes the same `order` field; the honest interim rather than a fake affordance.
+- [ ] **`Profile.resumeFile` is a URL text field, not an upload** (`05` §3.2 wants replace-in-place). Blocked on the same missing upload UI.
+- [ ] **Preview renders the Profile draft through its own markup, not through `About`.** `/about` reads the profile from `SiteState`, which holds the *live* record, so it cannot be handed a draft. The case-study preview has no such problem — it renders the real `CaseStudy` component with draft data, because that component takes its content as an `input()`. The fix is to give `About` the same treatment; it is a small Phase 3 refactor, deliberately not slipped into Phase 5.
 
 ---
 
