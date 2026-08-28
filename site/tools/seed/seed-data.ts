@@ -32,7 +32,7 @@ export type ProjectSeed = Seed<Project>;
  * two fields rather than one string (see 04 §2's note on `heroSubline`).
  *
  * `resumeFile` is absent, not empty-stringed: no resume file has been uploaded
- * to Storage yet, and 10 §3 has not settled PDF-only vs inline preview. 04 §2
+ * to Cloudinary yet, and 10 §3 has not settled PDF-only vs inline preview. 04 §2
  * makes it optional so the site renders without a resume link rather than
  * offering a broken one.
  *
@@ -336,7 +336,7 @@ export const UNSEEDED: readonly { entity: string; blockedOn: string }[] = [
   {
     entity: 'Profile.resumeFile (04 §2)',
     blockedOn:
-      'Every other Profile field is final as of 2026-08-27. Only the resume is outstanding: no file has been uploaded to Storage (06 §3.2), and 10 §3 has not settled PDF-only download vs an inline preview on /resume. The field is optional, so the site renders without a resume link rather than offering a broken one - but 02 §3 puts Resume in the header AND footer as a top-priority recruiter exit path (brief §28), so this is worth closing before launch.',
+      'Every other Profile field is final as of 2026-08-27. Only the resume is outstanding: no file has been uploaded to Cloudinary (06 §3.2), and 10 §3 has not settled PDF-only download vs an inline preview on /resume. The field is optional, so the site renders without a resume link rather than offering a broken one - but 02 §3 puts Resume in the header AND footer as a top-priority recruiter exit path (brief §28), so this is worth closing before launch.',
   },
   {
     entity: 'Experience (04 §4)',
@@ -371,6 +371,6 @@ export const UNSEEDED: readonly { entity: string; blockedOn: string }[] = [
   {
     entity: 'Media (04 §6)',
     blockedOn:
-      'Five screenshots exist for the Scholarship dashboard under projects/ScholarshipOperationDashboard/Media/, but they need uploading to Storage first (06 §3.2) - the model stores a URL, not a local path. No media exists for the other four projects. Missing media never blocks a case study going live (brief §32).',
+      'Five screenshots exist for the Scholarship dashboard under projects/ScholarshipOperationDashboard/Media/, but they need uploading to Cloudinary first (06 §3.2) - the model stores a secure_url plus a publicId, not a local path. No media exists for the other four projects. Missing media never blocks a case study going live (brief §32).',
   },
 ];

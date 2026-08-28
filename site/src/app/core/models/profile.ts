@@ -38,9 +38,14 @@ export interface Profile extends Editable {
   /** Full About/Story narrative. */
   readonly bioLong: string;
   /**
-   * Storage path (not a download URL) for the current resume PDF, so the file
-   * can be replaced without a redeploy (04 §2, 06 §3.2). Optional: the site
-   * must render with the resume link absent rather than break (04 §1.2).
+   * Cloudinary URL for the current resume PDF (04 §2, 06 §3.2).
+   *
+   * Cloudinary, not Firebase Storage — Storage was dropped from the
+   * architecture on 2026-08-28. The file can still be replaced without a
+   * redeploy, which is the property 04 §2 actually asks for.
+   *
+   * Optional: the site must render with the resume link absent rather than
+   * break, or offer a link that 404s (04 §1.2).
    */
   readonly resumeFile?: string;
   readonly contactEmail: string;

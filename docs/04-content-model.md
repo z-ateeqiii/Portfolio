@@ -24,8 +24,7 @@ Singleton entity — one record, edited not created/deleted.
 | Field | Type | Notes |
 |---|---|---|
 | `name` | string | "Muhammed Al-Ateeqi" |
-| `heroStatement` | string | The Hero headline — the one-line identity statement (brand doc §5, locked 2026-08-27) |
-| `heroSubline` | string? | **Added 2026-08-27.** The Hero's supporting paragraph. When brand doc §5 was locked it resolved to a headline *plus* a subline, and this schema had modelled the identity statement as a single line. Kept as its own field rather than concatenated into `heroStatement`: they are two distinct display roles (display face vs body face, per `07` §3), and merging them would force the Hero component to split a string back apart on a separator. Optional, so the Hero still renders on headline alone (`§1.2`) |
+| `heroStatement` | string | The one-line identity statement (brand doc §5) |
 | `positioning` | string | "Software Engineer & Builder" |
 | `bioShort` | string | Used in meta tags, previews |
 | `bioLong` | rich text | Full About/Story narrative content |
@@ -99,16 +98,20 @@ This directly reflects the categorized stack from the project brief (§11), rebu
 
 ## 6. Media
 
-Attached to a `Project` (one project → many media items), matching Muhammed's own stated organization (a folder per project containing its README and screenshots).
+Attached to a `Project` (one project → many media items), matching Muhammed's own stated organization (a folder per project containing its README and screenshots). **Updated 2026-08-28** to match `06` §3.2's Cloudinary migration — media inherits its parent project's publish state, so it is not independently `Editable`.
 
 | Field | Type | Notes |
 |---|---|---|
 | `projectSlug` | string | Parent reference |
-| `type` | enum | `image` \| `video` \| `thumbnail` |
-| `url` | string | |
+| `type` | enum | `image` — narrowed from the original `image \| video \| thumbnail`; project media is images-only now that video hosting inside the portfolio is a locked non-goal (media doc §6, §15) and `SocialVideo` (§8 below) already covers video via external links |
+| `url` | string | Cloudinary `secure_url` |
+| `publicId` | string | **Required** — the Cloudinary asset identifier. Without it, an asset can never be deleted from Cloudinary later; capturing it at upload time is the only chance to have it |
+| `alt` | string | **Required** — accessibility (per `07` §8), not optional |
 | `caption` | string? | Optional |
 | `order` | number | Manual ordering |
 | `isFeatured` | boolean | Used as the card/preview image |
+
+**Known gap, accepted deliberately**: deleting a `Media` doc from Firestore does not delete the underlying Cloudinary asset (unsigned uploads have no client-side delete capability by design — no secret in the browser). For a five-project portfolio this is expected to stay negligible; occasional manual cleanup in the Cloudinary console is the accepted approach rather than building a server-side delete endpoint pre-emptively.
 
 ---
 

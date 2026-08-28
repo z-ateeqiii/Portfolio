@@ -61,10 +61,19 @@ Notes:
 - `media` as a subcollection under `projects` (rather than a flat top-level collection) mirrors the mental model Muhammed already uses locally — one folder per project — and keeps queries scoped naturally (per `04` §6).
 - Every document that supports Draft/Preview/Publish (`04` §12) carries `status`, `updatedAt`, `publishedAt`. Public-facing queries always filter `status == 'published'` — draft content is structurally excluded from what the public site can ever fetch, not just hidden by the UI (this satisfies the security requirement in `05` §6: unpublished must actually mean unpublished).
 
-### 3.2 Storage
+### 3.2 Media Storage — Cloudinary, not Firebase Storage
 
-- `/resume/` — current resume file, referenced by `Profile.resumeFile`
-- `/projects/{slug}/` — screenshots, images, video thumbnails, matching the per-project folder structure Muhammed already uses locally, so migrating existing assets is a near-direct copy
+**Superseded decision, locked 2026-08-28**: the original plan below (Firebase Storage) was replaced to avoid Firebase's mandatory Blaze-plan prepayment purely for media hosting, which has no proportionate benefit for a project this size. Cloudinary handles all image storage/delivery instead; Firebase stays Firestore + Auth only.
+
+- **Cloudinary** stores and delivers all project images (screenshots, gallery images) and the resume file — direct browser upload from the Dashboard via a restricted upload preset, never exposing the Cloudinary API secret client-side
+- **Firestore** stores only image *metadata* (`secureUrl`, `publicId`, `alt`, `caption`, `order`) per `04` §6's `Media` entity — the `url` field there already holds a plain string, so it points to a Cloudinary URL instead of a Firebase Storage URL with zero schema change needed
+- **Social videos are never uploaded anywhere in this project** — they stay on their original platforms (YouTube/Instagram/Facebook); the Dashboard stores only the external URL and metadata, per `04` §8
+- Deletion is the one operation that may need a secure server-side/serverless endpoint later (never the Cloudinary API secret in Angular) — not required for initial launch, evaluate if/when it's needed rather than building it preemptively
+- Suggested Cloudinary folder structure: `ateeqi-portfolio/projects/{project-slug}/`
+
+~~Original plan (superseded):~~
+~~- `/resume/` — current resume file, referenced by `Profile.resumeFile`~~
+~~- `/projects/{slug}/` — screenshots, images, video thumbnails~~
 
 ### 3.3 Auth
 

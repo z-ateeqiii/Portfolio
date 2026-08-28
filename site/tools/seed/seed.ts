@@ -42,7 +42,7 @@ async function main(): Promise<void> {
   if (!isFirebaseConfigured()) {
     console.error(
       'Firebase is not configured yet (10 §4a).\n' +
-        'Create the project (Firestore, Storage, Auth, Hosting per 06 §3), then paste\n' +
+        'Create the project (Firestore, Auth, Hosting per 06 §3), then paste\n' +
         'the web config into src/app/core/firebase/firebase.config.ts and re-run.\n',
     );
     reportGaps();

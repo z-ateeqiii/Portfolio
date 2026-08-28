@@ -4,17 +4,22 @@ import { FirebaseOptions } from 'firebase/app';
  * Firebase project configuration (06 §3). Connected 2026-08-27.
  *
  * Project: ateeqi-portfolio — Firestore (production mode, europe-west3),
- * Storage, Auth (Email/Password + Google), Hosting.
+ * Auth (Email/Password + Google), Hosting.
+ *
+ * Firestore + Auth only. Firebase Storage was dropped from the architecture on
+ * 2026-08-28 (06 §3.2); images and the resume live in Cloudinary instead. The
+ * `storageBucket` value below stays because it is part of the web config the
+ * console hands out, but nothing in this codebase initialises the Storage SDK.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * THIS FILE IS NOT A SECRET, and is tracked in git deliberately.
  *
  * A Firebase *web* config is a public client identifier, not a credential — it
  * ships inside the JS bundle of every Firebase web app and is readable by any
- * visitor. What actually protects the data is firestore.rules / storage.rules
- * plus Auth, which is why those are written and deployed rather than treated as
- * an afterthought. Ignoring this file would imply the opposite and break the
- * build for anyone cloning the repo.
+ * visitor. What actually protects the data is firestore.rules plus Auth, which
+ * is why those are written and deployed rather than treated as an afterthought.
+ * Ignoring this file would imply the opposite and break the build for anyone
+ * cloning the repo.
  *
  * Service-account keys ARE secrets and are gitignored; none is used here.
  * ─────────────────────────────────────────────────────────────────────────────
