@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { Project, ProjectTier } from '../../../core/models';
 import { AdminService } from '../../../core/services/admin.service';
@@ -52,7 +53,7 @@ const EMPTY: ProjectForm = {
 @Component({
   selector: 'app-admin-project-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, DraftBar],
+  imports: [FormsModule, RouterLink, DraftBar],
   template: `
     <app-draft-bar
       [title]="form().name || 'New project'"
@@ -68,6 +69,18 @@ const EMPTY: ProjectForm = {
     />
 
     <div class="max-w-3xl space-y-6 p-8">
+      @if (isLive()) {
+        <a
+          [routerLink]="['/admin/projects', form().slug, 'media']"
+          class="inline-block rounded-sm border border-fg/24 px-4 py-2 text-caption text-fg no-underline"
+          >Manage images →</a
+        >
+      } @else {
+        <p class="text-caption text-fg-muted">
+          Publish this project before adding images — media is stored under the project's slug.
+        </p>
+      }
+
       <!-- Snapshot (03 §2.1) -->
       <div class="grid gap-5 sm:grid-cols-2">
         @for (f of snapshotFields; track f.key) {

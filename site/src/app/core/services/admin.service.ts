@@ -243,6 +243,24 @@ export class AdminService {
     await setDoc(doc(store, entity, docId), data);
   }
 
+  /**
+   * Writes to an arbitrary path.
+   *
+   * Media lives in a subcollection (`projects/{slug}/media`), so it cannot be
+   * addressed by the flat entity name `saveDirect` takes. Kept separate rather
+   * than loosening `saveDirect`'s type, so the entity-name path stays typed and
+   * only the genuinely nested case takes a string.
+   */
+  async saveAtPath<T extends DocumentData>(
+    path: string,
+    docId: string,
+    data: T,
+  ): Promise<void> {
+    const store = db();
+    if (!store) throw new Error('Firebase is not configured.');
+    await setDoc(doc(store, path, docId), data);
+  }
+
   async remove(path: string, docId: string): Promise<void> {
     const store = db();
     if (!store) throw new Error('Firebase is not configured.');

@@ -227,6 +227,12 @@ export const routes: Routes = [
               ),
           },
           {
+            path: 'projects/:slug/media',
+            title: 'Media',
+            loadComponent: () =>
+              import('./features/admin/media/media-editor').then((m) => m.AdminMediaEditor),
+          },
+          {
             path: 'preview/:entity/:id',
             title: 'Draft preview',
             loadComponent: () =>
