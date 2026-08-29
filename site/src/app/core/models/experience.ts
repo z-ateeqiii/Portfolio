@@ -15,6 +15,20 @@ export interface Experience extends Editable {
   readonly organization: string;
   readonly role: string;
   readonly timeframe: string;
+
+  /**
+   * Display order (added 2026-08-30 — a third 04 §4 schema change, flagged).
+   *
+   * 02 §7 asks for roles in reverse-chronological order, but `timeframe` is
+   * deliberately free text ("Apr 2026 – Present", "Sep 2023 – Dec 2023"), so
+   * nothing can sort it reliably — parsing dates out of prose is exactly the
+   * kind of guessing that breaks the first time a format varies. Firestore also
+   * returns documents in no guaranteed order without an explicit `orderBy`.
+   *
+   * So the intended order is stored, the same way Project stores `order` for
+   * the same reason (04 §3). Lower sorts first.
+   */
+  readonly order: number;
   /** e.g. "Part-time", "Apprenticeship · On-site, Cairo". Optional. */
   readonly engagement?: string;
   readonly summary: string;

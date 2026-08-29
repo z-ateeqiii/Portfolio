@@ -462,6 +462,7 @@ export const BUSINESS_VENTURES: readonly BusinessVenture[] = [
 export const EXPERIENCE: readonly Seed<Experience>[] = [
   {
     id: 'smart-technology',
+    order: 1,
     organization: 'Smart Technology',
     role: 'Software Engineer — Frontend',
     timeframe: 'Apr 2026 – Present',
@@ -474,6 +475,7 @@ export const EXPERIENCE: readonly Seed<Experience>[] = [
   },
   {
     id: 'ischool',
+    order: 2,
     organization: 'iSchool',
     role: 'Coding Instructor',
     timeframe: 'Apr 2026 – Jul 2026',
@@ -484,6 +486,7 @@ export const EXPERIENCE: readonly Seed<Experience>[] = [
   },
   {
     id: 'mindset-training',
+    order: 3,
     organization: 'Mindset Training',
     role: 'Frontend Instructor',
     timeframe: 'May 2024 – Aug 2024',
@@ -494,6 +497,7 @@ export const EXPERIENCE: readonly Seed<Experience>[] = [
   },
   {
     id: 'codology',
+    order: 4,
     organization: 'Codology Software Development',
     role: 'Front-End Web Developer',
     timeframe: 'Sep 2023 – Dec 2023',

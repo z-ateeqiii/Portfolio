@@ -1,7 +1,14 @@
 import { inject } from '@angular/core';
 import { ResolveFn, Routes } from '@angular/router';
 
-import { BusinessVenture, Media, Project, ProofPoint, SocialPlatform } from './core/models';
+import {
+  BusinessVenture,
+  Experience,
+  Media,
+  Project,
+  ProofPoint,
+  SocialPlatform,
+} from './core/models';
 import { ContentService } from './core/services';
 import { authGuard, guestGuard } from './core/auth/auth.guard';
 import { transferred } from './core/services/transfer';
@@ -37,6 +44,9 @@ const businessVentures: ResolveFn<BusinessVenture[]> = transferred('businessVent
 );
 const allProjects: ResolveFn<Project[]> = transferred('projects', () =>
   inject(ContentService).projects(),
+);
+const experience: ResolveFn<Experience[]> = transferred('experience', () =>
+  inject(ContentService).experience(),
 );
 
 /**
@@ -94,6 +104,7 @@ export const routes: Routes = [
     path: 'about',
     title: 'About — Muhammed Al-Ateeqi',
     loadComponent: () => import('./features/about/about').then((m) => m.About),
+    resolve: { experience },
   },
   {
     path: 'beyond',

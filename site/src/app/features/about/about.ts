@@ -2,9 +2,10 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { RouterLink } from '@angular/router';
 
 import { JOURNEY } from '../../core/content/site-copy';
-import { Profile } from '../../core/models';
+import { Experience, Profile } from '../../core/models';
 import { SiteState } from '../../core/services/site-state';
 import { UiEyebrow } from '../../shared/ui';
+import { ExperienceList } from './experience-list';
 
 /**
  * About / Story (02 §7).
@@ -39,7 +40,7 @@ import { UiEyebrow } from '../../shared/ui';
 @Component({
   selector: 'app-about',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, UiEyebrow],
+  imports: [RouterLink, UiEyebrow, ExperienceList],
   template: `
     @let p = profile();
 
@@ -70,7 +71,10 @@ import { UiEyebrow } from '../../shared/ui';
           }
         </div>
 
-        <!-- 02 §7.4 and §7.5 — bridges out, rather than ending flat. -->
+        <!-- 02 §7 item 4 — Experience, after the journey narrative. -->
+        <app-experience-list [roles]="experience()" />
+
+        <!-- 02 §7.5 and §7.6 — bridges out, rather than ending flat. -->
         <nav class="mt-16 flex flex-wrap gap-x-8 gap-y-3 border-t border-fg/12 pt-8">
           <a routerLink="/work" class="text-body text-action no-underline hover:underline"
             >See the work →</a
@@ -92,6 +96,10 @@ export class About {
    * content; absent on the public route, where the live profile is used.
    */
   readonly profileInput = input<Profile | null>(null);
+
+  /** Resolved per-route; empty in the dashboard preview, which previews the
+   *  Profile draft rather than the Experience records. */
+  readonly experience = input<Experience[]>([]);
 
   private readonly live = inject(SiteState).profile;
 

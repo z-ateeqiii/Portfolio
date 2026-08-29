@@ -74,9 +74,13 @@ export class ContentService {
     return referenceQuery<Media>(mediaPath(slug), orderBy('order'));
   }
 
-  /** Professional history (04 §4). */
+  /**
+   * Professional history (04 §4), in stored order — reverse-chronological as
+   * 02 §7 asks. `timeframe` is free text and cannot be sorted, so the order is
+   * an explicit field rather than something derived from prose.
+   */
   experience(): Promise<Experience[]> {
-    return publishedQuery<Experience>(COLLECTIONS.experience);
+    return publishedQuery<Experience>(COLLECTIONS.experience, orderBy('order'));
   }
 
   /** Skills, for grouping by level in the UI (04 §5). */

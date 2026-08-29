@@ -153,8 +153,9 @@ Section order:
 1. **Framing intro** — who this page is for (the curious, hiring managers who want more than a resume, founders evaluating fit)
 2. **The Journey** — Computer → Gaming → Video Editing → Content Creation → Programming → CS → Freelancing → Business → Leadership → Setback → Rebuilding → Software Engineering, told as a narrative arc, not a bullet timeline
 3. **The Setback** — referenced honestly as a turning point/rebuilding period, with zero personal/romantic detail (hard boundary from brief §9 and brand §17)
-4. **Where it leads today** — bridges into current professional identity and links to `/work`
-5. **Link out to Beyond Code** — for anyone who wants the social/business/teaching threads in full
+4. **Experience** — added 2026-08-28: an expandable accordion (per `04` §4's `Experience` entity) listing roles in reverse-chronological order, appended here rather than given its own top-level route, since it's supporting content for the same "hiring manager who wants more than a resume" audience this page already serves (per §13 below)
+5. **Where it leads today** — bridges into current professional identity and links to `/work`
+6. **Link out to Beyond Code** — for anyone who wants the social/business/teaching threads in full
 
 ---
 

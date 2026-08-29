@@ -77,9 +77,10 @@ One record per role/engagement (per brief §11 note that most of this lives in t
 |---|---|---|
 | `organization` | string | |
 | `role` | string | |
-| `timeframe` | string | |
+| `timeframe` | string | Free text, including ongoing roles verbatim (e.g. "Apr 2026 – Present") — never derive a tense or an end date from this string |
 | `summary` | rich text | What was actually done — kept distinct from a CV bullet list |
-| `linkedProjectSlug` | string? | Optional — links to a `Project` record where the work produced one (e.g. Smart Technology → ST Employees Portal) |
+| `tech` | string[]? | Optional — tech stack tags shown on the Experience accordion |
+| `linkedProjectSlugs` | string[]? | Optional — links to `Project` records where the role produced one. Plural: a single role (e.g. Smart Technology) can link more than one seeded project |
 
 ---
 
@@ -188,23 +189,6 @@ Applies to `Project`, `Experience`, `Profile`, and any other editable entity, pe
 | `publishedAt` | timestamp? | |
 
 Full workflow mechanics (preview links, permissions) belong in `05-dashboard-requirements.md` — this just establishes that every content type needs the state field to hang that workflow off of.
-
-### 12.1 Where a pending edit lives — added 2026-08-28
-
-The `status` field above describes what is **live**. It cannot, on its own, describe *"this project is published AND has unpublished edits waiting"* — and that is precisely what `05` §2 requires ("any change saves as a draft. **The live site is unaffected**"). Flipping a live project to `draft` in order to edit it would pull it off the public site until republished, which is the opposite of the requirement.
-
-So a pending edit is stored in its own top-level collection:
-
-```
-/drafts/{entity}__{docId}
-  { entity, docId, data: { …the edited fields… }, updatedAt }
-```
-
-- The **live document is never touched** until Publish, which copies `data` over it, sets `status: 'published'`, and deletes the draft. `publishedAt` is set only on a first publish, so it keeps meaning "when this first went public" rather than duplicating `updatedAt`.
-- `drafts/` is **admin-only for both read and write** in `firestore.rules`. This is what makes `05` §6 true rather than aspirational: a draft is not a hidden field on a public document, it is a document the public cannot read at all.
-- **Rejected alternative:** a `draft` map field on the live document. Firestore rules grant or deny whole documents and cannot hide a field, so an unfinished sentence sitting in `draft` would be readable by anyone who opened a browser console.
-
-Scope is unchanged from §12: only `Project`, `Experience` and `Profile` use this. Reference data (`Skill`, `SocialPlatform`, `BusinessVenture`, `Education`, `ProofPoint`) saves directly — a skill name is either right or absent, and `05` §3.6 asks for that form to be the fastest in the dashboard.
 
 ---
 

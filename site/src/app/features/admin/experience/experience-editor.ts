@@ -12,8 +12,9 @@ type ExperienceForm = Omit<
   linkedText: string;
 };
 
-const EMPTY = (id: string): ExperienceForm => ({
+const EMPTY = (id: string, order: number): ExperienceForm => ({
   id,
+  order,
   organization: '',
   role: '',
   timeframe: '',
@@ -170,6 +171,7 @@ export class AdminExperienceEditor {
   private readonly open = signal(new Set<string>());
 
   protected readonly fields = [
+    { key: 'order', label: 'Order', multiline: false, hint: 'Lower sorts first — /about lists roles newest first.' },
     { key: 'role', label: 'Role', multiline: false, hint: '' },
     { key: 'organization', label: 'Organisation', multiline: false, hint: '' },
     {
@@ -214,7 +216,8 @@ export class AdminExperienceEditor {
   }
 
   protected patch(id: string, key: string, value: string): void {
-    this.roles.set(this.roles().map((r) => (r.id === id ? { ...r, [key]: value } : r)));
+    const next = key === 'order' ? Number(value) || 0 : value;
+    this.roles.set(this.roles().map((r) => (r.id === id ? { ...r, [key]: next } : r)));
   }
 
   private async load(): Promise<void> {
@@ -229,6 +232,7 @@ export class AdminExperienceEditor {
 
     const toForm = (e: Experience): ExperienceForm => ({
       id: e.id,
+      order: e.order ?? 0,
       organization: e.organization,
       role: e.role,
       timeframe: e.timeframe,
@@ -248,7 +252,8 @@ export class AdminExperienceEditor {
 
   protected addRole(): void {
     const id = `role-${Date.now()}`;
-    this.roles.set([...this.roles(), EMPTY(id)]);
+    /** New roles append to the end; edit `order` to move one up the list. */
+    this.roles.set([...this.roles(), EMPTY(id, this.roles().length + 1)]);
     this.open.set(new Set([...this.open(), id]));
   }
 
