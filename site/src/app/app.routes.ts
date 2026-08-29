@@ -189,6 +189,44 @@ export const routes: Routes = [
               import('./features/admin/skills/skills-editor').then((m) => m.AdminSkillsEditor),
           },
           {
+            path: 'experience',
+            title: 'Experience',
+            loadComponent: () =>
+              import('./features/admin/experience/experience-editor').then(
+                (m) => m.AdminExperienceEditor,
+              ),
+          },
+          {
+            path: 'social',
+            title: 'Social platforms',
+            loadComponent: () =>
+              import('./features/admin/reference/reference-editors').then((m) => m.AdminSocialEditor),
+          },
+          {
+            path: 'business',
+            title: 'Business ventures',
+            loadComponent: () =>
+              import('./features/admin/reference/reference-editors').then(
+                (m) => m.AdminBusinessEditor,
+              ),
+          },
+          {
+            path: 'education',
+            title: 'Education',
+            loadComponent: () =>
+              import('./features/admin/reference/reference-editors').then(
+                (m) => m.AdminEducationEditor,
+              ),
+          },
+          {
+            path: 'proof-points',
+            title: 'Proof points',
+            loadComponent: () =>
+              import('./features/admin/reference/reference-editors').then(
+                (m) => m.AdminProofPointsEditor,
+              ),
+          },
+          {
             path: 'preview/:entity/:id',
             title: 'Draft preview',
             loadComponent: () =>

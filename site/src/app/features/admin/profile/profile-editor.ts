@@ -48,12 +48,20 @@ const EMPTY: ProfileForm = {
       [busy]="busy()"
       [draftedAt]="draftedAt()"
       [previewLink]="['/admin/preview/profile', docId]"
+      previewLabel="Preview /about"
       (save)="save()"
       (publish)="publish()"
       (discard)="discard()"
     />
 
     <div class="max-w-2xl space-y-5 p-8">
+      <p class="rounded-md border border-fg/12 bg-surface p-4 text-caption text-fg-muted">
+        These fields feed several pages. The hero headline and subline appear on
+        <strong class="text-fg">/</strong>; the short and long bio appear on
+        <strong class="text-fg">/about</strong>; the contact links appear in the footer of every
+        page and on <strong class="text-fg">/contact</strong>. Preview opens /about, which carries
+        the most of this content.
+      </p>
       @for (field of fields; track field.key) {
         <label class="block">
           <span class="font-mono text-label text-fg-muted uppercase">{{ field.label }}</span>

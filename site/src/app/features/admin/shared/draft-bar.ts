@@ -56,7 +56,7 @@ import { RouterLink } from '@angular/router';
       [class.pointer-events-none]="!hasDraft()"
       [class.opacity-40]="!hasDraft()"
       [class.text-fg]="hasDraft()"
-      >Preview</a
+      >{{ previewLabel() }}</a
     >
 
     @if (hasDraft()) {
@@ -89,6 +89,13 @@ export class DraftBar {
   readonly busy = input(false);
   readonly draftedAt = input<Date | null>(null);
   readonly previewLink = input<unknown[]>([]);
+  /**
+   * Names the page the preview actually opens, e.g. "Preview /about".
+   * A bare "Preview" is ambiguous on the Profile screen, whose fields feed
+   * several public pages — which is exactly the confusion the Phase 5 smoke
+   * test surfaced.
+   */
+  readonly previewLabel = input('Preview');
 
   readonly save = output<void>();
   readonly publish = output<void>();

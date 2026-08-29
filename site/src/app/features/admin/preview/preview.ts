@@ -3,6 +3,7 @@ import { Location } from '@angular/common';
 
 import { Profile, Project } from '../../../core/models';
 import { AdminService } from '../../../core/services/admin.service';
+import { About } from '../../about/about';
 import { CaseStudy } from '../../work/case-study/case-study';
 
 /**
@@ -26,16 +27,16 @@ import { CaseStudy } from '../../work/case-study/case-study';
  * rendered for anyone but the admin — and the underlying read is refused by
  * firestore.rules regardless of which route asks (05 §6).
  *
- * The About preview is a special case: /about reads the Profile from SiteState,
- * which holds the LIVE profile. So the draft bio is rendered here through a
- * standalone copy of the same prose markup rather than through `About` itself.
- * Noted in 10 §4f — the honest fix is for About to accept its profile as an
- * input, which is a Phase 3 refactor rather than something to slip in here.
+ * Fixed 2026-08-30: `About` now takes an optional profile input, so the Profile
+ * draft previews through the REAL /about page rather than a copy of its markup.
+ * The smoke test found the gap the right way round — publishing a bio edit
+ * worked, but there was no way to read it through before committing, which is
+ * the entire point of the Preview step.
  */
 @Component({
   selector: 'app-admin-preview',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CaseStudy],
+  imports: [About, CaseStudy],
   template: `
     <div
       class="sticky top-0 z-20 flex items-center gap-4 border-b border-fg/12 bg-surface px-8 py-3"
@@ -60,20 +61,9 @@ import { CaseStudy } from '../../work/case-study/case-study';
       </p>
     } @else if (entity() === 'projects') {
       <app-case-study [project]="project()" [media]="[]" />
-    } @else if (profile(); as p) {
-      <!-- Profile draft: bio prose, rendered the way /about renders it. -->
-      <article class="container-content py-20">
-        <h1 class="text-display-1 font-display text-fg">{{ p.heroStatement }}</h1>
-        @if (p.heroSubline) {
-          <p class="mt-6 text-body-lg text-fg-muted">{{ p.heroSubline }}</p>
-        }
-        <p class="mt-10 text-body-lg text-fg-muted">{{ p.bioShort }}</p>
-        <div class="mt-10 space-y-6">
-          @for (para of bioParagraphs(); track $index) {
-            <p class="text-body-lg text-fg">{{ para }}</p>
-          }
-        </div>
-      </article>
+    } @else {
+      <!-- The real /about page, rendered with the DRAFT profile. -->
+      <app-about [profileInput]="profile()" />
     }
   `,
 })

@@ -1,5 +1,7 @@
 import {
   BusinessVenture,
+  Education,
+  Experience,
   Profile,
   Project,
   Skill,
@@ -283,6 +285,9 @@ const PROVEN_IN_PROJECTS = new Set<string>([
   'GitHub',
   'Netlify',
   'Vercel',
+  'Route Guards',
+  'Role-Based Access Control',
+  'Modular Architecture',
 ]);
 /**
  * The id becomes the Firestore document id, so it has to survive punctuation
@@ -348,6 +353,12 @@ export const SKILLS: readonly Skill[] = [
     // practice on 2026-08-28. It describes how something is built, not a
     // library used to build it.
     'Responsive Design',
+    // Added 2026-08-30, confirmed directly: all three were used in production
+    // in the Smart Technology role (see EXPERIENCE below), which is the same
+    // evidence rule the other `strong` skills meet.
+    'Route Guards',
+    'Role-Based Access Control',
+    'Modular Architecture',
   ].map((n) => skill(n, 'practice')),
   ...[
     'Git',
@@ -431,6 +442,136 @@ export const BUSINESS_VENTURES: readonly BusinessVenture[] = [
       { label: 'Net proceeds', value: '~80,000 EGP' },
       { label: 'Duration', value: '~1 year' },
     ],
+  },
+];
+
+/**
+ * Experience (04 §4). Supplied from the CV on 2026-08-30, in the given order.
+ *
+ * Draftable (04 §12), so these seed as published like Projects do.
+ *
+ * ON THE ONGOING ROLE: Smart Technology has no end date and must never render
+ * as past or resigned — Muhammed is still employed there. `timeframe` carries
+ * "Apr 2026 – Present" literally, and nothing in the model or the UI derives a
+ * tense from it, so there is no code path that can turn "Present" into "was".
+ *
+ * `tech` lists only technologies the source names outright. The iSchool role
+ * describes teaching AI concepts to Grade 5 students without naming a stack, so
+ * its list is empty rather than filled with a plausible guess (09 §3).
+ */
+export const EXPERIENCE: readonly Seed<Experience>[] = [
+  {
+    id: 'smart-technology',
+    organization: 'Smart Technology',
+    role: 'Software Engineer — Frontend',
+    timeframe: 'Apr 2026 – Present',
+    summary:
+      'Frontend development, internal applications, and business workflow tooling. Designed and built the Employee Portal Guide (Angular 21, Tailwind, RxJS, Signals) — an internal training and onboarding app. Designed and developed the Scholarship Management Platform (Angular, Firebase) supporting Instructor and Operations/Admin workflows. Implemented role-based access with route guards, reactive state with Angular Signals, a lazy-loaded modular architecture, and a fully responsive UI — delivered to production.',
+    tech: ['Angular 21', 'Tailwind', 'RxJS', 'Angular Signals', 'Firebase'],
+    // Both seeded projects came out of this role, which is why 04 §4's
+    // singular link was widened to an array — see core/models/experience.ts.
+    linkedProjectSlugs: ['st-employees-portal', 'scholarship-operation-dashboard'],
+  },
+  {
+    id: 'ischool',
+    organization: 'iSchool',
+    role: 'Coding Instructor',
+    timeframe: 'Apr 2026 – Jul 2026',
+    engagement: 'Part-time',
+    summary:
+      'Introduced AI concepts to Grade 5 students; guided them through building their first AI project from concept to completion; simplified machine learning and automation for young learners.',
+    tech: [],
+  },
+  {
+    id: 'mindset-training',
+    organization: 'Mindset Training',
+    role: 'Frontend Instructor',
+    timeframe: 'May 2024 – Aug 2024',
+    engagement: 'Part-time',
+    summary:
+      'Delivered HTML, CSS, and JavaScript fundamentals to students aged 18–20. Achieved 95% positive feedback.',
+    tech: ['HTML', 'CSS', 'JavaScript'],
+  },
+  {
+    id: 'codology',
+    organization: 'Codology Software Development',
+    role: 'Front-End Web Developer',
+    timeframe: 'Sep 2023 – Dec 2023',
+    engagement: 'Apprenticeship · On-site, Cairo',
+    summary:
+      'Migrated a production CRM from Angular v11 to v16, resolving breaking changes and modernising the codebase. Integrated multiple REST API endpoints; applied scalable Angular module architecture in a live production environment.',
+    tech: ['Angular', 'REST APIs'],
+  },
+];
+
+/**
+ * Education and certifications (04 §10). Supplied 2026-08-30.
+ *
+ * Reference data, not draftable (04 §12), so these save directly.
+ *
+ * The 2026-dated Coursera certificate that 10 §2 flagged for a sanity check was
+ * confirmed as part of this list, so it is seeded rather than held back.
+ *
+ * All `visible: true` — 04 §10's flag exists so a collected-but-unused entry
+ * can be hidden without deleting it, and every entry here was given as one to
+ * show.
+ */
+export const EDUCATION: readonly Education[] = [
+  {
+    id: 'bsc-computer-science-himit',
+    type: 'degree',
+    title: 'B.Sc. Computer Science',
+    issuer: 'HIMIT',
+    date: 'Oct 2021 – Jul 2025',
+    visible: true,
+  },
+  {
+    id: 'full-stack-diploma-route',
+    type: 'degree',
+    title: 'Full Stack Development Diploma',
+    issuer: 'Route Academy',
+    date: 'Mar 2024 – Apr 2025',
+    visible: true,
+  },
+  {
+    id: 'cert-frontend-angular-route',
+    type: 'certification',
+    title: 'Frontend Development (Angular)',
+    issuer: 'Route Academy',
+    date: '2024',
+    visible: true,
+  },
+  {
+    id: 'cert-js-maharatech',
+    type: 'certification',
+    title: 'Introduction to Programming Using JavaScript',
+    issuer: 'MaharaTech',
+    date: '2023',
+    visible: true,
+  },
+  {
+    id: 'cert-clean-code-maharatech',
+    type: 'certification',
+    title: 'The Principles of Writing Clean Code',
+    issuer: 'MaharaTech',
+    date: '2023',
+    visible: true,
+  },
+  {
+    id: 'cert-web-apis-linkedin',
+    type: 'certification',
+    title: 'Introduction to Web APIs',
+    issuer: 'LinkedIn Learning',
+    date: '2023',
+    visible: true,
+  },
+  {
+    id: 'cert-google-ai-coursera',
+    type: 'certification',
+    title: 'Introduction to Google AI Essentials',
+    issuer: 'Coursera',
+    date: '2026',
+    visible: true,
   },
 ];
 

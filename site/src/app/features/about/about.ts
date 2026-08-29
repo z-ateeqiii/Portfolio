@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { JOURNEY } from '../../core/content/site-copy';
+import { Profile } from '../../core/models';
 import { SiteState } from '../../core/services/site-state';
 import { UiEyebrow } from '../../shared/ui';
 
@@ -22,6 +23,18 @@ import { UiEyebrow } from '../../shared/ui';
  *
  * Uses the narrow reading column (07 §4) — this is the longest prose on the
  * site and the one page most likely to be read start to finish.
+ *
+ * ─── Why the profile is an input, not just a store read ──────────────────────
+ * `profileInput` lets the dashboard render THIS component with a draft profile
+ * (05 §2's Preview step), the same way /work/:slug previews a draft project.
+ * Before this, /about read only the live profile from SiteState, so editing the
+ * bio could be published but never previewed — the gap found during the Phase 5
+ * smoke test.
+ *
+ * On the public route the input is absent and the live profile is used, so the
+ * normal path is unchanged. One template serves both, which is the point: a
+ * separate preview copy would drift from what actually ships.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 @Component({
   selector: 'app-about',
@@ -74,7 +87,15 @@ import { UiEyebrow } from '../../shared/ui';
   `,
 })
 export class About {
-  protected readonly profile = inject(SiteState).profile;
+  /**
+   * Optional override. Supplied by the dashboard preview with unpublished
+   * content; absent on the public route, where the live profile is used.
+   */
+  readonly profileInput = input<Profile | null>(null);
+
+  private readonly live = inject(SiteState).profile;
+
+  protected readonly profile = computed(() => this.profileInput() ?? this.live());
   protected readonly journey = JOURNEY;
 
   /** `bioLong` is stored with \n\n paragraph breaks (04 §2). */
