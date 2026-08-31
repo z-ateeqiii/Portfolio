@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { COPY } from '../../../core/content/site-copy';
+import { SeoService } from '../../../core/seo/seo.service';
 import { UiCard, UiEyebrow } from '../../../shared/ui';
 
 /**
@@ -42,6 +43,17 @@ import { UiCard, UiEyebrow } from '../../../shared/ui';
   `,
 })
 export class BeyondHub {
+  private readonly seo = inject(SeoService);
+
+  constructor() {
+    this.seo.apply({
+      path: '/beyond',
+      title: 'Beyond Code — Muhammed Al-Ateeqi',
+      description:
+        'The layer behind the engineer: social media, the Ateeqi Tech laptop business, and teaching.',
+    });
+  }
+
   protected readonly copy = COPY;
 
   /**

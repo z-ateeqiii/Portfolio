@@ -80,6 +80,7 @@ One record per role/engagement (per brief §11 note that most of this lives in t
 | `timeframe` | string | Free text, including ongoing roles verbatim (e.g. "Apr 2026 – Present") — never derive a tense or an end date from this string |
 | `summary` | rich text | What was actually done — kept distinct from a CV bullet list |
 | `tech` | string[]? | Optional — tech stack tags shown on the Experience accordion |
+| `order` | number | Explicit sort order (matches `Project`'s pattern) — `timeframe` is free text, so it can't be parsed for chronological sorting, and Firestore returns documents unordered without it |
 | `linkedProjectSlugs` | string[]? | Optional — links to `Project` records where the role produced one. Plural: a single role (e.g. Smart Technology) can link more than one seeded project |
 
 ---

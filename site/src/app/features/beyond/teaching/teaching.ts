@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { TEACHING } from '../../../core/content/site-copy';
+import { SeoService } from '../../../core/seo/seo.service';
 import { UiEyebrow, UiTag } from '../../../shared/ui';
 
 /**
@@ -53,5 +54,16 @@ import { UiEyebrow, UiTag } from '../../../shared/ui';
   `,
 })
 export class BeyondTeaching {
+  private readonly seo = inject(SeoService);
+
+  constructor() {
+    this.seo.apply({
+      path: '/beyond/teaching',
+      title: 'Teaching — Muhammed Al-Ateeqi',
+      description:
+        'Teaching and mentoring — explaining technical things to people still learning them.',
+    });
+  }
+
   protected readonly teaching = TEACHING;
 }

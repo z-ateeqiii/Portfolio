@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { COPY, PROCESS } from '../../core/content/site-copy';
 import { Project, ProofPoint } from '../../core/models';
+import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
 import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
@@ -165,7 +166,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     }
   `,
 })
-export class Home {
+export class Home implements OnInit {
   /** Resolved per-route (see app.routes.ts). */
   readonly featured = input<Project[]>([]);
   readonly proofPoints = input<ProofPoint[]>([]);
@@ -175,6 +176,28 @@ export class Home {
 
   protected readonly copy = COPY;
   protected readonly process = PROCESS;
+
+  private readonly seo = inject(SeoService);
+
+  /**
+   * Set in ngOnInit, not an effect.
+   *
+   * Effects do not flush before Angular serialises the server-rendered HTML, so
+   * an effect-based version emitted no meta tags at all on the first response —
+   * which is the only response a crawler or link-preview bot ever sees. Caught
+   * by grepping the served HTML for the canonical tag rather than trusting the
+   * code to have run. ngOnInit runs during SSR, after inputs are bound.
+   */
+  ngOnInit(): void {
+    const p = this.profile();
+    if (!p) return;
+    this.seo.apply({
+      path: '/',
+      title: `${p.name} — ${p.positioning}`,
+      description: p.bioShort,
+      jsonLd: this.seo.personSchema(p),
+    });
+  }
 
   /**
    * First paragraph of the seeded `bioLong` (04 §2).

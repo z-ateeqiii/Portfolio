@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { COPY } from '../../core/content/site-copy';
+import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
 import { UiButton, UiEyebrow } from '../../shared/ui';
 
@@ -66,6 +67,16 @@ import { UiButton, UiEyebrow } from '../../shared/ui';
 export class Contact {
   protected readonly profile = inject(SiteState).profile;
   protected readonly copy = COPY;
+
+  private readonly seo = inject(SeoService);
+
+  constructor() {
+    this.seo.apply({
+      path: '/contact',
+      title: 'Contact — Muhammed Al-Ateeqi',
+      description: 'Email, LinkedIn and GitHub — the fastest ways to get in touch.',
+    });
+  }
 
   /** Professional channels only — see the class note on brief §27. */
   protected channels(): { label: string; href: string }[] {

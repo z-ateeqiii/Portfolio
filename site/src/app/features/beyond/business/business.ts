@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { BusinessVenture } from '../../../core/models';
+import { SeoService } from '../../../core/seo/seo.service';
 import { UiEyebrow } from '../../../shared/ui';
 
 /**
@@ -60,6 +61,17 @@ import { UiEyebrow } from '../../../shared/ui';
   `,
 })
 export class BeyondBusiness {
+  private readonly seo = inject(SeoService);
+
+  constructor() {
+    this.seo.apply({
+      path: '/beyond/business',
+      title: 'Business — Muhammed Al-Ateeqi',
+      description:
+        'Ateeqi Tech — a laptop business built on asking what someone actually needed.',
+    });
+  }
+
   readonly ventures = input<BusinessVenture[]>([]);
 
   protected paragraphs(summary: string): string[] {

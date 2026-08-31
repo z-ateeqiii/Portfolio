@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { Project } from '../../../core/models';
+import { SeoService } from '../../../core/seo/seo.service';
 import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
 
 /**
@@ -100,6 +101,17 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
 })
 export class WorkIndex {
   readonly projects = input<Project[]>([]);
+
+  private readonly seo = inject(SeoService);
+
+  constructor() {
+    this.seo.apply({
+      path: '/work',
+      title: 'Work — Muhammed Al-Ateeqi',
+      description:
+        'Five projects, each built to fix something specific — operational dashboards, an internal onboarding platform, and a digital menu built unprompted.',
+    });
+  }
 
   /**
    * The lead card is chosen by `tier`, not by taking `projects[0]`.

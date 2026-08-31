@@ -115,7 +115,8 @@ Phase 3 built Home, About/Story, Beyond Code hub + all three subpages, and Conta
 
 **Open:**
 
-- [ ] **The not-found case study returns HTTP 200, not 404.** `/work/<anything>` matches the route and resolves to `null`, so the component renders a proper not-found view — but the status line still says 200. That is a "soft 404", which search engines treat poorly and which conflicts with brief §29's discoverability goal. Fixing it means setting the response status from inside SSR. **Belongs with the Phase 6 SEO work**, alongside meta/OG tags and the sitemap.
+- [x] **Soft 404 fixed (2026-08-31).** `/work/<unknown>` now returns a real 404 while still rendering the not-found view. Implemented by intercepting `writeHead`, not `res.status()`: `writeResponseToNodeResponse` writes the render's own 200 and overwrites anything set beforehand — the first attempt did exactly that and silently kept returning 200. The slug list comes from the same Firestore data the page renders from, and a failed lookup leaves the status alone so a transient hiccup never 404s a real page. Verified: real slugs 200, unknown slugs 404.
+- [x] ~~The not-found case study returns HTTP 200, not 404.~~ `/work/<anything>` matches the route and resolves to `null`, so the component renders a proper not-found view — but the status line still says 200. That is a "soft 404", which search engines treat poorly and which conflicts with brief §29's discoverability goal. Fixing it means setting the response status from inside SSR. **Belongs with the Phase 6 SEO work**, alongside meta/OG tags and the sitemap.
 - [ ] **A transient Firestore `permission-denied` was observed once during SSR** (server log: `[firestore] read failed for "projects"`), on the first request after a server restart. Not reproducible — the same four queries ran 3/3 clean immediately afterward, and the page rendered fully on the next request. `ContentService` caught it and returned `[]`, which is the designed degradation (`04` §1.2), so nothing crashed. **But that is exactly the risk worth naming:** a transient read failure produces a page that is silently missing a section — a Home with no Featured Work — with only a line in a server log to say so. Worth a retry-once on read failure, or at minimum log-based alerting, in the Phase 8 pass.
 
 ---
@@ -162,6 +163,26 @@ Verified against live Firestore, unauthenticated: `drafts/` refuses both list an
 - [ ] **A third `04` §4 schema change: `order: number` on Experience.** `02` §7 asks for reverse-chronological order, but `timeframe` is free text ("Apr 2026 – Present", "Sep 2023 – Dec 2023") and cannot be sorted — parsing dates out of prose breaks the first time a format varies — and Firestore returns documents unordered without an explicit `orderBy`. So the intended order is stored, exactly as `Project` does for the same reason (`04` §3). Needs adding to `04` §4's table.
 - [ ] **Old blocker, kept for the record: Experience had no public home.** Four roles are about to be seeded, but `02`'s IA has no Experience page — `02` §13 says this kind of supporting content lives inside Work/About rather than as its own destination. Where it surfaces (probably `/about`) is an open design decision, not an oversight.
 - [ ] **Two `04` §4 schema changes made on 2026-08-30**, raised per `09` §2.3: `tech?: string[]` added to Experience, and `linkedProjectSlug` widened to `linkedProjectSlugs: string[]` because the Smart Technology role produced two of the seeded projects and a singular field would have to drop one.
+
+---
+
+## 4g. Phase 6 — SEO (2026-08-31)
+
+Built and verified by fetching all eleven public routes from the SSR server and parsing the returned `<head>`: canonical, description, Open Graph and JSON-LD are present on every one. `Person` on `/` and `/about`, `CreativeWork` on each case study, none on the rest.
+
+- `sitemap.xml` is generated per request from live Firestore via the REST API, so a dashboard publish appears in it without a redeploy (`06` §6). `/admin` and `/styleguide` are excluded.
+- `robots.txt` allows everything public and disallows `/admin` and `/styleguide`, and advertises the sitemap.
+- Descriptions come from Firestore (`bioShort`, a project's `tagline`), never hand-written duplicates that would drift from the content they summarise.
+
+**Two bugs caught by checking the served HTML rather than trusting the code:**
+
+- **NG0203 — `inject()` outside an injection context.** `absoluteUrl()` called `inject(REQUEST)`, which is fine in a constructor but throws from `ngOnInit`. It failed on exactly the three pages that build JSON-LD, and the thrown error cost them *every* meta tag while the page still rendered normally — so nothing looked wrong. Fixed by resolving the origin once in `SeoService`'s constructor and making the URL joiner pure.
+- **Effects do not flush before SSR serialises the HTML.** An effect-based first version emitted no tags at all on the first response — the only response a crawler sees. Now `ngOnInit`.
+
+**Open:**
+
+- [ ] **No production domain, so `SITE_ORIGIN` is empty and the origin is derived per request.** That is correct in dev and on any preview deploy, but it cannot enforce ONE canonical form, which `06` §6 asks for: a site reachable at both a custom domain and a `*.web.app` URL would self-canonicalise each. **Set `SITE_ORIGIN` in `src/app/core/seo/site-url.ts` once the domain exists** — before launch, not after.
+- [ ] **No OG images.** The case-study OG image is wired to the project's featured screenshot, but no project has media yet, so shared links preview as text cards. Resolves itself once images are uploaded through the Phase 5 media screen.
 
 ---
 

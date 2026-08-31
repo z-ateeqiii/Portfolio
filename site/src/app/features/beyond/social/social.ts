@@ -1,7 +1,8 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 
 import { SocialPlatform } from '../../../core/models';
+import { SeoService } from '../../../core/seo/seo.service';
 import { UiEyebrow, UiStatusDot } from '../../../shared/ui';
 
 /**
@@ -72,6 +73,17 @@ import { UiEyebrow, UiStatusDot } from '../../../shared/ui';
   `,
 })
 export class BeyondSocial {
+  private readonly seo = inject(SeoService);
+
+  constructor() {
+    this.seo.apply({
+      path: '/beyond/social',
+      title: 'Social Media World — Muhammed Al-Ateeqi',
+      description:
+        'Years of making things for an audience — the creator side, and the reach it built.',
+    });
+  }
+
   readonly platforms = input<SocialPlatform[]>([]);
 
   /**

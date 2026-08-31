@@ -1,8 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { JOURNEY } from '../../core/content/site-copy';
 import { Experience, Profile } from '../../core/models';
+import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
 import { UiEyebrow } from '../../shared/ui';
 import { ExperienceList } from './experience-list';
@@ -90,7 +98,7 @@ import { ExperienceList } from './experience-list';
     </article>
   `,
 })
-export class About {
+export class About implements OnInit {
   /**
    * Optional override. Supplied by the dashboard preview with unpublished
    * content; absent on the public route, where the live profile is used.
@@ -105,6 +113,29 @@ export class About {
 
   protected readonly profile = computed(() => this.profileInput() ?? this.live());
   protected readonly journey = JOURNEY;
+
+  private readonly seo = inject(SeoService);
+
+  /**
+   * Set in ngOnInit, not an effect.
+   *
+   * Effects do not flush before Angular serialises the server-rendered HTML, so
+   * an effect-based version emitted no meta tags at all on the first response —
+   * which is the only response a crawler or link-preview bot ever sees. Caught
+   * by grepping the served HTML for the canonical tag rather than trusting the
+   * code to have run. ngOnInit runs during SSR, after inputs are bound.
+   */
+  ngOnInit(): void {
+    const p = this.profile();
+    /** Not applied in the dashboard preview — that is not a public page. */
+    if (!p || this.profileInput()) return;
+    this.seo.apply({
+      path: '/about',
+      title: `About — ${p.name}`,
+      description: p.bioShort,
+      jsonLd: this.seo.personSchema(p),
+    });
+  }
 
   /** `bioLong` is stored with \n\n paragraph breaks (04 §2). */
   protected paragraphs(): string[] {

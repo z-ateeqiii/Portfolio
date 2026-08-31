@@ -1,8 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { imageUrl } from '../../../core/cloudinary/cloudinary.config';
 import { Media, Project } from '../../../core/models';
+import { SeoService } from '../../../core/seo/seo.service';
 import { UiDisclosure } from '../../../shared/blocks/disclosure/disclosure';
 import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
 
@@ -194,7 +202,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
     }
   `,
 })
-export class CaseStudy {
+export class CaseStudy implements OnInit {
   /** Null for an unknown OR unpublished slug — see the 404 branch above. */
   readonly project = input<Project | null>(null);
   readonly media = input<Media[]>([]);
@@ -202,6 +210,50 @@ export class CaseStudy {
   /** Rich-text fields are stored with \n\n paragraph breaks (04 §3). */
   protected paragraphs(text: string): string[] {
     return text.split('\n\n');
+  }
+
+  private readonly seo = inject(SeoService);
+
+  /**
+   * Set in ngOnInit, not an effect.
+   *
+   * Effects do not flush before Angular serialises the server-rendered HTML, so
+   * an effect-based version emitted no meta tags at all on the first response —
+   * which is the only response a crawler or link-preview bot ever sees. Caught
+   * by grepping the served HTML for the canonical tag rather than trusting the
+   * code to have run. ngOnInit runs during SSR, after inputs are bound.
+   */
+  ngOnInit(): void {
+    const p = this.project();
+    if (!p) {
+      /**
+       * A not-found page still needs a description, and must NOT keep the
+       * previous case study's tags after a client-side navigation.
+       */
+      this.seo.apply({
+        path: '/work',
+        title: 'Case study not found — Muhammed Al-Ateeqi',
+        description: 'This case study is not available.',
+      });
+      return;
+    }
+
+    /**
+     * OG image is the project's featured screenshot, which is what makes a
+     * forwarded case-study link look intentional (06 §6, 02 §6). No image
+     * rather than a placeholder when a project has no media (04 §6) — a broken
+     * preview is worse than a text card.
+     */
+    const featured = this.media().find((m) => m.isFeatured) ?? this.media()[0];
+
+    this.seo.apply({
+      path: `/work/${p.slug}`,
+      title: `${p.name} — Muhammed Al-Ateeqi`,
+      description: p.tagline,
+      type: 'article',
+      image: featured ? imageUrl(featured.publicId, 1200) : undefined,
+      jsonLd: this.seo.caseStudySchema(p),
+    });
   }
 
   /** Keeps the section numbering contiguous when Approach is absent. */
