@@ -101,14 +101,14 @@ const EMPTY = (id: string, order: number): ExperienceForm => ({
                           rows="5"
                           [ngModel]="text(role, f.key)"
                           (ngModelChange)="patch(role.id, f.key, $event)"
-                          class="mt-2 w-full rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg"
+                          class="mt-2 w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
                         ></textarea>
                       } @else {
                         <input
                           [name]="f.key + role.id"
                           [ngModel]="text(role, f.key)"
                           (ngModelChange)="patch(role.id, f.key, $event)"
-                          class="mt-2 w-full rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg"
+                          class="mt-2 w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
                         />
                       }
                       @if (f.hint) {
@@ -122,7 +122,7 @@ const EMPTY = (id: string, order: number): ExperienceForm => ({
                       type="button"
                       [disabled]="busy()"
                       (click)="saveDraft(role)"
-                      class="rounded-sm border border-fg/24 px-4 py-2 text-caption text-fg disabled:opacity-40"
+                      class="rounded-sm border border-fg/40 px-4 py-2 text-caption text-fg disabled:opacity-40"
                     >
                       Save draft
                     </button>

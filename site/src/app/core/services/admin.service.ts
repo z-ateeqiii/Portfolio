@@ -88,7 +88,7 @@ export class AdminService {
   // a public query by accident (05 §6).
 
   async list<T>(path: string, sortBy?: string): Promise<T[]> {
-    const store = db();
+    const store = await db();
     if (!store) return [];
     try {
       const ref = collection(store, path);
@@ -101,7 +101,7 @@ export class AdminService {
   }
 
   async get<T>(path: string, id: string): Promise<T | null> {
-    const store = db();
+    const store = await db();
     if (!store) return null;
     try {
       const snap = await getDoc(doc(store, path, id));
@@ -126,7 +126,7 @@ export class AdminService {
     docId: string,
     data: T,
   ): Promise<void> {
-    const store = db();
+    const store = await db();
     if (!store) throw new Error('Firebase is not configured.');
 
     await setDoc(doc(store, DRAFTS, draftId(entity, docId)), {
@@ -138,7 +138,7 @@ export class AdminService {
   }
 
   async getDraft<T>(entity: DraftableEntity, docId: string): Promise<DraftRecord<T> | null> {
-    const store = db();
+    const store = await db();
     if (!store) return null;
     try {
       const snap = await getDoc(doc(store, DRAFTS, draftId(entity, docId)));
@@ -160,7 +160,7 @@ export class AdminService {
 
   /** Every pending draft, for the Overview's "what's in draft" (05 §3.1). */
   async listDrafts(): Promise<DraftRecord[]> {
-    const store = db();
+    const store = await db();
     if (!store) return [];
     try {
       const snap = await getDocs(collection(store, DRAFTS));
@@ -193,7 +193,7 @@ export class AdminService {
    * 09 §3 rules out.
    */
   async publish(entity: DraftableEntity, docId: string): Promise<void> {
-    const store = db();
+    const store = await db();
     if (!store) throw new Error('Firebase is not configured.');
 
     const draft = await this.getDraft<DocumentData>(entity, docId);
@@ -216,7 +216,7 @@ export class AdminService {
 
   /** Throw the pending edit away. The live document was never touched. */
   async discardDraft(entity: DraftableEntity, docId: string): Promise<void> {
-    const store = db();
+    const store = await db();
     if (!store) throw new Error('Firebase is not configured.');
     await deleteDoc(doc(store, DRAFTS, draftId(entity, docId)));
   }
@@ -238,7 +238,7 @@ export class AdminService {
     docId: string,
     data: T,
   ): Promise<void> {
-    const store = db();
+    const store = await db();
     if (!store) throw new Error('Firebase is not configured.');
     await setDoc(doc(store, entity, docId), data);
   }
@@ -256,13 +256,13 @@ export class AdminService {
     docId: string,
     data: T,
   ): Promise<void> {
-    const store = db();
+    const store = await db();
     if (!store) throw new Error('Firebase is not configured.');
     await setDoc(doc(store, path, docId), data);
   }
 
   async remove(path: string, docId: string): Promise<void> {
-    const store = db();
+    const store = await db();
     if (!store) throw new Error('Firebase is not configured.');
     await deleteDoc(doc(store, path, docId));
   }

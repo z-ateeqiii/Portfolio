@@ -38,7 +38,7 @@ import { AuthService } from '../../../core/auth/auth.service';
               autocomplete="username"
               required
               [(ngModel)]="email"
-              class="mt-2 w-full rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg"
+              class="mt-2 w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
             />
           </label>
 
@@ -50,7 +50,7 @@ import { AuthService } from '../../../core/auth/auth.service';
               autocomplete="current-password"
               required
               [(ngModel)]="password"
-              class="mt-2 w-full rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg"
+              class="mt-2 w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
             />
           </label>
 
@@ -71,7 +71,7 @@ import { AuthService } from '../../../core/auth/auth.service';
           type="button"
           [disabled]="busy()"
           (click)="signInWithGoogle()"
-          class="mt-3 w-full rounded-sm border border-fg/24 px-6 py-3 text-body text-fg disabled:opacity-50"
+          class="mt-3 w-full rounded-sm border border-fg/40 px-6 py-3 text-body text-fg disabled:opacity-50"
         >
           Continue with Google
         </button>

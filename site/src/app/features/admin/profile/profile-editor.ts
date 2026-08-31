@@ -71,14 +71,14 @@ const EMPTY: ProfileForm = {
               rows="6"
               [ngModel]="value(field.key)"
               (ngModelChange)="update(field.key, $event)"
-              class="mt-2 w-full rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg"
+              class="mt-2 w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
             ></textarea>
           } @else {
             <input
               [name]="field.key"
               [ngModel]="value(field.key)"
               (ngModelChange)="update(field.key, $event)"
-              class="mt-2 w-full rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg"
+              class="mt-2 w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
             />
           }
           @if (field.hint) {

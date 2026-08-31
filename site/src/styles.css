@@ -160,3 +160,25 @@
 @utility hairline {
   border: 1px solid --alpha(var(--color-fg) / 12%);
 }
+
+/* ---------------------------------------------------------------------------
+   BORDER ALPHA AND WCAG 1.4.11 — measured in the Phase 8 pass (07 §8).
+
+   Non-text contrast requires 3:1 for "visual information required to identify
+   user interface components". Measured against #140A03, the worse of the two
+   backgrounds:
+
+     fg/12  1.34:1   fg/24  2.08:1   fg/35  3.15:1   fg/40  3.78:1
+
+   So:
+   - CONTROL EDGES — inputs, selects, textareas, the secondary button — use
+     `border-fg/40`. An input's background (#140A03) sits at 1.07:1 against the
+     page, so the border is the only thing that identifies the control; it has
+     to be visible. fg/35 clears the bar by 0.15 and is not worth the risk of a
+     rounding difference, so fg/40 is the floor.
+   - CARD EDGES keep `border-fg/12`, deliberately. 07 §7 is explicit that a
+     card's depth comes from the surface colour shift, not the border — the
+     card is identified by its background, so the hairline is decorative and
+     1.4.11 does not apply. Raising it would also contradict 07 §7's "minimal
+     border, no drop-shadow-heavy floating card".
+--------------------------------------------------------------------------- */

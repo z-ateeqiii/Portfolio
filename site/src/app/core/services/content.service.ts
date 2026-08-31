@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { orderBy, where } from 'firebase/firestore';
 
 import {
   BusinessVenture,
@@ -20,6 +19,15 @@ import {
   publishedQuery,
   referenceQuery,
 } from './firestore-collection';
+
+/**
+ * No `firebase/firestore` import in this file, deliberately (Phase 8, 06 §7).
+ *
+ * Route resolvers reference this service, so anything it imports at module
+ * scope lands in the initial browser bundle. Queries are therefore described as
+ * plain `QuerySpec` objects and translated inside the data layer, which loads
+ * the SDK on demand.
+ */
 
 /**
  * Typed read access to published content, for the public site (09 §5).
@@ -46,16 +54,15 @@ export class ContentService {
 
   /** All published projects in curated order (brief §12, 04 §3). */
   projects(): Promise<Project[]> {
-    return publishedQuery<Project>(COLLECTIONS.projects, orderBy('order'));
+    return publishedQuery<Project>(COLLECTIONS.projects, { orderBy: 'order' });
   }
 
   /** The subset teased on Home's Featured Work section (02 §4). */
   featuredProjects(): Promise<Project[]> {
-    return publishedQuery<Project>(
-      COLLECTIONS.projects,
-      where('featuredOnHome', '==', true),
-      orderBy('order'),
-    );
+    return publishedQuery<Project>(COLLECTIONS.projects, {
+      equals: [['featuredOnHome', true]],
+      orderBy: 'order',
+    });
   }
 
   /**
@@ -71,7 +78,7 @@ export class ContentService {
 
   /** A project's screenshots, in manual order (04 §6). */
   media(slug: string): Promise<Media[]> {
-    return referenceQuery<Media>(mediaPath(slug), orderBy('order'));
+    return referenceQuery<Media>(mediaPath(slug), { orderBy: 'order' });
   }
 
   /**
@@ -80,7 +87,7 @@ export class ContentService {
    * an explicit field rather than something derived from prose.
    */
   experience(): Promise<Experience[]> {
-    return publishedQuery<Experience>(COLLECTIONS.experience, orderBy('order'));
+    return publishedQuery<Experience>(COLLECTIONS.experience, { orderBy: 'order' });
   }
 
   /** Skills, for grouping by level in the UI (04 §5). */
@@ -105,7 +112,7 @@ export class ContentService {
    * filtered at the query level: "not shown" should mean not sent (brief §9).
    */
   education(): Promise<Education[]> {
-    return referenceQuery<Education>(COLLECTIONS.education, where('visible', '==', true));
+    return referenceQuery<Education>(COLLECTIONS.education, { equals: [['visible', true]] });
   }
 
   /** Home's Proof Strip numbers (02 §4.2, 04 §11). */

@@ -25,7 +25,7 @@ import { AdminService } from '../../../core/services/admin.service';
  */
 
 const FIELD =
-  'mt-1 w-full rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg';
+  'mt-1 w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg';
 const LABEL = 'font-mono text-label text-fg-muted uppercase';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -209,7 +209,7 @@ export class AdminSocialEditor {
             <button
               type="button"
               (click)="addMetric(v)"
-              class="mt-3 rounded-sm border border-fg/24 px-3 py-1 text-caption text-fg"
+              class="mt-3 rounded-sm border border-fg/40 px-3 py-1 text-caption text-fg"
             >
               Add metric
             </button>
@@ -289,7 +289,7 @@ export class AdminBusinessEditor {
                   [name]="'t' + e.id"
                   [ngModel]="e.type"
                   (ngModelChange)="patch(e, { type: $event })"
-                  class="rounded-sm border border-fg/24 bg-surface px-2 py-1 text-caption text-fg"
+                  class="rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
                 >
                   @for (t of types; track t) {
                     <option [value]="t">{{ t }}</option>
@@ -301,7 +301,7 @@ export class AdminBusinessEditor {
                   [name]="'ti' + e.id"
                   [ngModel]="e.title"
                   (ngModelChange)="patch(e, { title: $event })"
-                  class="w-full rounded-sm border border-fg/24 bg-surface px-2 py-1 text-caption text-fg"
+                  class="w-full rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
                 />
               </td>
               <td class="py-2 pr-3">
@@ -309,7 +309,7 @@ export class AdminBusinessEditor {
                   [name]="'i' + e.id"
                   [ngModel]="e.issuer"
                   (ngModelChange)="patch(e, { issuer: $event })"
-                  class="w-full rounded-sm border border-fg/24 bg-surface px-2 py-1 text-caption text-fg"
+                  class="w-full rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
                 />
               </td>
               <td class="py-2 pr-3">
@@ -317,7 +317,7 @@ export class AdminBusinessEditor {
                   [name]="'d' + e.id"
                   [ngModel]="e.date"
                   (ngModelChange)="patch(e, { date: $event })"
-                  class="w-32 rounded-sm border border-fg/24 bg-surface px-2 py-1 text-caption text-fg"
+                  class="w-32 rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
                 />
               </td>
               <td class="py-2 pr-3">
@@ -428,7 +428,7 @@ export class AdminEducationEditor {
                   [ngModel]="p.label"
                   (ngModelChange)="patch(p, { label: $event })"
                   placeholder="Laptops sold"
-                  class="w-full rounded-sm border border-fg/24 bg-surface px-2 py-1 text-caption text-fg"
+                  class="w-full rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
                 />
               </td>
               <td class="py-2 pr-3">
@@ -437,7 +437,7 @@ export class AdminEducationEditor {
                   [ngModel]="p.value"
                   (ngModelChange)="patch(p, { value: $event })"
                   placeholder="80+"
-                  class="w-32 rounded-sm border border-fg/24 bg-surface px-2 py-1 text-caption text-fg"
+                  class="w-32 rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
                 />
               </td>
               <td class="py-2 pr-3">
@@ -446,7 +446,7 @@ export class AdminEducationEditor {
                   [ngModel]="p.sourceRef ?? ''"
                   (ngModelChange)="patch(p, { sourceRef: $event })"
                   placeholder="source, e.g. businessVentures/ateeqi-tech"
-                  class="w-full rounded-sm border border-fg/24 bg-surface px-2 py-1 text-caption text-fg"
+                  class="w-full rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
                 />
               </td>
               <td class="py-2 text-right">

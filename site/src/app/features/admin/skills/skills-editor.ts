@@ -56,13 +56,13 @@ const LEVELS: SkillLevel[] = ['strong', 'good', 'learning', 'interested'];
             name="newName"
             [(ngModel)]="newName"
             placeholder="e.g. Playwright"
-            class="mt-2 w-56 rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg"
+            class="mt-2 w-56 rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
           />
         </label>
         <select
           name="newCategory"
           [(ngModel)]="newCategory"
-          class="rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg"
+          class="rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
         >
           @for (c of categories; track c) {
             <option [value]="c">{{ c }}</option>
@@ -71,7 +71,7 @@ const LEVELS: SkillLevel[] = ['strong', 'good', 'learning', 'interested'];
         <select
           name="newLevel"
           [(ngModel)]="newLevel"
-          class="rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg"
+          class="rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
         >
           @for (l of levels; track l) {
             <option [value]="l">{{ l }}</option>
@@ -98,7 +98,7 @@ const LEVELS: SkillLevel[] = ['strong', 'good', 'learning', 'interested'];
                     [ngModel]="skill.category"
                     [name]="'cat-' + skill.id"
                     (ngModelChange)="patch(skill, { category: $event })"
-                    class="rounded-sm border border-fg/24 bg-surface px-2 py-1 text-caption text-fg"
+                    class="rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
                   >
                     @for (c of categories; track c) {
                       <option [value]="c">{{ c }}</option>
@@ -110,7 +110,7 @@ const LEVELS: SkillLevel[] = ['strong', 'good', 'learning', 'interested'];
                     [ngModel]="skill.level"
                     [name]="'lvl-' + skill.id"
                     (ngModelChange)="patch(skill, { level: $event })"
-                    class="rounded-sm border border-fg/24 bg-surface px-2 py-1 text-caption text-fg"
+                    class="rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
                   >
                     @for (l of levels; track l) {
                       <option [value]="l">{{ l }}</option>

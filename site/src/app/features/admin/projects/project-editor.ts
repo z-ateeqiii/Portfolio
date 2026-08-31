@@ -72,7 +72,7 @@ const EMPTY: ProjectForm = {
       @if (isLive()) {
         <a
           [routerLink]="['/admin/projects', form().slug, 'media']"
-          class="inline-block rounded-sm border border-fg/24 px-4 py-2 text-caption text-fg no-underline"
+          class="inline-block rounded-sm border border-fg/40 px-4 py-2 text-caption text-fg no-underline"
           >Manage images →</a
         >
       } @else {
@@ -90,7 +90,7 @@ const EMPTY: ProjectForm = {
               [name]="f.key"
               [ngModel]="text(f.key)"
               (ngModelChange)="update(f.key, $event)"
-              class="mt-2 w-full rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg"
+              class="mt-2 w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
             />
             @if (f.hint) {
               <span class="mt-1 block text-caption text-fg-muted">{{ f.hint }}</span>
@@ -121,7 +121,7 @@ const EMPTY: ProjectForm = {
       </fieldset>
 
       <!-- featuredOnHome — impossible to miss, per 05 §3.3 -->
-      <label class="flex items-start gap-3 rounded-md border border-fg/24 bg-surface p-4">
+      <label class="flex items-start gap-3 rounded-md border border-fg/40 bg-surface p-4">
         <input
           type="checkbox"
           name="featuredOnHome"
@@ -146,7 +146,7 @@ const EMPTY: ProjectForm = {
             rows="6"
             [ngModel]="text(f.key)"
             (ngModelChange)="update(f.key, $event)"
-            class="mt-2 w-full rounded-sm border border-fg/24 bg-surface px-3 py-2 text-body text-fg"
+            class="mt-2 w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
           ></textarea>
           <span class="mt-1 block text-caption text-fg-muted">{{ f.hint }}</span>
         </label>

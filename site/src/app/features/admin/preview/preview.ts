@@ -47,7 +47,7 @@ import { CaseStudy } from '../../work/case-study/case-study';
       <button
         type="button"
         (click)="back()"
-        class="rounded-sm border border-fg/24 px-4 py-2 text-caption text-fg"
+        class="rounded-sm border border-fg/40 px-4 py-2 text-caption text-fg"
       >
         Back to editor
       </button>

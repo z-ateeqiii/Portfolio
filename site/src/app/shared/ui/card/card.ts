@@ -28,7 +28,7 @@ export class UiCard {
 
   protected readonly hostClasses = computed(() =>
     this.interactive()
-      ? `${UiCard.BASE} transition-colors duration-[--duration-base] ease-[--ease-out-soft] hover:border-fg/24`
+      ? `${UiCard.BASE} transition-colors duration-[--duration-base] ease-[--ease-out-soft] hover:border-fg/40`
       : UiCard.BASE,
   );
 }

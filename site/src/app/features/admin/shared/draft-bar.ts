@@ -43,7 +43,7 @@ import { RouterLink } from '@angular/router';
       type="button"
       [disabled]="busy() || !dirty()"
       (click)="save.emit()"
-      class="rounded-sm border border-fg/24 px-4 py-2 text-caption text-fg disabled:opacity-40"
+      class="rounded-sm border border-fg/40 px-4 py-2 text-caption text-fg disabled:opacity-40"
     >
       Save draft
     </button>
@@ -52,7 +52,7 @@ import { RouterLink } from '@angular/router';
          not a separate preview template that could drift from the live one. -->
     <a
       [routerLink]="previewLink()"
-      class="rounded-sm border border-fg/24 px-4 py-2 text-caption no-underline"
+      class="rounded-sm border border-fg/40 px-4 py-2 text-caption no-underline"
       [class.pointer-events-none]="!hasDraft()"
       [class.opacity-40]="!hasDraft()"
       [class.text-fg]="hasDraft()"

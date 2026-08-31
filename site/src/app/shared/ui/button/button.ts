@@ -39,7 +39,7 @@ export class UiButton {
     // Black text on orange — 7.4:1, comfortably past AA (07 §8).
     primary: 'bg-action text-bg hover:bg-action-hover',
     // Ghost/outline for the secondary action, legible on both bg and surface.
-    secondary: 'bg-transparent text-fg border border-fg/24 hover:border-action hover:text-action',
+    secondary: 'bg-transparent text-fg border border-fg/40 hover:border-action hover:text-action',
   };
 
   protected readonly hostClasses = computed(
