@@ -4,7 +4,12 @@ import {
   provideBrowserGlobalErrorListeners,
   inject,
 } from '@angular/core';
-import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
+import {
+  TitleStrategy,
+  provideRouter,
+  withComponentInputBinding,
+  withViewTransitions,
+} from '@angular/router';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 import { routes } from './app.routes';
@@ -20,7 +25,18 @@ export const appConfig: ApplicationConfig = {
      * component inputs by key, so a page declares what it needs as an
      * `input()` instead of injecting ActivatedRoute and unwrapping snapshots.
      */
-    provideRouter(routes, withComponentInputBinding()),
+    /**
+     * View transitions for navigation clarity (07 §5's first justification,
+     * brief §25's "carefully controlled page transitions").
+     *
+     * The browser's native View Transition API rather than a GSAP page
+     * transition: it respects prefers-reduced-motion at the platform level,
+     * costs no bundle weight, and degrades to an instant navigation in browsers
+     * that do not support it. A hand-built page transition would have to
+     * reimplement all three, and would sit between the visitor and the content
+     * while it ran — which 07 §5 rules out.
+     */
+    provideRouter(routes, withComponentInputBinding(), withViewTransitions()),
     provideClientHydration(withEventReplay()),
 
     /**

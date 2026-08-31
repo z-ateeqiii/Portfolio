@@ -12,6 +12,7 @@ import { imageUrl } from '../../../core/cloudinary/cloudinary.config';
 import { Media, Project } from '../../../core/models';
 import { SeoService } from '../../../core/seo/seo.service';
 import { UiDisclosure } from '../../../shared/blocks/disclosure/disclosure';
+import { RevealDirective } from '../../../shared/motion/reveal.directive';
 import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
 
 /**
@@ -42,7 +43,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
 @Component({
   selector: 'app-case-study',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, UiButton, UiDisclosure, UiEyebrow, UiStatusDot, UiTag],
+  imports: [RouterLink, RevealDirective, UiButton, UiDisclosure, UiEyebrow, UiStatusDot, UiTag],
   template: `
     @let p = project();
 
@@ -136,7 +137,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         }
 
         <!-- 2. THE PROBLEM (03 §2.2) -->
-        <section class="mt-16">
+        <section appReveal class="mt-16">
           <ui-eyebrow index="01">The Problem</ui-eyebrow>
           <div class="mt-6 space-y-6">
             @for (para of paragraphs(p.problem); track $index) {
@@ -147,7 +148,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
 
         <!-- 3. THE APPROACH (03 §2.3) — absent on compact tier, by data. -->
         @if (p.approach) {
-          <section class="mt-16">
+          <section appReveal class="mt-16">
             <ui-eyebrow index="02">The Approach</ui-eyebrow>
             <div class="mt-6 space-y-6">
               @for (para of paragraphs(p.approach); track $index) {
@@ -158,7 +159,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         }
 
         <!-- 4. THE BUILD (03 §2.4) -->
-        <section class="mt-16">
+        <section appReveal class="mt-16">
           <ui-eyebrow [index]="p.approach ? '03' : '02'">The Build</ui-eyebrow>
           <div class="mt-6 space-y-6">
             @for (para of paragraphs(p.build); track $index) {
@@ -180,7 +181,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         }
 
         <!-- 6. OUTCOME (03 §2.6) -->
-        <section class="mt-16">
+        <section appReveal class="mt-16">
           <ui-eyebrow [index]="outcomeIndex()">Outcome</ui-eyebrow>
           <div class="mt-6 space-y-6">
             @for (para of paragraphs(p.outcome); track $index) {

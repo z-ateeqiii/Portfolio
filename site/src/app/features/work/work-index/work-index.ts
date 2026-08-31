@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 
 import { Project } from '../../../core/models';
 import { SeoService } from '../../../core/seo/seo.service';
+import { RevealDirective } from '../../../shared/motion/reveal.directive';
 import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
 
 /**
@@ -23,7 +24,7 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
 @Component({
   selector: 'app-work-index',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, UiCard, UiEyebrow, UiTag],
+  imports: [RouterLink, RevealDirective, UiCard, UiEyebrow, UiTag],
   template: `
     <section class="container-wide py-20">
       <ui-eyebrow>Work</ui-eyebrow>
@@ -75,8 +76,8 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
 
       @if (rest().length) {
         <div class="mt-8 grid gap-6 md:grid-cols-2">
-          @for (project of rest(); track project.slug) {
-            <ui-card [interactive]="true">
+          @for (project of rest(); track project.slug; let i = $index) {
+            <ui-card [interactive]="true" [appReveal]="i">
               <h2 class="text-display-3 font-display text-fg">
                 <a
                   [routerLink]="['/work', project.slug]"

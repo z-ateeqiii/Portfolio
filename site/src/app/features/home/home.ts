@@ -5,6 +5,7 @@ import { COPY, PROCESS } from '../../core/content/site-copy';
 import { Project, ProofPoint } from '../../core/models';
 import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
+import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
 /**
@@ -24,7 +25,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, UiButton, UiCard, UiEyebrow, UiTag],
+  imports: [RouterLink, RevealDirective, UiButton, UiCard, UiEyebrow, UiTag],
   template: `
     @let p = profile();
 
@@ -64,7 +65,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
     <!-- 3. Featured Work (02 §4.3) — leads with Scholarship, per brief §15. -->
     @if (featured().length) {
-      <section class="container-wide py-16">
+      <section appReveal class="container-wide py-16">
         <ui-eyebrow index="01">Featured Work</ui-eyebrow>
         <h2 class="mt-4 max-w-2xl text-display-2 font-display text-fg">{{ copy.featuredWork }}</h2>
 
@@ -106,7 +107,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     }
 
     <!-- 4. How I Work (02 §4.4) — condensed from brief §10, not the full list. -->
-    <section class="container-wide py-16">
+    <section appReveal class="container-wide py-16">
       <ui-eyebrow index="02">How I Work</ui-eyebrow>
       <h2 class="mt-4 max-w-2xl text-display-2 font-display text-fg">{{ copy.process }}</h2>
 
@@ -126,7 +127,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
     <!-- 5. Story Teaser (02 §4.5) — a short excerpt, bridging into /about. -->
     @if (storyExcerpt(); as excerpt) {
-      <section class="container-wide py-16">
+      <section appReveal class="container-wide py-16">
         <ui-eyebrow index="03">Story</ui-eyebrow>
         <h2 class="mt-4 max-w-2xl text-display-2 font-display text-fg">{{ copy.storyTeaser }}</h2>
         <p class="mt-6 max-w-2xl text-body-lg text-fg-muted">{{ excerpt }}</p>
@@ -139,7 +140,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     }
 
     <!-- 6. Beyond Code Teaser (02 §4.6) — one line and a door, not a section. -->
-    <section class="container-wide py-16">
+    <section appReveal class="container-wide py-16">
       <ui-eyebrow index="04">Beyond Code</ui-eyebrow>
       <p class="mt-4 max-w-2xl text-display-3 font-display text-fg">{{ copy.beyondTeaser }}</p>
       <p class="mt-8">
@@ -151,7 +152,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
     <!-- 7. Contact / Closing CTA (02 §4.7). -->
     @if (p) {
-      <section class="container-wide py-16">
+      <section appReveal class="container-wide py-16">
         <ui-eyebrow index="05">Contact</ui-eyebrow>
         <h2 class="mt-4 max-w-2xl text-display-2 font-display text-fg">{{ copy.contact }}</h2>
         <div class="mt-8 flex flex-wrap items-center gap-4">

@@ -186,6 +186,35 @@ Built and verified by fetching all eleven public routes from the SSR server and 
 
 ---
 
+## 4h. Phase 7 — Motion (2026-08-31)
+
+GSAP added against the finished pages, per `08` Phase 7. Applied sparingly: five Home sections, four case-study narrative blocks, the Work index's secondary cards (small stagger), and the Experience section on `/about`. Plus native view transitions for navigation clarity.
+
+**The rule the implementation is built around** is `07` §5's "a page must be usable the instant it renders, motion or not". The usual scroll-reveal pattern breaks it — `opacity: 0` in CSS, animate to 1 on scroll — because if the JavaScript is slow, blocked or broken, the content is invisible permanently. On a server-rendered site whose premise is being readable and indexable (brief §29), shipping real content and then hiding it with CSS is the worst available failure mode.
+
+So nothing is hidden in CSS. Elements render visible; the directive hides one only *after* JavaScript has run, confirmed motion is wanted, and loaded GSAP. Verified against the served HTML: no `opacity: 0`, `visibility: hidden` or `display: none` on any content. (The one `opacity: 0` present is the status-dot's pulse keyframe — the signature element, correctly disabled under reduced motion.)
+
+Three consequences of the same rule, each deliberate:
+
+- **Elements already in the viewport are never animated.** Hiding what the visitor is looking at to fade it back in is a flicker that delays reading for no storytelling gain. The Hero is therefore never animated at all.
+- **`prefers-reduced-motion` exits before GSAP is fetched**, so a visitor who asked for less motion does not download an animation library either.
+- **The AI disclosure and data-honesty blocks are not revealed.** brief §14 says the site "should not hide this"; starting them at `opacity: 0`, even briefly, sits against that. They are the one part of a case study that renders instantly, always.
+
+GSAP is dynamically imported and stays out of the initial bundle — verified: the initial total grew 4 kB, and no 68 kB GSAP chunk appears in the initial list.
+
+Page transitions use the browser's native View Transition API rather than a GSAP page transition: it respects reduced motion at the platform level, costs no bundle weight, and degrades to an instant navigation where unsupported.
+
+---
+
+## 4i. Hosting: Vercel, not Firebase Hosting (2026-08-31)
+
+Decision recorded in `06` §3.4. Firebase keeps Firestore + Auth; Cloudinary keeps media; Vercel hosts.
+
+- [ ] **Phase 9 deployment risk, flagged early.** Vercel's default behaviour can silently serve a static `index.html` instead of routing through the Angular SSR server — which would look like a working site while actually shipping an empty shell to crawlers, undoing Phase 6 entirely. Needs an explicit serverless function wrapper plus a `vercel.json` rewrite, **verified by checking the actual served HTML**, not by the deploy reporting success.
+- [ ] **Domain:** none yet; a Vercel subdomain temporarily. `SITE_ORIGIN` handling is unchanged — still empty, still derived per request, still needs setting once a real domain exists (§4g).
+
+---
+
 ## 5. Post-v1 / Not Blocking Launch
 
 Safe to leave until after the site is live:

@@ -13,6 +13,7 @@ import { Experience, Profile } from '../../core/models';
 import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
 import { UiEyebrow } from '../../shared/ui';
+import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { ExperienceList } from './experience-list';
 
 /**
@@ -48,7 +49,7 @@ import { ExperienceList } from './experience-list';
 @Component({
   selector: 'app-about',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, UiEyebrow, ExperienceList],
+  imports: [RouterLink, RevealDirective, UiEyebrow, ExperienceList],
   template: `
     @let p = profile();
 
@@ -80,7 +81,7 @@ import { ExperienceList } from './experience-list';
         </div>
 
         <!-- 02 §7 item 4 — Experience, after the journey narrative. -->
-        <app-experience-list [roles]="experience()" />
+        <app-experience-list appReveal [roles]="experience()" />
 
         <!-- 02 §7.5 and §7.6 — bridges out, rather than ending flat. -->
         <nav class="mt-16 flex flex-wrap gap-x-8 gap-y-3 border-t border-fg/12 pt-8">
