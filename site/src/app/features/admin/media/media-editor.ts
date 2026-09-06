@@ -140,6 +140,8 @@ interface Pending {
           <p class="mt-1 text-caption text-fg-muted">
             Drag a card by its handle to reorder. Click a thumbnail to open it full-size. The
             cover image is what shows for this project on /work and its case study.
+            <strong class="text-fg">Alt text and caption edits save immediately</strong> — there
+            is no separate Save button, same as Skills.
           </p>
 
           <div
@@ -340,10 +342,24 @@ export class AdminMediaEditor {
     await this.admin.saveAtPath(mediaPath(this.slug()), record.id, record);
   }
 
+  /**
+   * Autosaves on every change — the note above the grid says so, matching
+   * Skills' "Changes save immediately". A write that fails is rolled back to
+   * what was actually persisted and surfaced as an error, rather than left
+   * showing an edit that only exists locally: the exact silent-failure shape
+   * the original caption bug had, now guarded against everywhere this
+   * component writes, not just on first save.
+   */
   protected async patch(item: Media, change: Partial<Media>): Promise<void> {
+    const previous = this.media();
     const next = { ...item, ...change };
-    this.media.set(this.media().map((m) => (m.id === item.id ? next : m)));
-    await this.admin.saveAtPath(mediaPath(this.slug()), item.id, next);
+    this.media.set(previous.map((m) => (m.id === item.id ? next : m)));
+    try {
+      await this.admin.saveAtPath(mediaPath(this.slug()), item.id, next);
+    } catch (e) {
+      this.media.set(previous);
+      this.error.set(e instanceof Error ? e.message : 'Could not save that change. Try again.');
+    }
   }
 
   /**
@@ -356,27 +372,45 @@ export class AdminMediaEditor {
   protected async onReorder(event: CdkDragDrop<Media[]>): Promise<void> {
     if (event.previousIndex === event.currentIndex) return;
 
-    const reordered = [...this.media()];
+    const previous = this.media();
+    const reordered = [...previous];
     moveItemInArray(reordered, event.previousIndex, event.currentIndex);
     const withOrder = reordered.map((m, i) => ({ ...m, order: i }));
 
     this.media.set(withOrder);
-    await Promise.all(
-      withOrder.map((m) => this.admin.saveAtPath(mediaPath(this.slug()), m.id, m)),
-    );
+    try {
+      await Promise.all(
+        withOrder.map((m) => this.admin.saveAtPath(mediaPath(this.slug()), m.id, m)),
+      );
+    } catch (e) {
+      this.media.set(previous);
+      this.error.set(e instanceof Error ? e.message : 'Could not save the new order. Try again.');
+    }
   }
 
   /** At most one card image per project (04 §6), so setting one clears the rest. */
   protected async setFeatured(item: Media, value: boolean): Promise<void> {
-    const updated = this.media().map((m) => ({ ...m, isFeatured: value && m.id === item.id }));
+    const previous = this.media();
+    const updated = previous.map((m) => ({ ...m, isFeatured: value && m.id === item.id }));
     this.media.set(updated);
-    await Promise.all(
-      updated.map((m) => this.admin.saveAtPath(mediaPath(this.slug()), m.id, m)),
-    );
+    try {
+      await Promise.all(
+        updated.map((m) => this.admin.saveAtPath(mediaPath(this.slug()), m.id, m)),
+      );
+    } catch (e) {
+      this.media.set(previous);
+      this.error.set(e instanceof Error ? e.message : 'Could not set the cover image. Try again.');
+    }
   }
 
   protected async remove(item: Media): Promise<void> {
-    this.media.set(this.media().filter((m) => m.id !== item.id));
-    await this.admin.remove(mediaPath(this.slug()), item.id);
+    const previous = this.media();
+    this.media.set(previous.filter((m) => m.id !== item.id));
+    try {
+      await this.admin.remove(mediaPath(this.slug()), item.id);
+    } catch (e) {
+      this.media.set(previous);
+      this.error.set(e instanceof Error ? e.message : 'Could not remove that image. Try again.');
+    }
   }
 }
