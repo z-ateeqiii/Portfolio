@@ -205,6 +205,69 @@ export const PROJECTS: readonly ProjectSeed[] = [
       'Live at the café, with positive feedback from customers and staff. Of everything in this project set, this is the clearest evidence of Muhammed building a solution without being asked (per brief §17) — pure initiative, not a work assignment or paid engagement.',
     featuredOnHome: false,
   },
+
+  // -- Compact, freelance client work (03 §6a, added 2026-09-06) -------------
+  {
+    slug: 'magic-touch',
+    name: 'Magic Touch',
+    tagline: 'Freelance single-page site for Magic Touch, a beauty salon offering massage and wellness services',
+    tier: 'compact',
+    order: 6,
+    // 03 §6a.1 names no role/duration for any of the three freelance sites -
+    // same restraint as FreshCart above: left empty rather than inferred.
+    role: '',
+    timeframe: '',
+    stack: ['HTML5', 'CSS3', 'JavaScript (ES6+)'],
+    liveUrl: 'https://z-ateeqiii.github.io/MagicTouch/',
+    githubUrl: 'https://github.com/z-ateeqiii/MagicTouch',
+    problem:
+      'A salon needed a bookable web presence without booking friction (forms, phone tag) costing them customers — and needed to be able to update prices and services themselves afterward, without calling a developer for every small change.',
+    build:
+      'Built as a zero-dependency static site so it can be hosted anywhere with no build pipeline. Every service card generates its own prefilled WhatsApp message naming the exact service, duration, and price — booking is one tap, no typing. Voice calls are kept on a deliberately separate phone number from the WhatsApp booking line. All editable content (services, prices, contact details) lives in one plain data file so the client can update it without touching markup. One notable technical problem solved directly: the client’s only logo file was a screenshot with a fake transparency checkerboard baked in as real pixels — a Python script identifies and removes the checkerboard (including backdrop trapped inside letterforms) and rebuilds genuine transparency. Photos are pre-optimized from ~13MB of source images down to ~308KB of served WebP files.',
+    outcome:
+      'A fast, easily bookable static site a non-technical client can safely maintain themselves, with no ongoing hosting cost.',
+    featuredOnHome: false,
+  },
+  {
+    slug: 'creative-nails',
+    name: 'Creative Nails',
+    tagline:
+      'Freelance catalogue/portfolio website for Creative Nails, a nail and skincare studio in Dahab, Egypt run by nail expert Lilo',
+    tier: 'compact',
+    order: 7,
+    role: '',
+    timeframe: '',
+    stack: ['HTML5', 'CSS3', 'JavaScript (ES6+)'],
+    liveUrl: 'https://z-ateeqiii.github.io/CreativeDesign/',
+    githubUrl: 'https://github.com/z-ateeqiii/CreativeDesign',
+    problem:
+      'The studio had no web presence beyond Instagram — no single place showing its full service catalogue for a walk-in or passerby to reference.',
+    build:
+      'A static catalogue site organized by service category, paired with a printable QR card the studio can hand out or display in-store, linking straight to the site.',
+    outcome: 'The studio now has a real, linkable web presence beyond its Instagram page.',
+    featuredOnHome: false,
+  },
+  {
+    slug: 'grandpas-kitchen',
+    name: 'Grandpa’s Kitchen',
+    // Truncated before the trailing "— work that began from..." clause, same
+    // treatment Cyber50's tagline above gives its own trailing sub-clause.
+    tagline: 'Freelance digital menu/website for Grandpa’s Kitchen, a restaurant in Dahab, Egypt',
+    tier: 'compact',
+    order: 8,
+    role: '',
+    timeframe: '',
+    stack: ['HTML5', 'CSS3', 'JavaScript (ES6+)'],
+    liveUrl: 'https://z-ateeqiii.github.io/grandpas-kitchen/',
+    githubUrl: 'https://github.com/z-ateeqiii/grandpas-kitchen',
+    problem:
+      'A small, chef-owned restaurant had no digital menu — the kind of QR-accessible menu that avoids reprinting costs every time a price or dish changes.',
+    build:
+      'Built mobile-first, meant to be opened straight from a QR code at the table. A v2 pass incorporated the client’s actual branding — a clean logo file and real photos of the chef and restaurant — rather than generic stock imagery, so the site reflects the actual place and person behind it.',
+    outcome:
+      'Live and deployed, purpose-built for the QR-at-the-table use case this kind of restaurant menu exists for.',
+    featuredOnHome: false,
+  },
 ];
 
 /**

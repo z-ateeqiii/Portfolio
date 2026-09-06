@@ -170,6 +170,63 @@ Live at the café, with positive feedback from customers and staff. Of everythin
 
 ---
 
+## 6a. Freelance Projects — added 2026-09-06
+
+Three freelance client sites, added to the roster alongside the original five. All Compact tier — static, no-backend sites built for real small-business clients, distinct in kind from the Angular/Firebase engineering work above but real evidence of freelance client work, scoping, and delivery.
+
+### 6a.1 Magic Touch (Beauty Salon)
+
+**Snapshot**
+- Freelance single-page site for Magic Touch, a beauty salon offering massage and wellness services
+- Plain HTML/CSS/JS, zero dependencies, no build step
+- GitHub: z-ateeqiii/MagicTouch
+- Live: z-ateeqiii.github.io/MagicTouch/
+
+**The Problem**
+A salon needed a bookable web presence without booking friction (forms, phone tag) costing them customers — and needed to be able to update prices and services themselves afterward, without calling a developer for every small change.
+
+**The Build**
+Built as a zero-dependency static site so it can be hosted anywhere with no build pipeline. Every service card generates its own prefilled WhatsApp message naming the exact service, duration, and price — booking is one tap, no typing. Voice calls are kept on a deliberately separate phone number from the WhatsApp booking line. All editable content (services, prices, contact details) lives in one plain data file so the client can update it without touching markup. One notable technical problem solved directly: the client's only logo file was a screenshot with a fake transparency checkerboard baked in as real pixels — a Python script identifies and removes the checkerboard (including backdrop trapped inside letterforms) and rebuilds genuine transparency. Photos are pre-optimized from ~13MB of source images down to ~308KB of served WebP files.
+
+**Outcome**
+A fast, easily bookable static site a non-technical client can safely maintain themselves, with no ongoing hosting cost.
+
+### 6a.2 Creative Nails
+
+**Snapshot**
+- Freelance catalogue/portfolio website for Creative Nails, a nail and skincare studio in Dahab, Egypt run by nail expert Lilo
+- Includes a printable QR business card linking directly to the site
+- GitHub: z-ateeqiii/CreativeDesign
+- Live: z-ateeqiii.github.io/CreativeDesign/
+
+**The Problem**
+The studio had no web presence beyond Instagram — no single place showing its full service catalogue for a walk-in or passerby to reference.
+
+**The Build**
+A static catalogue site organized by service category, paired with a printable QR card the studio can hand out or display in-store, linking straight to the site.
+
+**Outcome**
+The studio now has a real, linkable web presence beyond its Instagram page.
+
+### 6a.3 Grandpa's Kitchen
+
+**Snapshot**
+- Freelance digital menu/website for Grandpa's Kitchen, a restaurant in Dahab, Egypt — work that began from an in-person conversation with the owner, who is also the restaurant's chef
+- Mobile-first HTML/CSS/vanilla JS, built for QR-code access at the table
+- GitHub: z-ateeqiii/grandpas-kitchen
+- Live: z-ateeqiii.github.io/grandpas-kitchen/
+
+**The Problem**
+A small, chef-owned restaurant had no digital menu — the kind of QR-accessible menu that avoids reprinting costs every time a price or dish changes.
+
+**The Build**
+Built mobile-first, meant to be opened straight from a QR code at the table. A v2 pass incorporated the client's actual branding — a clean logo file and real photos of the chef and restaurant — rather than generic stock imagery, so the site reflects the actual place and person behind it.
+
+**Outcome**
+Live and deployed, purpose-built for the QR-at-the-table use case this kind of restaurant menu exists for.
+
+---
+
 ## 7. Media Handling
 
 Per Muhammed's Discovery answer: no personal portrait needed (confirmed, consistent with brief §26). Each project has its own folder containing its README plus screenshots — this maps directly onto the dashboard's per-project media model (`04-content-model.md` will define the exact schema). Nothing here should block development; missing media is never a reason to delay a case study going live, per brief §32.

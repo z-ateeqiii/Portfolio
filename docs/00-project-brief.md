@@ -284,24 +284,14 @@ Current technical focus:
 
 ### Expanding Toward
 
-**Good** — course basics completed, real knowledge, not yet applied in a shipped project:
+**Learning** — course basics completed, not yet applied in a real project:
 - C#
 - .NET
 - SQL Server Databases
 
-**Learning** — familiar from the JavaScript/TypeScript background, not formally studied yet:
+**Interested in** — clear next step, not yet started:
 - Node.js
-
-**Interested in** — clear direction, not yet started:
 - AI-assisted development tools
-
-> **Level mapping updated 2026-08-28.** These tiers now use the exact `level` values from `04-content-model.md` §5 (`strong` / `good` / `learning` / `interested`), so the brief and the seeded `Skill` records cannot drift apart. Two things changed from the previous wording: C#/.NET/SQL Server moved from "Learning" to **Good** (the underlying description — course basics done, not yet shipped — is unchanged; only the label it maps to), and Node.js moved from "Interested in" to **Learning**, since "not yet started" understated an existing JS/TS foundation.
->
-> The skills in "Current technical focus" above are not all one level either: those **used in one of the five shipped projects** are `strong` — evidence via a real case study rather than self-assessment (per `01` §9, Rule 1). **24 are strong** as of 2026-08-28.
->
-> Three records are `strong` despite not appearing in the list above, each evidenced by seeded project data rather than by assertion: **Firebase** and **Firestore** (the Scholarship dashboard's backend, `03` §4) and **Vercel** (hosts the live demos for both the Scholarship dashboard and the Nutella menu — two seeded `liveUrl` values). **Responsive Design** was also recategorised from "Frameworks & UI" to `practice`: it describes how something is built, not a library used to build it.
->
-> 13 skills listed above were never named in any tier and remain `good` pending a final pass — see `10` §4b.
 
 This split matters: the serverless/Firebase architecture chosen for full-stack projects (e.g. the Scholarship Operation Dashboard) was a deliberate scope decision made in part because backend depth is still developing — not a limitation to hide, but a reasoned engineering choice consistent with the professional philosophy in §10.
 
@@ -318,6 +308,12 @@ Projects currently identified:
 3. Cybersecurity Dashboard
 4. FreshCart eCommerce Application
 5. Nutella Digital Menu
+
+Added 2026-09-06 — freelance client work, Compact tier (per `03-case-study-system.md` §6a):
+
+6. Magic Touch (Beauty Salon)
+7. Creative Nails
+8. Grandpa's Kitchen
 
 Projects should NOT necessarily receive equal visual weight.
 
