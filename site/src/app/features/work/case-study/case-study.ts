@@ -12,6 +12,7 @@ import { imageUrl } from '../../../core/cloudinary/cloudinary.config';
 import { Media, Project } from '../../../core/models';
 import { SeoService } from '../../../core/seo/seo.service';
 import { UiDisclosure } from '../../../shared/blocks/disclosure/disclosure';
+import { UiGallery } from '../../../shared/blocks/gallery/gallery';
 import { RevealDirective } from '../../../shared/motion/reveal.directive';
 import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
 
@@ -43,7 +44,16 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
 @Component({
   selector: 'app-case-study',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RevealDirective, UiButton, UiDisclosure, UiEyebrow, UiStatusDot, UiTag],
+  imports: [
+    RouterLink,
+    RevealDirective,
+    UiButton,
+    UiDisclosure,
+    UiEyebrow,
+    UiGallery,
+    UiStatusDot,
+    UiTag,
+  ],
   template: `
     @let p = project();
 
@@ -116,23 +126,12 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         </header>
 
         <!-- Media (04 §6). Nothing is seeded yet, so this renders nothing —
-             missing media never blocks a case study going live (brief §32). -->
+             missing media never blocks a case study going live (brief §32).
+             A masonry grid a visitor can click through, not a static stack
+             (Muhammed's manual-testing report) — see UiGallery. -->
         @if (media().length) {
-          <div class="mt-14 space-y-6">
-            @for (item of media(); track item.id) {
-              <figure>
-                <img
-                  [src]="src(item)"
-                  [alt]="item.alt"
-                  loading="lazy"
-                  decoding="async"
-                  class="w-full rounded-md border border-fg/12"
-                />
-                @if (item.caption) {
-                  <figcaption class="mt-3 text-caption text-fg-muted">{{ item.caption }}</figcaption>
-                }
-              </figure>
-            }
+          <div class="mt-14">
+            <ui-gallery [items]="media()" />
           </div>
         }
 
@@ -259,13 +258,4 @@ export class CaseStudy implements OnInit {
 
   /** Keeps the section numbering contiguous when Approach is absent. */
   protected readonly outcomeIndex = computed(() => (this.project()?.approach ? '04' : '03'));
-
-  /**
-   * Cloudinary delivery URL built from `publicId` rather than using the stored
-   * `url` directly, so every case-study image gets f_auto/q_auto and a width
-   * cap. Screenshots are the heaviest asset on the site (06 §7).
-   */
-  protected src(item: Media): string {
-    return imageUrl(item.publicId, 1200);
-  }
 }

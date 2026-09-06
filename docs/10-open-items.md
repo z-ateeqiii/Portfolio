@@ -262,6 +262,27 @@ Found by actually clicking through the live admin UI rather than by static analy
 All five verified together: `tsc --noEmit` and a full `ng build` clean; initial browser bundle unaffected (~317 kB raw, no budget warning — the new resolver code lives entirely inside already-lazy chunks); SSR-fetched `/`, `/work`, `/about`, a real case study, and an unknown slug (404) all still render correct content with the new code paths active.
 
 
+## 4l. Three more gaps from Muhammed's own testing (2026-09-06)
+
+The `4k` batch was tested live and produced a second, smaller report — three genuinely new gaps, plus four items (`4k`'s grid, cover images, delete, and the `effect()` fix) re-reported, most likely against a stale local checkout, since re-verifying the actual source confirmed all four were already in place from `4k`. All three below were diagnosed and reported to Muhammed before any code was written, per his standing instruction.
+
+**Media reordering had no visible save, and typing raced itself.** The `order` field was a plain number input wired to `(ngModelChange)`, which does autosave on every keystroke — traced and confirmed, so nothing was silently failing — but nothing on screen confirmed a save had happened, unlike every other autosaving field in the dashboard, and typing a two-digit number fired two separate writes that could theoretically resolve out of order.
+
+- [x] **Fixed**: the number field is gone. Reordering is now real drag-and-drop (`@angular/cdk/drag-drop`, `21.2.14` — the CDK release line matching this project's `@angular/core@^21.2.0`), each card dragged by a labelled handle so dragging can't be triggered from inside the alt-text/caption inputs. A drop recomputes `order` for every item and writes them all in one batch (`Promise.all`) — one deliberate action instead of a stream of per-keystroke writes, and self-evidently "saved" the way typing into a box isn't.
+- Measured cost: the `media-editor` lazy chunk (admin-only, behind the dashboard's own lazy boundary — `05` §7) grew from 10.40 kB to 72.92 kB raw (3.27 kB → 18.14 kB estimated transfer). The public site's initial bundle is untouched by this change — confirmed by grepping the whole `src/app` tree for `@angular/cdk` imports outside this one file.
+
+**Cropping needed a real crop tool, not a custom one.** 05 §3.4's multi-file drop zone uploaded whatever was dropped, uncropped — fine for most screenshots, not for the ones that need trimming before they read as 16:9.
+
+- [x] **Fixed**: replaced the custom XHR uploader (`upload.service.ts`, deleted) with Cloudinary's own Upload Widget (`upload-widget.service.ts`), `cropping: true` at a 16:9 default, with Cloudinary's own Skip button (on by default) covering screenshots that aren't. The alt-text-required gate is unchanged — Muhammed confirmed it's a `04` §6 data rule, not tied to which uploader produced the file, so a widget upload still lands in the same "needs alt text before saving" pending list as before.
+- Measured cost: **zero**, structurally, not just in this build. The widget loads via a runtime `<script>` tag (`upload-widget.cloudinary.com/latest/global/all.js`, 16.45 kB brotli-compressed, verified directly) injected only when an admin opens the media page — Angular's bundler never sees it, so it can't appear in any `ng build` chunk, lazy or otherwise.
+
+**The public gallery was a static stack, not something to browse.** `case-study.ts` rendered project images as a `space-y-6` vertical stack with no click handler at all — not a gallery, and explicitly flagged against the "as light and fast as opening Instagram" bar this rebuild was held to.
+
+- [x] **Fixed**: extracted into `shared/blocks/gallery/gallery.ts` (`ui-gallery`), a masonry grid via Tailwind's `columns-2 sm:columns-3` (pure CSS — confirmed by compiling it directly before relying on it, not assumed) that opens a lightbox on click, built on the browser's native `<dialog>` element (`showModal()`) rather than a carousel package — free focus-trapping, Esc-to-close, and a native backdrop, arrow-key navigation added on top. Zero new dependencies.
+- Measured cost: the public site's initial bundle grew by 6.63 kB raw / 1.64 kB estimated transfer (339.90 kB → 346.53 kB raw), almost entirely the new Tailwind utility classes themselves (the global stylesheet grew 25.68 kB → 26.91 kB raw) rather than anything JS — `ui-gallery` has no script-side cost beyond what Angular and the browser already ship.
+
+All three verified together: `tsc --noEmit` and a full `ng build` clean; SSR-fetched a real case study with seeded media (`scholarship-operation-dashboard`) and confirmed the rendered HTML has the masonry grid, real Cloudinary thumbnails at the capped width, and a closed (no `open` attribute) `<dialog>` in the initial response; SSR-fetched `/admin/projects/.../media` to confirm the CDK-based editor doesn't crash the server render; Home and `/work` re-confirmed still rendering cover images correctly, unaffected.
+
 Safe to leave until after the site is live:
 
 - [ ] `SocialVideo` entity (`04` §8) — only needed if/when a curated video archive is ready; the whole site works without it

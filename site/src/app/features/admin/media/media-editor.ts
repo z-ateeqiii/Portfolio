@@ -1,9 +1,16 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDropList,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { imageUrl } from '../../../core/cloudinary/cloudinary.config';
-import { CloudinaryUploadService } from '../../../core/cloudinary/upload.service';
+import { CloudinaryWidgetService } from '../../../core/cloudinary/upload-widget.service';
 import { Media } from '../../../core/models';
 import { AdminService } from '../../../core/services/admin.service';
 import { mediaPath } from '../../../core/services/firestore-collection';
@@ -11,10 +18,8 @@ import { mediaPath } from '../../../core/services/firestore-collection';
 /**
  * Per-project media (05 §3.4, §4).
  *
- * Upload, reorder, mark-as-featured, replace, remove — matching 04 §6.
- * Multi-file drag-and-drop, because 05 §3.4 asks for it specifically: Muhammed
- * already keeps screenshots in per-project folders, so the natural gesture is
- * dropping a folder's worth at once, not picking them one at a time.
+ * Upload (via Cloudinary's own Upload Widget, cropping included), reorder
+ * (drag-and-drop), mark-as-featured, replace, remove — matching 04 §6.
  *
  * ─── alt text is required before an image can be saved ───────────────────────
  * 04 §6 makes `alt` required, and this screen is where that gets enforced in
@@ -22,6 +27,9 @@ import { mediaPath } from '../../../core/services/firestore-collection';
  * Media document until alt text is written. Accessibility that depends on
  * remembering decays (07 §8), and case studies are carried by their
  * screenshots — an image nobody described is invisible to a screen reader.
+ * This holds regardless of which uploader produced the file (confirmed with
+ * Muhammed when the widget replaced the old drop zone): it is a data rule,
+ * not an artifact of the upload mechanism.
  * ─────────────────────────────────────────────────────────────────────────────
  *
  * No publish workflow: media inherits its parent project's state (04 §6), so a
@@ -33,7 +41,6 @@ import { mediaPath } from '../../../core/services/firestore-collection';
  * stays possible in the Cloudinary console later.
  */
 interface Pending {
-  readonly file: File;
   readonly url: string;
   readonly publicId: string;
   alt: string;
@@ -49,7 +56,7 @@ interface Pending {
 @Component({
   selector: 'app-admin-media',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, CdkDrag, CdkDragHandle, CdkDropList],
   template: `
     <div class="p-8">
       <a
@@ -59,26 +66,20 @@ interface Pending {
       >
       <h1 class="mt-2 font-display text-display-3 text-fg">Media — {{ slug() }}</h1>
 
-      <!-- Drop zone (05 §3.4) -->
-      <div
-        (dragover)="$event.preventDefault(); dragging.set(true)"
-        (dragleave)="dragging.set(false)"
-        (drop)="onDrop($event)"
-        class="mt-6 max-w-3xl rounded-md border border-dashed p-8 text-center"
-        [class.border-action]="dragging()"
-        [class.border-fg\\/24]="!dragging()"
-      >
-        <p class="text-body text-fg">Drop images here</p>
-        <p class="mt-1 text-caption text-fg-muted">or</p>
-        <label class="mt-3 inline-block cursor-pointer rounded-sm border border-fg/40 px-4 py-2 text-caption text-fg">
-          Choose files
-          <input type="file" multiple accept="image/*" hidden (change)="onPick($event)" />
-        </label>
-        @if (uploading()) {
-          <p class="mt-4 font-mono text-label text-fg-muted uppercase">
-            Uploading… {{ progress() }}%
-          </p>
-        }
+      <!-- Upload (05 §3.4) — Cloudinary's own Upload Widget, cropping built in.
+           Loaded at runtime, on demand: see CloudinaryWidgetService. -->
+      <div class="mt-6 max-w-3xl">
+        <button
+          type="button"
+          (click)="openUpload()"
+          class="rounded-sm border border-fg/40 px-4 py-2 text-caption text-fg hover:border-action hover:text-action"
+        >
+          Upload images…
+        </button>
+        <p class="mt-2 text-caption text-fg-muted">
+          Opens Cloudinary's uploader. Crop to 16:9, or skip cropping for screenshots that
+          aren't.
+        </p>
         @if (error(); as message) {
           <p class="mt-4 text-caption text-action" role="alert">{{ message }}</p>
         }
@@ -129,25 +130,38 @@ interface Pending {
       }
 
       <!-- Saved media (04 §6), as a real grid rather than a stack of full-width
-           rows -- Muhammed's report that images "aren't shown in an organized,
-           clickable grid" once uploaded. Each thumbnail is wrapped in a plain
-           link to the full-size image (no lightbox library needed, consistent
-           with this being a plain, functional tool per 05 §7). -->
+           rows. Drag by the handle to reorder — a drop is one deliberate write
+           of every affected item's order, rather than a number field whose
+           per-keystroke autosave gave no feedback that anything had happened
+           (found via manual testing). -->
       @if (media().length) {
         <div class="mt-10 max-w-5xl">
           <h2 class="font-mono text-label text-fg uppercase">On this project ({{ media().length }})</h2>
           <p class="mt-1 text-caption text-fg-muted">
-            Click a thumbnail to open it full-size. The cover image is what shows for this
-            project on /work and its case study.
+            Drag a card by its handle to reorder. Click a thumbnail to open it full-size. The
+            cover image is what shows for this project on /work and its case study.
           </p>
 
-          <div class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div
+            cdkDropList
+            cdkDropListOrientation="mixed"
+            (cdkDropListDropped)="onReorder($event)"
+            class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+          >
             @for (item of media(); track item.id) {
               <div
-                class="rounded-md border p-3"
+                cdkDrag
+                class="rounded-md border bg-surface p-3"
                 [class.border-action]="item.isFeatured"
                 [class.border-fg\/12]="!item.isFeatured"
               >
+                <div
+                  cdkDragHandle
+                  class="mb-2 flex cursor-grab items-center gap-1 font-mono text-label text-fg-muted uppercase active:cursor-grabbing"
+                >
+                  <span aria-hidden="true">⠿</span> Drag to reorder
+                </div>
+
                 <a [href]="full(item.publicId)" target="_blank" rel="noopener" class="block">
                   <img
                     [src]="thumb(item.publicId)"
@@ -193,17 +207,7 @@ interface Pending {
                   />
                 </label>
 
-                <div class="mt-2 flex items-center justify-between gap-2">
-                  <label class="flex items-center gap-1 text-caption text-fg-muted">
-                    Order
-                    <input
-                      type="number"
-                      [name]="'o' + item.id"
-                      [ngModel]="item.order"
-                      (ngModelChange)="patch(item, { order: +$event || 0 })"
-                      class="w-14 rounded-sm border border-fg/40 bg-surface px-1 py-1 text-caption text-fg"
-                    />
-                  </label>
+                <div class="mt-2 flex justify-end">
                   <button
                     type="button"
                     (click)="remove(item)"
@@ -224,13 +228,10 @@ export class AdminMediaEditor {
   readonly slug = input<string>('');
 
   private readonly admin = inject(AdminService);
-  private readonly uploader = inject(CloudinaryUploadService);
+  private readonly widget = inject(CloudinaryWidgetService);
 
   protected readonly media = signal<Media[]>([]);
   protected readonly pending = signal<Pending[]>([]);
-  protected readonly dragging = signal(false);
-  protected readonly uploading = signal(false);
-  protected readonly progress = signal(0);
   protected readonly error = signal('');
 
   constructor() {
@@ -261,28 +262,10 @@ export class AdminMediaEditor {
     this.media.set(await this.admin.list<Media>(mediaPath(slug), 'order'));
   }
 
-  protected onDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.dragging.set(false);
-    void this.uploadAll(Array.from(event.dataTransfer?.files ?? []));
-  }
-
-  protected onPick(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    void this.uploadAll(Array.from(input.files ?? []));
-    input.value = '';
-  }
-
-  private async uploadAll(files: File[]): Promise<void> {
-    const images = files.filter((f) => f.type.startsWith('image/'));
-    if (!images.length) return;
-
-    this.uploading.set(true);
+  protected async openUpload(): Promise<void> {
     this.error.set('');
-
-    for (const file of images) {
-      try {
-        const result = await this.uploader.upload(file, this.slug(), (p) => this.progress.set(p));
+    try {
+      await this.widget.openWidget(this.slug(), (result) => {
         /**
          * Lands in `pending`, not in Firestore. The record is only created once
          * alt text exists — 04 §6 makes it required, and this is where that is
@@ -290,15 +273,12 @@ export class AdminMediaEditor {
          */
         this.pending.set([
           ...this.pending(),
-          { file, url: result.url, publicId: result.publicId, alt: '', caption: '' },
+          { url: result.url, publicId: result.publicId, alt: '', caption: '' },
         ]);
-      } catch (e) {
-        this.error.set(e instanceof Error ? e.message : 'Upload failed.');
-      }
+      });
+    } catch (e) {
+      this.error.set(e instanceof Error ? e.message : 'Could not open the uploader.');
     }
-
-    this.uploading.set(false);
-    this.progress.set(0);
   }
 
   protected async save(item: Pending): Promise<void> {
@@ -364,6 +344,26 @@ export class AdminMediaEditor {
     const next = { ...item, ...change };
     this.media.set(this.media().map((m) => (m.id === item.id ? next : m)));
     await this.admin.saveAtPath(mediaPath(this.slug()), item.id, next);
+  }
+
+  /**
+   * Drag-and-drop reorder (05 §3.4 / Muhammed's manual-testing report). One
+   * drop recomputes `order` for every item and writes them all at once — a
+   * single deliberate action, unlike the old per-keystroke number field it
+   * replaces, which auto-saved on every keypress with nothing on screen to
+   * confirm it and a theoretical risk of out-of-order writes racing.
+   */
+  protected async onReorder(event: CdkDragDrop<Media[]>): Promise<void> {
+    if (event.previousIndex === event.currentIndex) return;
+
+    const reordered = [...this.media()];
+    moveItemInArray(reordered, event.previousIndex, event.currentIndex);
+    const withOrder = reordered.map((m, i) => ({ ...m, order: i }));
+
+    this.media.set(withOrder);
+    await Promise.all(
+      withOrder.map((m) => this.admin.saveAtPath(mediaPath(this.slug()), m.id, m)),
+    );
   }
 
   /** At most one card image per project (04 §6), so setting one clears the rest. */
