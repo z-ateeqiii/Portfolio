@@ -38,6 +38,11 @@ interface Pending {
   readonly publicId: string;
   alt: string;
   caption: string;
+  /** Set when Save image fails, so the failure is visible on THIS card rather
+   *  than silently doing nothing (Phase 8 bug: an unhandled setDoc rejection
+   *  left a saved-looking pending item with no record ever created). */
+  saveError?: string;
+  saving?: boolean;
 }
 
 @Component({
@@ -107,12 +112,15 @@ interface Pending {
                 </label>
                 <button
                   type="button"
-                  [disabled]="!item.alt.trim()"
+                  [disabled]="!item.alt.trim() || item.saving"
                   (click)="save(item)"
                   class="rounded-sm bg-action px-4 py-2 text-caption font-medium text-bg disabled:opacity-40"
                 >
-                  Save image
+                  {{ item.saving ? 'Saving…' : 'Save image' }}
                 </button>
+                @if (item.saveError; as message) {
+                  <p class="text-caption text-action" role="alert">{{ message }}</p>
+                }
               </div>
             </div>
           }
@@ -245,7 +253,23 @@ export class AdminMediaEditor {
     const alt = item.alt.trim();
     if (!alt) return;
 
+    this.patchPending(item, { saving: true, saveError: undefined });
+
     const id = item.publicId.split('/').pop() ?? `media-${Date.now()}`;
+    const caption = item.caption.trim();
+    /**
+     * `caption` is OMITTED, not set to `undefined`, when empty.
+     *
+     * Firestore's client SDK rejects `undefined` as a field value outright
+     * (`invalid-argument`, thrown before any network call) unless the app was
+     * initialised with `ignoreUndefinedProperties` — which this project does
+     * not do. `caption: item.caption.trim() || undefined` therefore threw on
+     * every image saved with no caption, and `save()` had no try/catch, so the
+     * rejection was an unhandled promise: the button did nothing, the image
+     * never became a Media document, and nothing on screen said why.
+     * Confirmed directly against the SDK before this fix — the identical
+     * object with the field omitted reaches the server.
+     */
     const record: Media = {
       id,
       projectSlug: this.slug(),
@@ -253,14 +277,30 @@ export class AdminMediaEditor {
       url: item.url,
       publicId: item.publicId,
       alt,
-      caption: item.caption.trim() || undefined,
+      ...(caption ? { caption } : {}),
       order: this.media().length,
       isFeatured: this.media().length === 0,
     };
 
-    await this.persist(record);
-    this.pending.set(this.pending().filter((p) => p.publicId !== item.publicId));
-    await this.load();
+    try {
+      await this.persist(record);
+      this.pending.set(this.pending().filter((p) => p.publicId !== item.publicId));
+      await this.load();
+    } catch (e) {
+      /**
+       * Visible per-item, not just logged — a save that fails silently is what
+       * caused this bug to go unnoticed in the first place.
+       */
+      this.patchPending(item, {
+        saving: false,
+        saveError: e instanceof Error ? e.message : 'Save failed. Try again.',
+      });
+    }
+  }
+
+  /** Updates one pending item in place, by publicId. */
+  private patchPending(item: Pending, change: Partial<Pending>): void {
+    this.pending.set(this.pending().map((p) => (p.publicId === item.publicId ? { ...p, ...change } : p)));
   }
 
   /** Media lives in a subcollection, so it is written by path, not by entity. */

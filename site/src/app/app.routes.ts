@@ -194,6 +194,12 @@ export const routes: Routes = [
               import('./features/admin/projects/project-editor').then((m) => m.AdminProjectEditor),
           },
           {
+            path: 'projects/:slug/media',
+            title: 'Media',
+            loadComponent: () =>
+              import('./features/admin/media/media-editor').then((m) => m.AdminMediaEditor),
+          },
+          {
             path: 'skills',
             title: 'Skills',
             loadComponent: () =>
@@ -236,12 +242,6 @@ export const routes: Routes = [
               import('./features/admin/reference/reference-editors').then(
                 (m) => m.AdminProofPointsEditor,
               ),
-          },
-          {
-            path: 'projects/:slug/media',
-            title: 'Media',
-            loadComponent: () =>
-              import('./features/admin/media/media-editor').then((m) => m.AdminMediaEditor),
           },
           {
             path: 'preview/:entity/:id',
