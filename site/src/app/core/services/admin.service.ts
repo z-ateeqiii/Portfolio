@@ -70,13 +70,29 @@ function toDate(value: unknown): Date {
   return value instanceof Timestamp ? value.toDate() : value instanceof Date ? value : new Date(0);
 }
 
+/**
+ * `updatedAt`/`publishedAt` are attached ONLY when the raw document actually
+ * has them — not manufactured for every entity this hydrates.
+ *
+ * `hydrate()` is generic and runs for every `list()`/`get()` call across every
+ * entity, but `Timestamped`/`Editable` (04 §12) applies only to Project,
+ * Experience and Profile. Media, Skill, SocialPlatform, BusinessVenture,
+ * Education and ProofPoint are all explicitly outside that workflow (04 §6,
+ * §12) and never write these fields — so unconditionally stamping them here
+ * (previously `publishedAt: undefined` when absent) manufactured a field that
+ * was never really part of the document. That phantom `undefined` then rode
+ * along through any `{ ...item, ...change }` patch back into `setDoc()`,
+ * which Firestore's client SDK rejects outright — the same failure shape as
+ * the original caption bug, just introduced on the read side this time
+ * instead of the write side.
+ */
 function hydrate<T>(snap: QueryDocumentSnapshot<DocumentData>): T {
   const data = snap.data();
   return {
     ...data,
     id: snap.id,
-    updatedAt: toDate(data['updatedAt']),
-    publishedAt: data['publishedAt'] ? toDate(data['publishedAt']) : undefined,
+    ...(data['updatedAt'] ? { updatedAt: toDate(data['updatedAt']) } : {}),
+    ...(data['publishedAt'] ? { publishedAt: toDate(data['publishedAt']) } : {}),
   } as T;
 }
 

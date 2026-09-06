@@ -138,11 +138,26 @@ interface Pending {
         <div class="mt-10 max-w-5xl">
           <h2 class="font-mono text-label text-fg uppercase">On this project ({{ media().length }})</h2>
           <p class="mt-1 text-caption text-fg-muted">
-            Drag a card by its handle to reorder. Click a thumbnail to open it full-size. The
-            cover image is what shows for this project on /work and its case study.
+            Drag a card by its handle to rearrange, then click Save order to commit it. Click a
+            thumbnail to open it full-size. The cover image is what shows for this project on
+            /work and its case study.
             <strong class="text-fg">Alt text and caption edits save immediately</strong> — there
-            is no separate Save button, same as Skills.
+            is no separate Save button for those, same as Skills.
           </p>
+
+          <div class="mt-3 flex items-center gap-3">
+            <button
+              type="button"
+              [disabled]="!reorderDirty() || savingOrder()"
+              (click)="saveOrder()"
+              class="rounded-sm bg-action px-4 py-2 text-caption font-medium text-bg disabled:opacity-40"
+            >
+              {{ savingOrder() ? 'Saving order…' : 'Save order' }}
+            </button>
+            @if (reorderDirty() && !savingOrder()) {
+              <span class="text-caption text-fg-muted">Order changed — not yet saved.</span>
+            }
+          </div>
 
           <div
             cdkDropList
@@ -235,6 +250,8 @@ export class AdminMediaEditor {
   protected readonly media = signal<Media[]>([]);
   protected readonly pending = signal<Pending[]>([]);
   protected readonly error = signal('');
+  protected readonly reorderDirty = signal(false);
+  protected readonly savingOrder = signal(false);
 
   constructor() {
     /**
@@ -262,6 +279,7 @@ export class AdminMediaEditor {
 
   private async load(slug: string): Promise<void> {
     this.media.set(await this.admin.list<Media>(mediaPath(slug), 'order'));
+    this.reorderDirty.set(false);
   }
 
   protected async openUpload(): Promise<void> {
@@ -363,28 +381,35 @@ export class AdminMediaEditor {
   }
 
   /**
-   * Drag-and-drop reorder (05 §3.4 / Muhammed's manual-testing report). One
-   * drop recomputes `order` for every item and writes them all at once — a
-   * single deliberate action, unlike the old per-keystroke number field it
-   * replaces, which auto-saved on every keypress with nothing on screen to
-   * confirm it and a theoretical risk of out-of-order writes racing.
+   * Drag-and-drop reorder (05 §3.4 / Muhammed's manual-testing report) —
+   * rearranging is in-memory only. Unlike alt/caption/featured, reordering is
+   * a multi-step task (several drags before the arrangement is actually
+   * right), so committing a write on every single drop would mean every
+   * intermediate arrangement hits Firestore, not just the final one. Nothing
+   * is written until `saveOrder()` runs.
    */
-  protected async onReorder(event: CdkDragDrop<Media[]>): Promise<void> {
+  protected onReorder(event: CdkDragDrop<Media[]>): void {
     if (event.previousIndex === event.currentIndex) return;
 
-    const previous = this.media();
-    const reordered = [...previous];
+    const reordered = [...this.media()];
     moveItemInArray(reordered, event.previousIndex, event.currentIndex);
-    const withOrder = reordered.map((m, i) => ({ ...m, order: i }));
+    this.media.set(reordered.map((m, i) => ({ ...m, order: i })));
+    this.reorderDirty.set(true);
+  }
 
-    this.media.set(withOrder);
+  /** Commits every item's current `order` in one batch write. */
+  protected async saveOrder(): Promise<void> {
+    this.savingOrder.set(true);
+    this.error.set('');
     try {
       await Promise.all(
-        withOrder.map((m) => this.admin.saveAtPath(mediaPath(this.slug()), m.id, m)),
+        this.media().map((m) => this.admin.saveAtPath(mediaPath(this.slug()), m.id, m)),
       );
+      this.reorderDirty.set(false);
     } catch (e) {
-      this.media.set(previous);
       this.error.set(e instanceof Error ? e.message : 'Could not save the new order. Try again.');
+    } finally {
+      this.savingOrder.set(false);
     }
   }
 
