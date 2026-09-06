@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { cloudinaryConfig, projectFolder } from './cloudinary.config';
+import { cloudinaryConfig } from './cloudinary.config';
 
 /** What Cloudinary's widget returns that we actually store (04 §6). */
 export interface WidgetUploadResult {
@@ -56,11 +56,21 @@ export class CloudinaryWidgetService {
   private scriptPromise: Promise<void> | null = null;
 
   /**
-   * Opens the widget for a project's folder. `onUpload` fires once per file —
-   * the widget supports multi-file selection (`multiple: true`), matching the
-   * old drop-zone's behaviour.
+   * Opens the widget targeting an arbitrary Cloudinary folder — a project's
+   * (`projectFolder(slug)`) or any other, e.g. the Profile singleton's own
+   * hero-photo folder. `onUpload` fires once per file — the widget supports
+   * multi-file selection (`multiple: true`), matching the old drop-zone's
+   * behaviour.
+   *
+   * `croppingAspectRatio` defaults to 16/9 (project screenshots, mostly
+   * laptop screens); pass `null` for a free-form crop, e.g. the Hero photo,
+   * which is full-bleed background rather than a fixed-ratio card image.
    */
-  async openWidget(slug: string, onUpload: (result: WidgetUploadResult) => void): Promise<void> {
+  async openWidget(
+    folder: string,
+    onUpload: (result: WidgetUploadResult) => void,
+    options?: { readonly croppingAspectRatio?: number | null; readonly multiple?: boolean },
+  ): Promise<void> {
     await this.ensureScript();
     const cloudinary = window.cloudinary;
     if (!cloudinary) throw new Error('Cloudinary widget failed to load.');
@@ -69,11 +79,11 @@ export class CloudinaryWidgetService {
       {
         cloudName: cloudinaryConfig.cloudName,
         uploadPreset: cloudinaryConfig.uploadPreset,
-        folder: projectFolder(slug),
-        multiple: true,
+        folder,
+        multiple: options?.multiple ?? true,
         sources: ['local'],
         cropping: true,
-        croppingAspectRatio: 16 / 9,
+        croppingAspectRatio: options?.croppingAspectRatio === null ? undefined : (options?.croppingAspectRatio ?? 16 / 9),
         clientAllowedFormats: ['image'],
       },
       (error, result) => {

@@ -54,6 +54,15 @@
   --text-display-3--letter-spacing: -0.008em;
   --text-display-3--font-weight: 600;
 
+  /* Oversized display size — the visual-identity redesign's rotating Hero
+     title and featured project names (2026-09-06). Bigger than display-1 and
+     deliberately condensed (paired with the `display-condensed` utility
+     below), never used for anything but a short name/word. */
+  --text-display-hero: clamp(3.5rem, 11vw, 9rem);
+  --text-display-hero--line-height: 0.86;
+  --text-display-hero--letter-spacing: -0.03em;
+  --text-display-hero--font-weight: 700;
+
   /* Body — long-form reading (Story page, case-study prose) */
   --text-body-lg: 1.125rem;
   --text-body-lg--line-height: 1.7;
@@ -77,6 +86,9 @@
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --duration-fast: 150ms;
   --duration-base: 250ms;
+  /* Hero rotating-title crossfade (visual-identity redesign, 2026-09-06) —
+     the one deliberately slower transition on the site, reserved for that. */
+  --duration-slow: 420ms;
 }
 
 /* ---------------------------------------------------------------------------
@@ -159,6 +171,80 @@
    a grey that is not in the palette (07 §2: nothing added, nothing dropped). */
 @utility hairline {
   border: 1px solid --alpha(var(--color-fg) / 12%);
+}
+
+/* ---------------------------------------------------------------------------
+   Photo-strip visual system — Hero (with a real photo), Work Index and Home
+   card cover images, and the Case Study header (visual-identity redesign,
+   2026-09-06). Every color here is one of the existing @theme tokens above —
+   no new hex, per 07 §2's "nothing added, nothing dropped".
+--------------------------------------------------------------------------- */
+
+/* Oversized display type, horizontally condensed — pairs with
+   --text-display-hero, but usable anywhere a short name/word gets the same
+   treatment (a project name at text-display-2/3 sizes, say). Never applied
+   to long-form copy — condensing a full sentence reads as broken, not bold. */
+@utility display-condensed {
+  transform: scaleX(0.93);
+  transform-origin: left center;
+}
+
+/* Film grain — the same SVG feTurbulence noise the design reference uses,
+   inlined as a data URI so it costs one CSS rule, not a network request. */
+@utility photo-strip-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22220%22 height=%22220%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.82%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22220%22 height=%22220%22 filter=%22url(%23n)%22/%3E%3C/svg%3E');
+}
+
+/* Blurred radial glow, corner-anchored by whoever uses it (position/inset are
+   the caller's job — this utility only supplies the look). Built from
+   --color-action/--color-action-hover, the same accent used everywhere else
+   interactive, not a new orange invented for this one effect. */
+@utility photo-strip-glow {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 9999px;
+  filter: blur(50px);
+  mix-blend-mode: screen;
+  opacity: 0.85;
+  background: radial-gradient(
+    circle at 40% 60%,
+    --alpha(var(--color-action) / 90%) 0%,
+    --alpha(var(--color-action-hover) / 30%) 38%,
+    transparent 68%
+  );
+}
+
+/* The "viewfinder" crop-mark rectangle over a photo/screenshot. Decorative
+   only (pointer-events: none), a photography reference, not a real control. */
+@utility photo-strip-frame {
+  position: absolute;
+  pointer-events: none;
+  border: 1px solid --alpha(var(--color-fg) / 80%);
+}
+
+/* Load-time reveal for the Case Study header (distinct from the scroll-
+   triggered `appReveal` directive in shared/motion — this one plays once on
+   mount, no JS and no scroll position needed). Pure CSS, so it runs whether
+   or not JavaScript loads; the site-wide prefers-reduced-motion rule below
+   already zeroes every animation-duration, so this needs no separate guard. */
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility stagger-in {
+  animation: stagger-in var(--duration-base) var(--ease-out-soft) both;
 }
 
 /* ---------------------------------------------------------------------------

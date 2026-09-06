@@ -605,20 +605,24 @@ Technology choice should follow design requirements, not the other way around.
 
 # 26. Personal Image
 
-A personal portrait is NOT required in the Hero.
+**Superseded decision, locked 2026-09-06**: a personal portrait is now used full-bleed in the Hero, reversing the original "not required" stance below. This came out of a deliberate visual-identity redesign process — Muhammed iterated on multiple Hero treatments built around a real photo of himself, in a high-contrast black-and-white editorial style with a layered typography/viewfinder-frame motif, and confirmed he wanted the result. It's a considered reversal, not a default that crept in. See `04-content-model.md` §2's `heroImage` field for the data-model side.
 
-The visual identity should rely on:
+~~Original rule (superseded):~~
 
-- Typography
-- Content
-- Project media
-- Visual storytelling
-- Layout
-- Motion
-- Numbers
-- Art direction
+~~A personal portrait is NOT required in the Hero.~~
 
-A portrait may be introduced later only if it adds meaningful value.
+~~The visual identity should rely on:~~
+
+~~- Typography~~
+~~- Content~~
+~~- Project media~~
+~~- Visual storytelling~~
+~~- Layout~~
+~~- Motion~~
+~~- Numbers~~
+~~- Art direction~~
+
+~~A portrait may be introduced later only if it adds meaningful value.~~
 
 ---
 

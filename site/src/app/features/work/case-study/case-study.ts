@@ -78,51 +78,86 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
       </section>
     } @else {
       <article class="container-content py-20">
-        <!-- 1. SNAPSHOT (03 §2.1) -->
-        <header>
-          <ui-eyebrow>{{ p.tier }} project</ui-eyebrow>
-          <h1 class="mt-4 text-display-1 font-display text-fg">{{ p.name }}</h1>
-          <p class="mt-6 text-body-lg text-fg-muted">{{ p.tagline }}</p>
+        <!-- 1. SNAPSHOT (03 §2.1). Photo-strip treatment per the
+             visual-identity redesign (2026-09-06): glow + grain behind the
+             text, an oversized condensed name, and — when the project has a
+             cover screenshot — a side panel with the viewfinder crop-mark
+             frame. Text reveals in three steps on mount (pure CSS, no JS —
+             see the stagger-in utility in styles.css), distinct from the
+             scroll-triggered appReveal directive used further down this page. -->
+        <header class="relative overflow-visible">
+          <div class="photo-strip-glow absolute -bottom-64 -right-52 -z-10 h-175 w-205"></div>
+          <div class="photo-strip-grain -z-10"></div>
 
-          <dl class="mt-10 flex flex-wrap gap-x-10 gap-y-4">
-            @if (p.role) {
-              <div>
-                <dt class="font-mono text-label text-fg-muted uppercase">Role</dt>
-                <dd class="mt-1 text-body text-fg">{{ p.role }}</dd>
+          <div class="grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+            <div>
+              <div class="stagger-in" style="animation-delay:0ms">
+                <ui-eyebrow>{{ p.tier }} project</ui-eyebrow>
+                <h1 class="display-condensed mt-4 text-display-hero font-display text-fg">
+                  {{ p.name }}
+                </h1>
+                <p class="mt-6 max-w-md text-body-lg text-fg-muted">{{ p.tagline }}</p>
               </div>
-            }
-            @if (p.timeframe) {
-              <div>
-                <dt class="font-mono text-label text-fg-muted uppercase">Timeframe</dt>
-                <dd class="mt-1 text-body text-fg">{{ p.timeframe }}</dd>
+
+              <div class="stagger-in" style="animation-delay:120ms">
+                <dl class="mt-10 flex flex-wrap gap-x-10 gap-y-4">
+                  @if (p.role) {
+                    <div>
+                      <dt class="font-mono text-label text-fg-muted uppercase">Role</dt>
+                      <dd class="mt-1 text-body text-fg">{{ p.role }}</dd>
+                    </div>
+                  }
+                  @if (p.timeframe) {
+                    <div>
+                      <dt class="font-mono text-label text-fg-muted uppercase">Timeframe</dt>
+                      <dd class="mt-1 text-body text-fg">{{ p.timeframe }}</dd>
+                    </div>
+                  }
+                </dl>
+
+                <ul class="mt-8 flex flex-wrap gap-2">
+                  @for (tech of p.stack; track tech; let i = $index) {
+                    <li><ui-tag [icon]="tagIcon(i)">{{ tech }}</ui-tag></li>
+                  }
+                </ul>
+
+                <!-- Links render only when they exist. Cyber50 has neither,
+                     because its main repo was never provided (10 §2) — an
+                     absent link is honest, a guessed one is a broken promise. -->
+                @if (p.liveUrl || p.githubUrl) {
+                  <div class="mt-8 flex flex-wrap items-center gap-4">
+                    @if (p.liveUrl) {
+                      <a uiButton [href]="p.liveUrl" target="_blank" rel="noopener">
+                        <ui-status-dot />
+                        Live demo
+                      </a>
+                    }
+                    @if (p.githubUrl) {
+                      <a uiButton variant="secondary" [href]="p.githubUrl" target="_blank" rel="noopener">
+                        Source
+                      </a>
+                    }
+                  </div>
+                }
               </div>
-            }
-          </dl>
-
-          <ul class="mt-8 flex flex-wrap gap-2">
-            @for (tech of p.stack; track tech) {
-              <li><ui-tag>{{ tech }}</ui-tag></li>
-            }
-          </ul>
-
-          <!-- Links render only when they exist. Cyber50 has neither, because
-               its main repo was never provided (10 §2) — an absent link is
-               honest, a guessed one is a broken promise. -->
-          @if (p.liveUrl || p.githubUrl) {
-            <div class="mt-8 flex flex-wrap items-center gap-4">
-              @if (p.liveUrl) {
-                <a uiButton [href]="p.liveUrl" target="_blank" rel="noopener">
-                  <ui-status-dot />
-                  Live demo
-                </a>
-              }
-              @if (p.githubUrl) {
-                <a uiButton variant="secondary" [href]="p.githubUrl" target="_blank" rel="noopener">
-                  Source
-                </a>
-              }
             </div>
-          }
+
+            @if (headerImage(); as image) {
+              <div class="stagger-in relative" style="animation-delay:240ms">
+                <div
+                  class="photo-strip-frame absolute -top-4 -right-4 hidden h-[calc(100%+2rem)] w-3/5 lg:block"
+                  aria-hidden="true"
+                ></div>
+                <img
+                  [src]="headerImageSrc(image.publicId)"
+                  [alt]="image.alt"
+                  loading="lazy"
+                  decoding="async"
+                  class="relative w-full rounded-md object-cover grayscale contrast-125"
+                />
+              </div>
+            }
+          </div>
         </header>
 
         <!-- Media (04 §6). Nothing is seeded yet, so this renders nothing —
@@ -212,6 +247,28 @@ export class CaseStudy implements OnInit {
     return text.split('\n\n');
   }
 
+  /**
+   * The header's screenshot panel (visual-identity redesign, 2026-09-06) —
+   * same "featured, else first" choice the OG image in `ngOnInit` already
+   * makes, computed once and reused by both rather than duplicated.
+   */
+  protected readonly headerImage = computed(
+    () => this.media().find((m) => m.isFeatured) ?? this.media()[0] ?? null,
+  );
+
+  protected headerImageSrc(publicId: string): string {
+    return imageUrl(publicId, 900);
+  }
+
+  /**
+   * Stack is free-text (04 §3) with no real per-technology meaning to assign
+   * an icon shape to, so the three shapes just cycle by position — the same
+   * purely-rhythmic alternation the design reference itself uses.
+   */
+  protected tagIcon(index: number): 'diamond' | 'square' | 'circle' {
+    return (['diamond', 'square', 'circle'] as const)[index % 3];
+  }
+
   private readonly seo = inject(SeoService);
 
   /**
@@ -244,7 +301,7 @@ export class CaseStudy implements OnInit {
      * rather than a placeholder when a project has no media (04 §6) — a broken
      * preview is worse than a text card.
      */
-    const featured = this.media().find((m) => m.isFeatured) ?? this.media()[0];
+    const featured = this.headerImage();
 
     this.seo.apply({
       path: `/work/${p.slug}`,

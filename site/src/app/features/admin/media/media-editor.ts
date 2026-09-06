@@ -9,7 +9,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-import { imageUrl } from '../../../core/cloudinary/cloudinary.config';
+import { imageUrl, projectFolder } from '../../../core/cloudinary/cloudinary.config';
 import { CloudinaryWidgetService } from '../../../core/cloudinary/upload-widget.service';
 import { Media } from '../../../core/models';
 import { AdminService } from '../../../core/services/admin.service';
@@ -285,7 +285,7 @@ export class AdminMediaEditor {
   protected async openUpload(): Promise<void> {
     this.error.set('');
     try {
-      await this.widget.openWidget(this.slug(), (result) => {
+      await this.widget.openWidget(projectFolder(this.slug()), (result) => {
         /**
          * Lands in `pending`, not in Firestore. The record is only created once
          * alt text exists — 04 §6 makes it required, and this is where that is

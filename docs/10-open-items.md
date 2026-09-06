@@ -283,6 +283,29 @@ The `4k` batch was tested live and produced a second, smaller report — three g
 
 All three verified together: `tsc --noEmit` and a full `ng build` clean; SSR-fetched a real case study with seeded media (`scholarship-operation-dashboard`) and confirmed the rendered HTML has the masonry grid, real Cloudinary thumbnails at the capped width, and a closed (no `open` attribute) `<dialog>` in the initial response; SSR-fetched `/admin/projects/.../media` to confirm the CDK-based editor doesn't crash the server render; Home and `/work` re-confirmed still rendering cover images correctly, unaffected.
 
+## 4m. Visual-identity redesign, phase 1 (2026-09-06)
+
+Muhammed brought a Claude Design reference (`Portfolio Visual System.dc.html`, exported to `design-reference/` after `/design-login` wasn't available in this environment) as a visual/motion reference only — a photo-strip treatment (desaturated photo, blurred orange glow, film grain, a photography "viewfinder" crop-mark, oversized condensed display type, mono all-caps micro-labels) applied consistently across several pages, not a single mockup to copy literally. Scope was reported and approved before any code was touched, per two real blockers surfaced along the way rather than silently resolved:
+
+- **The Hero's treatment is fundamentally a full-bleed personal photo** — direct conflict with `00` §26's locked "no portrait" rule. Resolved by Muhammed superseding §26 (documented there, not overridden silently) and adding `Profile.heroImage` (`04` §2) — a Cloudinary reference, same shape as `Media`.
+- **The rotating title needs a field that didn't exist.** Resolved by adding `Profile.heroTitles: string[]` (`04` §2) — `["Software Engineer", "Frontend Specialist", "Builder"]`, a decision already made earlier in the project, separate from and unaffected by the fixed `heroStatement`/`heroSubline`.
+
+Both new fields are optional in the `Profile` type on purpose — a live Firestore document written before this change doesn't have them yet, and `Home` gates the entire new Hero form on both being present, rendering the original simple Hero otherwise. No "loading" state either way: whichever form applies is decided synchronously from the resolved Profile, so SSR is unaffected.
+
+**Shipped:**
+- New design tokens (`--text-display-hero`, `--duration-slow`) and shared CSS utilities (`display-condensed`, `photo-strip-grain`, `photo-strip-glow`, `photo-strip-frame`, `stagger-in`) in `styles.css` — every color used is an existing `@theme` token, no new hex (`07` §2).
+- `UiTag` gained an optional `icon` input (diamond/square/circle outline) — off by default, so every existing call site (About's Experience tags, etc.) is unaffected. Stack is free-text (`04` §3) with no real per-technology meaning to assign a shape to, so tags cycle the three shapes by position rather than inventing a fake per-tech mapping.
+- `UiCard` gained an optional `accent` input (orange-tinted border) for the featured-project treatment — a real input rather than a class bolted on from outside, since the component already owns its border color as one computed string.
+- `Home`: the Hero now has two real forms (photo + rotating title, or the original simple form), gated on `heroImage`/`heroTitles` both being set; Featured Work cards get desaturated cover images and icon tags.
+- `WorkIndex`: glow + grain behind the whole page, desaturated cover images, the featured lead card gets `accent`, oversized condensed card names, icon tags.
+- `CaseStudy`: the header (Snapshot block only — the rest of the page is unchanged) gets glow + grain, an oversized condensed project name, the cover screenshot in a side panel with the viewfinder frame, and a pure-CSS three-step load reveal (`stagger-in`) — distinct from the scroll-triggered `appReveal` directive used everywhere else on the page.
+- `CloudinaryWidgetService.openWidget()` generalized to take a folder string instead of a project slug (it's no longer project-specific now that the Profile editor uses it too), and `AdminProfileEditor` gained real upload UI for `heroImage` (free-crop, not the 16:9 project-screenshot default) and a comma-separated `heroTitles` field, matching the existing `stackText`/`techText` form-only-field pattern.
+- **Explicitly left unchanged, matching what was approved**: About, Beyond Code, Contact, the admin dashboard's own visual system, header/footer/nav, disclosure blocks, and form fields — none of these appear in the reference and none got a treatment invented for them.
+
+**Bundle impact — confirmed, not estimated**: public initial bundle grew 346.53 kB → 352.39 kB raw (100.25 kB → 101.46 kB estimated transfer), +1.21 kB transfer sitewide. `Home`'s own lazy chunk grew from ~6.4 kB to 9.81 kB raw for the rotating-title timer and scroll-linked parallax, both plain component logic — no new dependency anywhere in this batch. Grain/glow/frame are pure CSS (one inline SVG data-URI, gradients, filters); the case-study load-reveal is a CSS `@keyframes` animation, not JavaScript.
+
+**Still pending, not a bug**: `heroImage`/`heroTitles` are not seeded yet — Muhammed uploads the real photo and enters the three rotating titles through `/admin/profile` himself. Until then the Hero correctly renders in its original simple form.
+
 Safe to leave until after the site is live:
 
 - [ ] `SocialVideo` entity (`04` §8) — only needed if/when a curated video archive is ready; the whole site works without it

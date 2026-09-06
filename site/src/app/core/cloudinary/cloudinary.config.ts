@@ -49,7 +49,14 @@ export const cloudinaryConfig = {
  * Cloudinary can be derived from its project rather than looked up.
  */
 export function projectFolder(slug: string): string {
-  return `${cloudinaryConfig.rootFolder}/projects/${slug}`; 
+  return `${cloudinaryConfig.rootFolder}/projects/${slug}`;
+}
+
+/** Folder for the Profile singleton's own assets (the Hero photo, added
+ *  2026-09-06) — not per-project, so it sits alongside `projects/`, not
+ *  inside it. */
+export function profileFolder(): string {
+  return `${cloudinaryConfig.rootFolder}/profile`;
 }
 
 /** The unsigned upload endpoint for images (06 §3.2). */

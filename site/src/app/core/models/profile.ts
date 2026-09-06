@@ -1,6 +1,18 @@
 import { Editable } from './content-status';
 
 /**
+ * A real personal photo used full-bleed in the Hero (04 §2's `heroImage`,
+ * added 2026-09-06 — reverses brief §26's original "no portrait" rule; see
+ * §26 itself for why). Same shape as `Media` (§6): a Cloudinary reference,
+ * not the file itself.
+ */
+export interface HeroImage {
+  readonly url: string;
+  readonly publicId: string;
+  readonly alt: string;
+}
+
+/**
  * Profile — singleton (04 §2). Edited, never created or deleted.
  *
  * NOTE ON THE MISSING AVAILABILITY FIELD (10 §1):
@@ -32,6 +44,24 @@ export interface Profile extends Editable {
    * renders on the headline alone (04 §1.2).
    */
   readonly heroSubline?: string;
+  /**
+   * Rotating role titles cycled in the Hero's oversized display type (04 §2,
+   * added 2026-09-06 for the visual-identity redesign) — separate from
+   * `heroStatement`, which stays fixed and unaffected by the rotation.
+   *
+   * Optional, and treated as absent-or-empty the same way: until this is
+   * actually seeded, the Hero renders in its simpler, non-rotating form
+   * rather than assuming a field a fresh Firestore read may not have yet
+   * (the exact hydrate() lesson from the admin dashboard's `publishedAt` bug
+   * — a field new to the schema is not retroactively present on old reads).
+   */
+  readonly heroTitles?: readonly string[];
+  /**
+   * A real photo, full-bleed in the Hero (04 §2, added 2026-09-06). Optional
+   * so the Hero still renders — in its simpler form — before one is uploaded
+   * (04 §1.2: an unset field must never break a page).
+   */
+  readonly heroImage?: HeroImage;
   readonly positioning: string;
   /** Short bio for meta tags and link previews. */
   readonly bioShort: string;

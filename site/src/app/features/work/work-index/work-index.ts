@@ -18,103 +18,114 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
  * a click when there is not.
  *
  * The featured project is visually distinguished at the top (02 §5, brief §15)
- * — by size and span, not by colour, since orange is reserved for interactive
- * elements (07 §2, Option A).
+ * — by size and span, and now (visual-identity redesign, 2026-09-06) by an
+ * orange-tinted border (`ui-card`'s `accent` input) and oversized condensed
+ * type on its name — never by fill colour, since orange stays reserved for
+ * interactive elements (07 §2, Option A); the tint is on a border, the same
+ * place focus rings and control edges already use it.
+ *
+ * Cover images are desaturated (grayscale + contrast) per the same redesign —
+ * a deliberate, consistent photo treatment, not a missing-color bug.
  */
 @Component({
   selector: 'app-work-index',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RevealDirective, UiCard, UiEyebrow, UiTag],
   template: `
-    <section class="container-wide py-20">
-      <ui-eyebrow>Work</ui-eyebrow>
+    <section class="container-wide relative overflow-hidden py-20">
+      <div class="photo-strip-glow absolute -top-56 -right-64 h-160 w-190"></div>
+      <div class="photo-strip-grain"></div>
 
-      <!-- 02 §5: "intro line reinforcing positioning (not a repeat of the Hero)".
-           This talks about the set of projects; the Hero talks about Muhammed. -->
-      <h1 class="mt-4 max-w-3xl text-display-1 font-display text-fg">
-        Five projects, each built to fix something specific.
-      </h1>
+      <div class="relative">
+        <ui-eyebrow>Work</ui-eyebrow>
 
-      @if (featured(); as lead) {
-        <div class="mt-14">
-          <ui-card [interactive]="true">
-            @if (cover(lead.slug); as image) {
-              <img
-                [src]="image.url"
-                [alt]="image.alt"
-                loading="lazy"
-                decoding="async"
-                class="mb-6 aspect-video w-full rounded-sm object-cover"
-              />
-            }
-            <p class="font-mono text-label text-fg-muted uppercase">Featured</p>
+        <!-- 02 §5: "intro line reinforcing positioning (not a repeat of the Hero)".
+             This talks about the set of projects; the Hero talks about Muhammed. -->
+        <h1 class="mt-4 max-w-3xl text-display-1 font-display text-fg">
+          Five projects, each built to fix something specific.
+        </h1>
 
-            <h2 class="mt-4 text-display-2 font-display text-fg">
-              <a
-                [routerLink]="['/work', lead.slug]"
-                class="text-fg no-underline hover:text-action"
-                >{{ lead.name }}</a
-              >
-            </h2>
-
-            <p class="mt-4 max-w-2xl text-body-lg text-fg-muted">{{ lead.tagline }}</p>
-
-            <dl class="mt-6 flex flex-wrap gap-x-10 gap-y-2">
-              @if (lead.role) {
-                <div>
-                  <dt class="font-mono text-label text-fg-muted uppercase">Role</dt>
-                  <dd class="mt-1 text-caption text-fg">{{ lead.role }}</dd>
-                </div>
-              }
-              @if (lead.timeframe) {
-                <div>
-                  <dt class="font-mono text-label text-fg-muted uppercase">Timeframe</dt>
-                  <dd class="mt-1 text-caption text-fg">{{ lead.timeframe }}</dd>
-                </div>
-              }
-            </dl>
-
-            <ul class="mt-6 flex flex-wrap gap-2">
-              @for (tech of lead.stack; track tech) {
-                <li><ui-tag>{{ tech }}</ui-tag></li>
-              }
-            </ul>
-          </ui-card>
-        </div>
-      }
-
-      @if (rest().length) {
-        <div class="mt-8 grid gap-6 md:grid-cols-2">
-          @for (project of rest(); track project.slug; let i = $index) {
-            <ui-card [interactive]="true" [appReveal]="i">
-              @if (cover(project.slug); as image) {
+        @if (featured(); as lead) {
+          <div class="mt-14">
+            <ui-card [interactive]="true" [accent]="true">
+              @if (cover(lead.slug); as image) {
                 <img
                   [src]="image.url"
                   [alt]="image.alt"
                   loading="lazy"
                   decoding="async"
-                  class="mb-4 aspect-video w-full rounded-sm object-cover"
+                  class="mb-6 aspect-video w-full rounded-sm object-cover grayscale contrast-125"
                 />
               }
-              <h2 class="text-display-3 font-display text-fg">
+              <p class="font-mono text-label text-action uppercase">Featured</p>
+
+              <h2 class="display-condensed mt-4 text-display-1 font-display text-fg">
                 <a
-                  [routerLink]="['/work', project.slug]"
+                  [routerLink]="['/work', lead.slug]"
                   class="text-fg no-underline hover:text-action"
-                  >{{ project.name }}</a
+                  >{{ lead.name }}</a
                 >
               </h2>
 
-              <p class="mt-4 text-body text-fg-muted">{{ project.tagline }}</p>
+              <p class="mt-4 max-w-2xl text-body-lg text-fg-muted">{{ lead.tagline }}</p>
+
+              <dl class="mt-6 flex flex-wrap gap-x-10 gap-y-2">
+                @if (lead.role) {
+                  <div>
+                    <dt class="font-mono text-label text-fg-muted uppercase">Role</dt>
+                    <dd class="mt-1 text-caption text-fg">{{ lead.role }}</dd>
+                  </div>
+                }
+                @if (lead.timeframe) {
+                  <div>
+                    <dt class="font-mono text-label text-fg-muted uppercase">Timeframe</dt>
+                    <dd class="mt-1 text-caption text-fg">{{ lead.timeframe }}</dd>
+                  </div>
+                }
+              </dl>
 
               <ul class="mt-6 flex flex-wrap gap-2">
-                @for (tech of project.stack; track tech) {
-                  <li><ui-tag>{{ tech }}</ui-tag></li>
+                @for (tech of lead.stack; track tech; let i = $index) {
+                  <li><ui-tag [icon]="tagIcon(i)">{{ tech }}</ui-tag></li>
                 }
               </ul>
             </ui-card>
-          }
-        </div>
-      }
+          </div>
+        }
+
+        @if (rest().length) {
+          <div class="mt-8 grid gap-6 md:grid-cols-2">
+            @for (project of rest(); track project.slug; let i = $index) {
+              <ui-card [interactive]="true" [appReveal]="i">
+                @if (cover(project.slug); as image) {
+                  <img
+                    [src]="image.url"
+                    [alt]="image.alt"
+                    loading="lazy"
+                    decoding="async"
+                    class="mb-4 aspect-video w-full rounded-sm object-cover grayscale contrast-125"
+                  />
+                }
+                <h2 class="display-condensed text-display-3 font-display text-fg">
+                  <a
+                    [routerLink]="['/work', project.slug]"
+                    class="text-fg no-underline hover:text-action"
+                    >{{ project.name }}</a
+                  >
+                </h2>
+
+                <p class="mt-4 text-body text-fg-muted">{{ project.tagline }}</p>
+
+                <ul class="mt-6 flex flex-wrap gap-2">
+                  @for (tech of project.stack; track tech; let j = $index) {
+                    <li><ui-tag [icon]="tagIcon(j)">{{ tech }}</ui-tag></li>
+                  }
+                </ul>
+              </ui-card>
+            }
+          </div>
+        }
+      </div>
     </section>
   `,
 })
@@ -152,5 +163,14 @@ export class WorkIndex {
   /** A project's cover image (04 §6's isFeatured), if one has been set. */
   protected cover(slug: string) {
     return this.projects().covers[slug];
+  }
+
+  /**
+   * Stack is free-text (04 §3) with no real per-technology meaning to assign
+   * an icon shape to, so the three shapes just cycle by position — the same
+   * purely-rhythmic alternation the design reference itself uses.
+   */
+  protected tagIcon(index: number): 'diamond' | 'square' | 'circle' {
+    return (['diamond', 'square', 'circle'] as const)[index % 3];
   }
 }

@@ -11,7 +11,7 @@ export type { BusinessVenture, MetricPair } from './business-venture';
 export type { Education, EducationType } from './education';
 export type { Experience } from './experience';
 export type { Media, MediaType } from './media';
-export type { Profile } from './profile';
+export type { HeroImage, Profile } from './profile';
 export type { Project, ProjectTier } from './project';
 export type { ProofPoint } from './proof-point';
 export type { Skill, SkillCategory, SkillLevel } from './skill';

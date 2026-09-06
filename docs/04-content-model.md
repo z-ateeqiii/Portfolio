@@ -26,6 +26,8 @@ Singleton entity — one record, edited not created/deleted.
 | `name` | string | "Muhammed Al-Ateeqi" |
 | `heroStatement` | string | The locked Hero headline — final copy, per `01` §5 |
 | `heroSubline` | string | The locked Hero subline — separate field, not concatenated into `heroStatement`, since headline and subline render in different type roles (display vs body face, per `07` §3). Added when the Hero copy was locked; this row was previously dropped from this doc by mistake during an unrelated edit and is restored here |
+| `heroTitles` | string[] | **Added 2026-09-06.** Rotating role titles cycled in the Hero's oversized display type, per the visual-identity redesign: exactly `["Software Engineer", "Frontend Specialist", "Builder"]`, in that order. Separate from `heroStatement`/`heroSubline`, which stay fixed |
+| `heroImage` | media ref? | **Added 2026-09-06 — reverses the brief §26 "no portrait" rule; see §26 itself for the reasoning.** Cloudinary reference (`secureUrl` + `publicId` + `alt`, same shape as `Media` in §6) for a real personal photo used full-bleed in the Hero. Optional so the Hero still renders cleanly if unset |
 | `positioning` | string | "Software Engineer & Builder" |
 | `bioShort` | string | Used in meta tags, previews |
 | `bioLong` | rich text | Full About/Story narrative content |
