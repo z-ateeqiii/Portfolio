@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -39,8 +39,9 @@ interface Pending {
   alt: string;
   caption: string;
   /** Set when Save image fails, so the failure is visible on THIS card rather
-   *  than silently doing nothing (Phase 8 bug: an unhandled setDoc rejection
-   *  left a saved-looking pending item with no record ever created). */
+   *  than silently doing nothing (found via manual testing: an unhandled
+   *  setDoc rejection left a saved-looking pending item with no record ever
+   *  created). */
   saveError?: string;
   saving?: boolean;
 }
@@ -127,58 +128,93 @@ interface Pending {
         </div>
       }
 
-      <!-- Saved media -->
+      <!-- Saved media (04 §6), as a real grid rather than a stack of full-width
+           rows -- Muhammed's report that images "aren't shown in an organized,
+           clickable grid" once uploaded. Each thumbnail is wrapped in a plain
+           link to the full-size image (no lightbox library needed, consistent
+           with this being a plain, functional tool per 05 §7). -->
       @if (media().length) {
-        <div class="mt-10 max-w-3xl">
+        <div class="mt-10 max-w-5xl">
           <h2 class="font-mono text-label text-fg uppercase">On this project ({{ media().length }})</h2>
-          @for (item of media(); track item.id) {
-            <div class="mt-4 flex gap-4 rounded-md border border-fg/12 p-4">
-              <img [src]="thumb(item.publicId)" [alt]="item.alt" class="size-24 shrink-0 rounded-sm object-cover" />
-              <div class="min-w-0 flex-1 space-y-2">
-                <input
-                  [name]="'a' + item.id"
-                  [ngModel]="item.alt"
-                  (ngModelChange)="patch(item, { alt: $event })"
-                  class="w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-caption text-fg"
-                />
-                <input
-                  [name]="'c' + item.id"
-                  [ngModel]="item.caption ?? ''"
-                  (ngModelChange)="patch(item, { caption: $event })"
-                  placeholder="Caption"
-                  class="w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-caption text-fg"
-                />
-                <div class="flex flex-wrap items-center gap-4">
-                  <label class="flex items-center gap-2 text-caption text-fg-muted">
+          <p class="mt-1 text-caption text-fg-muted">
+            Click a thumbnail to open it full-size. The cover image is what shows for this
+            project on /work and its case study.
+          </p>
+
+          <div class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            @for (item of media(); track item.id) {
+              <div
+                class="rounded-md border p-3"
+                [class.border-action]="item.isFeatured"
+                [class.border-fg\/12]="!item.isFeatured"
+              >
+                <a [href]="full(item.publicId)" target="_blank" rel="noopener" class="block">
+                  <img
+                    [src]="thumb(item.publicId)"
+                    [alt]="item.alt"
+                    class="aspect-video w-full rounded-sm object-cover"
+                  />
+                </a>
+
+                <!--
+                  The cover-image control (04 §6's isFeatured), made "impossible
+                  to miss" rather than a small unlabeled checkbox buried among
+                  other fields -- matching the bar 05 §3.3 sets for featuredOnHome.
+                -->
+                @if (item.isFeatured) {
+                  <p class="mt-2 font-mono text-label text-action uppercase">Cover image</p>
+                } @else {
+                  <button
+                    type="button"
+                    (click)="setFeatured(item, true)"
+                    class="mt-2 font-mono text-label text-fg-muted uppercase hover:text-action"
+                  >
+                    Set as cover
+                  </button>
+                }
+
+                <label class="mt-2 block">
+                  <span class="font-mono text-label text-fg-muted uppercase">Alt text</span>
+                  <input
+                    [name]="'a' + item.id"
+                    [ngModel]="item.alt"
+                    (ngModelChange)="patch(item, { alt: $event })"
+                    class="mt-1 w-full rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
+                  />
+                </label>
+                <label class="mt-2 block">
+                  <span class="font-mono text-label text-fg-muted uppercase">Caption</span>
+                  <input
+                    [name]="'c' + item.id"
+                    [ngModel]="item.caption ?? ''"
+                    (ngModelChange)="patch(item, { caption: $event })"
+                    placeholder="Optional"
+                    class="mt-1 w-full rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
+                  />
+                </label>
+
+                <div class="mt-2 flex items-center justify-between gap-2">
+                  <label class="flex items-center gap-1 text-caption text-fg-muted">
                     Order
                     <input
                       type="number"
                       [name]="'o' + item.id"
                       [ngModel]="item.order"
                       (ngModelChange)="patch(item, { order: +$event || 0 })"
-                      class="w-20 rounded-sm border border-fg/40 bg-surface px-2 py-1 text-caption text-fg"
+                      class="w-14 rounded-sm border border-fg/40 bg-surface px-1 py-1 text-caption text-fg"
                     />
-                  </label>
-                  <label class="flex items-center gap-2 text-caption text-fg-muted">
-                    <input
-                      type="checkbox"
-                      [name]="'f' + item.id"
-                      [ngModel]="item.isFeatured"
-                      (ngModelChange)="setFeatured(item, $event)"
-                    />
-                    Card image
                   </label>
                   <button
                     type="button"
                     (click)="remove(item)"
-                    class="ml-auto text-caption text-fg-muted hover:text-action"
+                    class="text-caption text-fg-muted hover:text-action"
                   >
                     Remove
                   </button>
                 </div>
               </div>
-            </div>
-          }
+            }
+          </div>
         </div>
       }
     </div>
@@ -198,15 +234,31 @@ export class AdminMediaEditor {
   protected readonly error = signal('');
 
   constructor() {
-    void this.load();
+    /**
+     * effect(), not a constructor-time call -- same root cause and fix as
+     * project-editor.ts: `this.slug()` read inside a constructor always holds
+     * its DEFAULT ('') rather than the router-bound value, because
+     * `withComponentInputBinding()` applies real route params via
+     * `ComponentRef.setInput()` AFTER construction. The symptom here was
+     * `mediaPath('') = 'projects//media'` -- a nonsense path -- so "On this
+     * project" came back empty on cold page load even when media genuinely
+     * existed, regardless of what was actually stored.
+     */
+    effect(() => {
+      void this.load(this.slug());
+    });
   }
 
   protected thumb(publicId: string): string {
     return imageUrl(publicId, 240);
   }
 
-  private async load(): Promise<void> {
-    this.media.set(await this.admin.list<Media>(mediaPath(this.slug()), 'order'));
+  protected full(publicId: string): string {
+    return imageUrl(publicId, 1600);
+  }
+
+  private async load(slug: string): Promise<void> {
+    this.media.set(await this.admin.list<Media>(mediaPath(slug), 'order'));
   }
 
   protected onDrop(event: DragEvent): void {
@@ -285,7 +337,7 @@ export class AdminMediaEditor {
     try {
       await this.persist(record);
       this.pending.set(this.pending().filter((p) => p.publicId !== item.publicId));
-      await this.load();
+      await this.load(this.slug());
     } catch (e) {
       /**
        * Visible per-item, not just logged — a save that fails silently is what

@@ -11,6 +11,7 @@ import {
 } from './core/models';
 import { ContentService } from './core/services';
 import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { ProjectsWithCovers, withCovers } from './core/content/project-covers';
 import { transferred } from './core/services/transfer';
 
 /**
@@ -30,9 +31,14 @@ import { transferred } from './core/services/transfer';
  * which is the one thing 06 §2 is trying to prevent (brief §29).
  */
 
-const featuredProjects: ResolveFn<Project[]> = transferred('featuredProjects', () =>
-  inject(ContentService).featuredProjects(),
-);
+const featuredProjects: ResolveFn<ProjectsWithCovers> = transferred('featuredProjects', () => {
+  // inject() here, synchronously, as the resolver's very first statement --
+  // the same requirement (and the same bug class, if violated) diagnosed and
+  // fixed in the admin editors: inject() is only valid inside the current
+  // synchronous injection-context call stack, not after an await.
+  const content = inject(ContentService);
+  return content.featuredProjects().then((projects) => withCovers(content, projects));
+});
 const proofPoints: ResolveFn<ProofPoint[]> = transferred('proofPoints', () =>
   inject(ContentService).proofPoints(),
 );
@@ -42,9 +48,10 @@ const socialPlatforms: ResolveFn<SocialPlatform[]> = transferred('socialPlatform
 const businessVentures: ResolveFn<BusinessVenture[]> = transferred('businessVentures', () =>
   inject(ContentService).businessVentures(),
 );
-const allProjects: ResolveFn<Project[]> = transferred('projects', () =>
-  inject(ContentService).projects(),
-);
+const allProjects: ResolveFn<ProjectsWithCovers> = transferred('projects', () => {
+  const content = inject(ContentService);
+  return content.projects().then((projects) => withCovers(content, projects));
+});
 const experience: ResolveFn<Experience[]> = transferred('experience', () =>
   inject(ContentService).experience(),
 );

@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import { Project, ProjectTier } from '../../../core/models';
 import { AdminService } from '../../../core/services/admin.service';
@@ -145,6 +146,22 @@ const EMPTY: ProjectForm = {
           <span class="mt-1 block text-caption text-fg-muted">{{ f.hint }}</span>
         </label>
       }
+
+      <!-- Destructive, deliberately separated from the form fields above and
+           from Save/Preview/Publish in the DraftBar (05 §3.3-style clarity —
+           this is not an action to reach by accident). -->
+      @if (isLive() || hasDraft()) {
+        <div class="border-t border-fg/12 pt-6">
+          <button
+            type="button"
+            [disabled]="busy()"
+            (click)="deleteProject()"
+            class="text-caption text-fg-muted hover:text-action disabled:opacity-40"
+          >
+            Delete this project
+          </button>
+        </div>
+      }
     </div>
   `,
 })
@@ -153,6 +170,7 @@ export class AdminProjectEditor {
   readonly slug = input<string>('new');
 
   private readonly admin = inject(AdminService);
+  private readonly router = inject(Router);
 
   private readonly loaded = signal<ProjectForm>(EMPTY);
   protected readonly form = signal<ProjectForm>(EMPTY);
@@ -219,7 +237,32 @@ export class AdminProjectEditor {
   ] as const;
 
   constructor() {
-    void this.load();
+    /**
+     * effect(), not a constructor-time call. Found by Muhammed testing an
+     * existing published project: opening its editor showed "New project" /
+     * "NOT PUBLISHED YET" with every field empty.
+     *
+     * `withComponentInputBinding()` sets router-bound inputs via
+     * `ComponentRef.setInput()` AFTER the component is constructed — confirmed
+     * by reading the installed Angular Router source
+     * (`RoutedComponentInputBinder.subscribeToRouteData`), which runs from the
+     * outlet's activation sequence, strictly after `createComponent()` returns.
+     * So `this.slug()` read synchronously in a constructor always held its
+     * DEFAULT value ('new'), never the real route param — `load()` saw
+     * `slug === 'new'`, returned immediately, and the form stayed at `EMPTY`
+     * (whose `order: 99` is exactly the "order defaulting to 99" symptom).
+     *
+     * `effect()` runs for the first time AFTER construction, once `setInput()`
+     * has already applied the real value, and re-runs whenever `slug()`
+     * changes — which also fixes a second bug this shared: Angular reuses this
+     * component instance when navigating between two different projects'
+     * editors (e.g. clicking "New project" while already editing one), and a
+     * constructor never runs again on reuse, so the OLD project's data would
+     * otherwise persist onto the next slug indefinitely.
+     */
+    effect(() => {
+      void this.load(this.slug());
+    });
   }
 
   protected text(key: string): string {
@@ -232,9 +275,14 @@ export class AdminProjectEditor {
     this.form.set({ ...this.form(), [key]: value });
   }
 
-  private async load(): Promise<void> {
-    const slug = this.slug();
-    if (slug === 'new') return;
+  private async load(slug: string): Promise<void> {
+    if (slug === 'new') {
+      this.isLive.set(false);
+      this.hasDraft.set(false);
+      this.draftedAt.set(null);
+      this.reset(EMPTY);
+      return;
+    }
 
     const live = await this.admin.get<Project>('projects', slug);
     this.isLive.set(live !== null);
@@ -247,9 +295,13 @@ export class AdminProjectEditor {
       return;
     }
 
+    this.hasDraft.set(false);
+    this.draftedAt.set(null);
     if (live) {
       const { status: _s, updatedAt: _u, publishedAt: _p, stack, ...rest } = live;
       this.reset({ ...EMPTY, ...rest, stackText: (stack ?? []).join(', ') });
+    } else {
+      this.reset(EMPTY);
     }
   }
 
@@ -298,9 +350,26 @@ export class AdminProjectEditor {
   protected async discard(): Promise<void> {
     await this.run(async () => {
       await this.admin.discardDraft('projects', this.form().slug);
-      this.hasDraft.set(false);
-      this.draftedAt.set(null);
-      await this.load();
+      await this.load(this.slug());
+    });
+  }
+
+  /**
+   * Deletes the project entirely — live document, any pending draft, and its
+   * media (05 §3.3's counterpart to the list screen's own delete action; see
+   * projects-list.ts for the same operation there). Only shown once there is
+   * something to delete (isLive() or hasDraft()) — a brand-new, never-saved
+   * 'new' screen has nothing to remove.
+   */
+  protected async deleteProject(): Promise<void> {
+    const form = this.form();
+    const label = form.name || form.slug;
+    if (!confirm(`Delete "${label}"? This removes it — and its images — from the site immediately. This cannot be undone.`)) {
+      return;
+    }
+    await this.run(async () => {
+      await this.admin.deleteProject(form.slug || this.slug());
+      await this.router.navigateByUrl('/admin/projects');
     });
   }
 

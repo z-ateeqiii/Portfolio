@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
 import { Location } from '@angular/common';
 
 import { Profile, Project } from '../../../core/models';
@@ -81,7 +81,18 @@ export class AdminPreview {
   protected readonly profile = signal<Profile | null>(null);
 
   constructor() {
-    void this.load();
+    /**
+     * effect(), not a constructor-time call -- same root cause and fix as
+     * project-editor.ts and media-editor.ts: `this.entity()`/`this.id()` read
+     * inside a constructor always held their DEFAULTS ('projects' / '') rather
+     * than the router-bound values, since `withComponentInputBinding()` applies
+     * real route params via `ComponentRef.setInput()` AFTER construction. Here
+     * that meant every preview looked up a draft keyed by an empty id, so
+     * "No draft saved for this record yet" could show even when one existed.
+     */
+    effect(() => {
+      void this.load(this.entity(), this.id());
+    });
   }
 
   protected back(): void {
@@ -92,9 +103,20 @@ export class AdminPreview {
     return this.profile()?.bioLong.split('\n\n') ?? [];
   }
 
-  private async load(): Promise<void> {
-    const entity = this.entity() === 'profile' ? 'profile' : 'projects';
-    const draft = await this.admin.getDraft<Record<string, unknown>>(entity, this.id());
+  private async load(entityParam: string, id: string): Promise<void> {
+    /**
+     * Reset on every run, not just the first -- this component instance is
+     * reused if the admin previews one draft, goes back, and previews a
+     * different one, and without this a stale result from the PREVIOUS
+     * target could stay on screen while the new fetch is in flight.
+     */
+    this.loading.set(true);
+    this.found.set(false);
+    this.project.set(null);
+    this.profile.set(null);
+
+    const entity = entityParam === 'profile' ? 'profile' : 'projects';
+    const draft = await this.admin.getDraft<Record<string, unknown>>(entity, id);
 
     if (draft) {
       this.found.set(true);

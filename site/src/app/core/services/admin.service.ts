@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '../firebase/firebase';
+import { mediaPath } from './firestore-collection';
 
 /**
  * The Draft → Preview → Publish state machine (05 §2), and every admin write.
@@ -265,5 +266,32 @@ export class AdminService {
     const store = await db();
     if (!store) throw new Error('Firebase is not configured.');
     await deleteDoc(doc(store, path, docId));
+  }
+
+  /**
+   * Deletes a project entirely: its media, the live document, and any
+   * lingering draft.
+   *
+   * Firestore never cascade-deletes subcollections — `media` at
+   * `projects/{slug}/media` (04 §6) is a genuinely separate collection from
+   * its parent doc, so removing only the parent would leave orphaned media
+   * documents behind. Harmless publicly (nothing can reach them without the
+   * parent, which no longer exists), but Firestore clutter with no purpose,
+   * so this cleans it up rather than leaving it. The underlying Cloudinary
+   * ASSETS stay orphaned regardless — that gap is already accepted at this
+   * project's scale (04 §6) — this only handles the Firestore side, which
+   * costs nothing extra to do properly while already deleting the project.
+   *
+   * Works for both a live, published project and a draft-only one that was
+   * never published: `remove('projects', slug)` on a document that does not
+   * exist is a harmless no-op in Firestore, so the same method covers the
+   * "unpublished drafts" row in the projects list too.
+   */
+  async deleteProject(slug: string): Promise<void> {
+    const media = await this.list<{ id: string }>(mediaPath(slug));
+    await Promise.all(media.map((m) => this.remove(mediaPath(slug), m.id)));
+
+    await this.remove('projects', slug);
+    await this.discardDraft('projects', slug).catch(() => undefined);
   }
 }

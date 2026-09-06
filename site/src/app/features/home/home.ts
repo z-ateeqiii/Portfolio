@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import type { ProjectsWithCovers } from '../../core/content/project-covers';
 import { COPY, PROCESS } from '../../core/content/site-copy';
-import { Project, ProofPoint } from '../../core/models';
+import { ProofPoint } from '../../core/models';
 import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
@@ -64,14 +65,28 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     }
 
     <!-- 3. Featured Work (02 §4.3) — leads with Scholarship, per brief §15. -->
-    @if (featured().length) {
+    @if (featured().projects.length) {
       <section appReveal class="container-wide py-16">
         <ui-eyebrow index="01">Featured Work</ui-eyebrow>
         <h2 class="mt-4 max-w-2xl text-display-2 font-display text-fg">{{ copy.featuredWork }}</h2>
 
         <div class="mt-10 grid gap-6 md:grid-cols-2">
-          @for (project of featured(); track project.slug) {
+          @for (project of featured().projects; track project.slug) {
             <ui-card [interactive]="true">
+              <!--
+                Cover image (04 §6's isFeatured), rendered only when a project
+                has one — a text-only card is the existing, already-correct
+                fallback (brief §32: missing media never blocks a page).
+              -->
+              @if (featured().covers[project.slug]; as cover) {
+                <img
+                  [src]="cover.url"
+                  [alt]="cover.alt"
+                  loading="lazy"
+                  decoding="async"
+                  class="mb-4 aspect-video w-full rounded-sm object-cover"
+                />
+              }
               <div class="flex items-baseline justify-between gap-4">
                 <h3 class="text-display-3 font-display text-fg">
                   <a
@@ -169,7 +184,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 })
 export class Home implements OnInit {
   /** Resolved per-route (see app.routes.ts). */
-  readonly featured = input<Project[]>([]);
+  readonly featured = input<ProjectsWithCovers>({ projects: [], covers: {} });
   readonly proofPoints = input<ProofPoint[]>([]);
 
   /** Shared across every route, so it is read from the store, not re-fetched. */

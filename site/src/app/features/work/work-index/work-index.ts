@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { Project } from '../../../core/models';
+import type { ProjectsWithCovers } from '../../../core/content/project-covers';
 import { SeoService } from '../../../core/seo/seo.service';
 import { RevealDirective } from '../../../shared/motion/reveal.directive';
 import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
@@ -38,6 +38,15 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
       @if (featured(); as lead) {
         <div class="mt-14">
           <ui-card [interactive]="true">
+            @if (cover(lead.slug); as image) {
+              <img
+                [src]="image.url"
+                [alt]="image.alt"
+                loading="lazy"
+                decoding="async"
+                class="mb-6 aspect-video w-full rounded-sm object-cover"
+              />
+            }
             <p class="font-mono text-label text-fg-muted uppercase">Featured</p>
 
             <h2 class="mt-4 text-display-2 font-display text-fg">
@@ -78,6 +87,15 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
         <div class="mt-8 grid gap-6 md:grid-cols-2">
           @for (project of rest(); track project.slug; let i = $index) {
             <ui-card [interactive]="true" [appReveal]="i">
+              @if (cover(project.slug); as image) {
+                <img
+                  [src]="image.url"
+                  [alt]="image.alt"
+                  loading="lazy"
+                  decoding="async"
+                  class="mb-4 aspect-video w-full rounded-sm object-cover"
+                />
+              }
               <h2 class="text-display-3 font-display text-fg">
                 <a
                   [routerLink]="['/work', project.slug]"
@@ -101,7 +119,7 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
   `,
 })
 export class WorkIndex {
-  readonly projects = input<Project[]>([]);
+  readonly projects = input<ProjectsWithCovers>({ projects: [], covers: {} });
 
   private readonly seo = inject(SeoService);
 
@@ -123,11 +141,16 @@ export class WorkIndex {
    * to sort first if the curation order ever changed.
    */
   protected readonly featured = computed(
-    () => this.projects().find((p) => p.tier === 'featured') ?? null,
+    () => this.projects().projects.find((p) => p.tier === 'featured') ?? null,
   );
 
   protected readonly rest = computed(() => {
     const lead = this.featured();
-    return this.projects().filter((p) => p !== lead);
+    return this.projects().projects.filter((p) => p !== lead);
   });
+
+  /** A project's cover image (04 §6's isFeatured), if one has been set. */
+  protected cover(slug: string) {
+    return this.projects().covers[slug];
+  }
 }

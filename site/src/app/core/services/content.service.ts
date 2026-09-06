@@ -82,6 +82,19 @@ export class ContentService {
   }
 
   /**
+   * A project's chosen cover image (04 §6's `isFeatured`), or null when none
+   * has been marked yet — callers render a text-only fallback in that case
+   * (brief §32: missing media never blocks a page). At most one per project;
+   * that is enforced where it is set (the dashboard's media screen), not
+   * re-checked here.
+   */
+  featuredImage(slug: string): Promise<Media | null> {
+    return referenceQuery<Media>(mediaPath(slug), { equals: [['isFeatured', true]] }).then(
+      ([first]) => first ?? null,
+    );
+  }
+
+  /**
    * Professional history (04 §4), in stored order — reverse-chronological as
    * 02 §7 asks. `timeframe` is free text and cannot be sorted, so the order is
    * an explicit field rather than something derived from prose.

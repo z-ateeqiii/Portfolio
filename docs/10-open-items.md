@@ -237,7 +237,30 @@ Decision recorded in `06` §3.4. Firebase keeps Firestore + Auth; Cloudinary kee
 
 ---
 
-## 5. Post-v1 / Not Blocking Launch
+## 4k. Dashboard bugs found during Muhammed's own testing (2026-09-06)
+
+Found by actually clicking through the live admin UI rather than by static analysis or by curling public routes — the one class of defect none of the automated checks in `4a`–`4j` could reach, since `/admin` is authenticated and client-rendered (`06` §2, §5) and this session has no login credentials.
+
+**CRITICAL, root-caused before any fix was written.** Opening an existing, already-published project's editor showed "New project" / "NOT PUBLISHED YET" with every field empty and `order` defaulting to 99. Root cause confirmed by reading the installed `@angular/router` source directly (`RoutedComponentInputBinder.subscribeToRouteData`, `_router-chunk.mjs`): `withComponentInputBinding()` applies router-bound `input()` values via `ComponentRef.setInput()` **after** the component is constructed, never before. Three admin screens read a route-bound `input()` synchronously inside a constructor-triggered `load()` — `project-editor.ts` (`slug`), `media-editor.ts` (`slug`, so `mediaPath('')` = `'projects//media'` — the likely explanation for images not appearing in "On this project" on a cold load), and `preview.ts` (`entity`/`id`, so a draft preview could report "no draft" when one existed). All three always read the DEFAULT value at construction, never the real one.
+
+- [x] **Fixed**: constructor-triggered `load()` replaced with `effect(() => void this.load(this.slug()))` in all three files. Effects run for the first time *after* construction (once `setInput()` has applied), and re-run whenever the tracked input changes — which also fixes a second, related bug the constructor-only version had: Angular reuses these component instances across same-route navigations (e.g. Project A's editor → Project B's editor via routerLink), and a constructor never runs again on reuse, so stale data from the previous target would otherwise persist indefinitely. `project-editor.ts` and `preview.ts` also reset their state signals at the top of `load()` for the same reason.
+- This is a real, structural gap in this session's own verification method, not just a code bug: build success, SSR/curl checks, and direct Firestore/Cloudinary probes all passed throughout Phases 5–8 because none of them exercise live client-side routing into an authenticated, `input()`-bound component. Only a human clicking through the actual app could have caught it, and did.
+
+**No delete option for projects** — confirmed absent (`grep` found zero `remove`/`delete` references in either projects screen), while `AdminService.remove()` already existed and was already used the same way by Education, Proof Points, Business Ventures, and Experience's own "Delete role".
+
+- [x] **Fixed**: `AdminService.deleteProject(slug)` added — removes the project's `media` subcollection, the live document, and any lingering draft. Firestore never cascades subcollection deletes, so without this, deleting a project would leave orphaned `media` documents with the parent gone; harmless publicly, pure clutter otherwise, so it is cleaned up as part of the same operation. The underlying Cloudinary *assets* stay orphaned regardless — that gap is already accepted at this scale (`04` §6) — this only handles the Firestore side. Delete buttons added to both the projects list (every row, live and draft-only) and the project editor itself, each behind a plain `confirm()`, matching the existing "Delete role" pattern rather than introducing a new one.
+- Found live, while verifying: exactly this situation exists on the real site right now — a test project (slug `dddddddd`, stack tags `CSS`/`JS`/`Pyhton`) that Muhammed mentioned creating and being unable to remove. It also has `featuredOnHome: true` and a real uploaded cover image (alt `"Test1"`), so it is genuinely live on Home and `/work` at this moment — first real thing to delete with the new button.
+
+**Media grid + cover-image visibility.** "On this project" was a vertical stack of full-width rows with a small 96px thumbnail; the cover-image control (`04` §6's `isFeatured`) was a small unlabeled checkbox among four other inputs.
+
+- [x] **Fixed**: responsive grid (`grid-cols-2 sm:grid-cols-3 lg:grid-cols-4`), each thumbnail wrapped in a plain link to the full-size image (no lightbox library — consistent with this being a plain, functional tool per `05` §7). Cover image is now a clearly labelled state ("Cover image" / "Set as cover" button) rather than a checkbox, matching the "impossible to miss" bar `05` §3.3 sets for `featuredOnHome`.
+
+**Cover image on Home / `/work` cards.** Confirmed `isFeatured` was already wired to the case study's own OG image, but neither Home's Featured Work cards nor the `/work` index cards rendered any image at all — text-only.
+
+- [x] **Fixed**: `ContentService.featuredImage(slug)` added; a new `core/content/project-covers.ts` attaches each project's cover (if any) to its already-resolved list inside the SAME resolver (`app.routes.ts`) rather than a second one, so the list is still fetched exactly once per page load (`06` §7). Card templates render the image only when one exists and fall back to the existing text-only layout otherwise (brief §32). **Verified against live production data** (the `dddddddd` test project's real cover image), not just the empty-state path: the correct Cloudinary delivery URL (`f_auto,q_auto,w_640,c_limit`), the real authored `alt` text, and the right placement all confirmed in the served SSR HTML on both `/` and `/work`.
+
+All five verified together: `tsc --noEmit` and a full `ng build` clean; initial browser bundle unaffected (~317 kB raw, no budget warning — the new resolver code lives entirely inside already-lazy chunks); SSR-fetched `/`, `/work`, `/about`, a real case study, and an unknown slug (404) all still render correct content with the new code paths active.
+
 
 Safe to leave until after the site is live:
 

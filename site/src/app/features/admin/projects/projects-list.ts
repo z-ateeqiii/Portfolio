@@ -24,6 +24,12 @@ import { AdminService, DraftRecord } from '../../../core/services/admin.service'
  * sticky DraftBar). Absent on never-published drafts, matching the project
  * editor's own rule: media is stored under the project's slug, so there is
  * nowhere for it to attach until the project is live.
+ *
+ * A "Delete" action on every row, live and draft-only alike — there was
+ * previously no way to remove a project from this screen at all (Muhammed
+ * had a test project he could not clean up). Behind a plain confirm(), and
+ * routed through AdminService.deleteProject() so a project's media is
+ * cleaned up along with it rather than left as orphaned Firestore documents.
  */
 @Component({
   selector: 'app-admin-projects',
@@ -46,7 +52,7 @@ import { AdminService, DraftRecord } from '../../../core/services/admin.service'
         <table class="mt-8 w-full text-left">
           <thead>
             <tr class="border-b border-fg/12">
-              @for (h of ['Order', 'Name', 'Tier', 'Home', 'State', 'Media']; track h) {
+              @for (h of ['Order', 'Name', 'Tier', 'Home', 'State', 'Media', '']; track h) {
                 <th class="pb-2 font-mono text-label font-normal text-fg-muted uppercase">{{ h }}</th>
               }
             </tr>
@@ -80,6 +86,16 @@ import { AdminService, DraftRecord } from '../../../core/services/admin.service'
                     >Manage →</a
                   >
                 </td>
+                <td class="py-3 text-right">
+                  <button
+                    type="button"
+                    [disabled]="deleting().has(project.slug)"
+                    (click)="deleteProject(project.slug, project.name)"
+                    class="text-caption text-fg-muted hover:text-action disabled:opacity-40"
+                  >
+                    {{ deleting().has(project.slug) ? 'Deleting…' : 'Delete' }}
+                  </button>
+                </td>
               </tr>
             }
 
@@ -99,6 +115,16 @@ import { AdminService, DraftRecord } from '../../../core/services/admin.service'
                 <td class="py-3 font-mono text-caption text-fg-muted">—</td>
                 <td class="py-3 font-mono text-caption text-action">never published</td>
                 <td class="py-3 font-mono text-caption text-fg-muted">—</td>
+                <td class="py-3 text-right">
+                  <button
+                    type="button"
+                    [disabled]="deleting().has(draft.docId)"
+                    (click)="deleteProject(draft.docId, name(draft))"
+                    class="text-caption text-fg-muted hover:text-action disabled:opacity-40"
+                  >
+                    {{ deleting().has(draft.docId) ? 'Deleting…' : 'Delete' }}
+                  </button>
+                </td>
               </tr>
             }
           </tbody>
@@ -114,6 +140,10 @@ export class AdminProjectsList {
   protected readonly projects = signal<Project[]>([]);
   protected readonly draftSlugs = signal(new Set<string>());
   protected readonly unpublishedDrafts = signal<DraftRecord[]>([]);
+  /** Slugs/docIds currently being deleted, so the button disables per-row
+   *  rather than the whole list, and cannot be double-clicked into a
+   *  duplicate delete. */
+  protected readonly deleting = signal(new Set<string>());
 
   constructor() {
     void this.load();
@@ -121,6 +151,32 @@ export class AdminProjectsList {
 
   protected name(draft: DraftRecord): string {
     return (draft.data as { name?: string }).name || draft.docId;
+  }
+
+  protected async deleteProject(slug: string, label: string): Promise<void> {
+    if (
+      !confirm(
+        `Delete "${label}"? This removes it — and its images — from the site immediately. This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+
+    this.deleting.set(new Set([...this.deleting(), slug]));
+    try {
+      await this.admin.deleteProject(slug);
+      this.projects.set(this.projects().filter((p) => p.slug !== slug));
+      this.unpublishedDrafts.set(this.unpublishedDrafts().filter((d) => d.docId !== slug));
+      const nextDrafts = new Set(this.draftSlugs());
+      nextDrafts.delete(slug);
+      this.draftSlugs.set(nextDrafts);
+    } catch (error) {
+      console.error('[admin/projects] delete failed', error);
+    } finally {
+      const next = new Set(this.deleting());
+      next.delete(slug);
+      this.deleting.set(next);
+    }
   }
 
   private async load(): Promise<void> {
