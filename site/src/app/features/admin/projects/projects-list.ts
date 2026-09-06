@@ -16,6 +16,14 @@ import { AdminService, DraftRecord } from '../../../core/services/admin.service'
  * 05 §3.3 asks for drag-order; a numeric field is the honest interim — it
  * writes the same field and is not pretending to be the finished interaction.
  * Logged in 10 §4f.
+ *
+ * A "Media" link on every live row, so reaching the upload screen never
+ * requires opening the project editor first. Muhammed reported no way in from
+ * either this list or the editor and had to type the /media URL directly —
+ * this is the other half of that fix (the editor gets its own link in its
+ * sticky DraftBar). Absent on never-published drafts, matching the project
+ * editor's own rule: media is stored under the project's slug, so there is
+ * nowhere for it to attach until the project is live.
  */
 @Component({
   selector: 'app-admin-projects',
@@ -38,7 +46,7 @@ import { AdminService, DraftRecord } from '../../../core/services/admin.service'
         <table class="mt-8 w-full text-left">
           <thead>
             <tr class="border-b border-fg/12">
-              @for (h of ['Order', 'Name', 'Tier', 'Home', 'State']; track h) {
+              @for (h of ['Order', 'Name', 'Tier', 'Home', 'State', 'Media']; track h) {
                 <th class="pb-2 font-mono text-label font-normal text-fg-muted uppercase">{{ h }}</th>
               }
             </tr>
@@ -65,6 +73,13 @@ import { AdminService, DraftRecord } from '../../../core/services/admin.service'
                     <span class="text-fg-muted">live</span>
                   }
                 </td>
+                <td class="py-3">
+                  <a
+                    [routerLink]="['/admin/projects', project.slug, 'media']"
+                    class="text-caption text-fg-muted no-underline hover:text-action"
+                    >Manage →</a
+                  >
+                </td>
               </tr>
             }
 
@@ -83,6 +98,7 @@ import { AdminService, DraftRecord } from '../../../core/services/admin.service'
                 <td class="py-3 font-mono text-caption text-fg-muted">—</td>
                 <td class="py-3 font-mono text-caption text-fg-muted">—</td>
                 <td class="py-3 font-mono text-caption text-action">never published</td>
+                <td class="py-3 font-mono text-caption text-fg-muted">—</td>
               </tr>
             }
           </tbody>

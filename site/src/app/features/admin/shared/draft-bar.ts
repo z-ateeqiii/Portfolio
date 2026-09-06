@@ -14,6 +14,15 @@ import { RouterLink } from '@angular/router';
  * explicit button, never a side effect of saving, and it is disabled unless
  * there is actually a draft to publish. Save writes only to `drafts/` — there
  * is no code path from typing in a field to changing the live site.
+ *
+ * `extraLink` is a generic escape hatch for a screen-specific secondary action
+ * — e.g. "Manage images" on the Project editor — placed in this bar rather than
+ * buried in the scrolling form body BECAUSE this bar is sticky and always
+ * visible: a link that only appears once, above a long form, is exactly what a
+ * real user (Muhammed) reported never finding, and had to reach by typing the
+ * URL by hand. DraftBar itself stays generic — it has no idea what "media" is,
+ * it just renders whatever label/route a caller hands it — so Profile and every
+ * other draftable screen that has no such action simply passes nothing.
  */
 @Component({
   selector: 'app-draft-bar',
@@ -38,6 +47,14 @@ import { RouterLink } from '@angular/router';
         }
       </p>
     </div>
+
+    @if (extraLink(); as link) {
+      <a
+        [routerLink]="link.route"
+        class="rounded-sm border border-fg/40 px-4 py-2 text-caption text-fg no-underline"
+        >{{ link.label }} →</a
+      >
+    }
 
     <button
       type="button"
@@ -96,6 +113,13 @@ export class DraftBar {
    * test surfaced.
    */
   readonly previewLabel = input('Preview');
+
+  /**
+   * Optional secondary navigation link, always visible in this sticky bar
+   * (e.g. { label: 'Manage images', route: [...] } on the Project editor).
+   * Absent by default, so screens with no such action render nothing extra.
+   */
+  readonly extraLink = input<{ label: string; route: unknown[] } | null>(null);
 
   readonly save = output<void>();
   readonly publish = output<void>();

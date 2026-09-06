@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 
 import { Project, ProjectTier } from '../../../core/models';
 import { AdminService } from '../../../core/services/admin.service';
@@ -53,7 +52,7 @@ const EMPTY: ProjectForm = {
 @Component({
   selector: 'app-admin-project-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, DraftBar],
+  imports: [FormsModule, DraftBar],
   template: `
     <app-draft-bar
       [title]="form().name || 'New project'"
@@ -63,19 +62,14 @@ const EMPTY: ProjectForm = {
       [busy]="busy()"
       [draftedAt]="draftedAt()"
       [previewLink]="['/admin/preview/projects', form().slug || 'new']"
+      [extraLink]="mediaLink()"
       (save)="save()"
       (publish)="publish()"
       (discard)="discard()"
     />
 
     <div class="max-w-3xl space-y-6 p-8">
-      @if (isLive()) {
-        <a
-          [routerLink]="['/admin/projects', form().slug, 'media']"
-          class="inline-block rounded-sm border border-fg/40 px-4 py-2 text-caption text-fg no-underline"
-          >Manage images →</a
-        >
-      } @else {
+      @if (!isLive()) {
         <p class="text-caption text-fg-muted">
           Publish this project before adding images — media is stored under the project's slug.
         </p>
@@ -170,6 +164,17 @@ export class AdminProjectEditor {
 
   protected readonly dirty = computed(
     () => JSON.stringify(this.form()) !== JSON.stringify(this.loaded()),
+  );
+
+  /**
+   * Surfaced in the sticky DraftBar rather than the scrolling form body — a
+   * link that only appeared once, above a long form, is what Muhammed reported
+   * never finding; he had to type the /media URL by hand. `null` before the
+   * project is live: media is stored under the project's slug (03 §2.1's
+   * Snapshot), so there is nowhere for it to attach yet.
+   */
+  protected readonly mediaLink = computed(() =>
+    this.isLive() ? { label: 'Manage images', route: ['/admin/projects', this.form().slug, 'media'] } : null,
   );
 
   protected readonly tiers: { value: ProjectTier; meaning: string }[] = [
