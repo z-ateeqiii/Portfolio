@@ -29,6 +29,15 @@
   --color-action: #ff6b00;
   --color-action-hover: #e59400; /* hover/active only — never a standalone color */
 
+  /* Atmospheric glow — the burnt red the light in the Hero is made of.
+     A SEPARATE token rather than a new value for --color-action-hover, which
+     was the obvious place to put it: that token is also the primary button's
+     hover fill, and the button sets black text on it. #A33612 under black text
+     measures 3.04:1, below the 4.5:1 floor in 07 §8 — so reusing it would have
+     traded an accessible control for a background colour. This is a
+     background-only role and never touches text or a control. */
+  --color-glow: #a33612;
+
   /* Functional accent — "THIS IS LIVE / VERIFIED / WORKING" (07 §2, §6).
      Never decorative. If it is on screen, it is telling the visitor something. */
   --color-live: #00d68f;
@@ -422,8 +431,8 @@
      so this cannot regress if a box is ever resized. */
   background: radial-gradient(
     circle closest-side at 50% 50%,
-    --alpha(var(--color-action) / 90%) 0%,
-    --alpha(var(--color-action-hover) / 30%) 45%,
+    --alpha(var(--color-action) / 55%) 0%,
+    --alpha(var(--color-glow) / 70%) 38%,
     transparent 100%
   );
   animation: glow-breathe var(--duration-ambient-glow) var(--ease-out-soft) infinite;
@@ -487,8 +496,8 @@
   opacity: 0.26;
   background: radial-gradient(
     ellipse closest-side at 50% 50%,
-    --alpha(var(--color-action) / 55%) 0%,
-    --alpha(var(--color-action-hover) / 18%) 45%,
+    --alpha(var(--color-action) / 32%) 0%,
+    --alpha(var(--color-glow) / 42%) 40%,
     transparent 100%
   );
   animation: glow-breathe calc(var(--duration-ambient-glow) * 1.6) var(--ease-out-soft) infinite;

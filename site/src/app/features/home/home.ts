@@ -77,7 +77,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
         the one you only get once the browser chrome retracts — which put the
         actions under the address bar on first paint.
       -->
-      <section class="relative flex min-h-[76svh] w-full items-end bg-bg pt-28 pb-12">
+      <section class="relative flex min-h-[95svh] w-full items-end bg-bg pt-28 pb-12">
         <!--
           The photo and its gradients are clipped by THIS wrapper, not by the
           section. The parallax layer is translated on scroll and genuinely has
@@ -85,10 +85,10 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
           slice the glow below, redrawing the hard seam the backdrop component
           was changed to stop causing.
         -->
-        <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute inset-0  overflow-hidden">
           <div
             #photoLayer
-            class="absolute inset-0 bg-cover bg-center grayscale contrast-125 brightness-[.82]"
+            class="absolute inset-0 bg-cover bg-center grayscale contrast-115 brightness-[1]"
             [style.background-image]="'url(' + heroPhotoUrl() + ')'"
             [attr.role]="'img'"
             [attr.aria-label]="p!.heroImage!.alt"
@@ -116,15 +116,12 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
             still the photograph it was, and it is the layer that makes the
             left column safe at every viewport width and in every title state.
           -->
-          <div
-            class="absolute inset-0"
-            style="background:linear-gradient(90deg, rgba(0,0,0,.94) 0%, rgba(0,0,0,.86) 30%, rgba(0,0,0,.62) 52%, rgba(0,0,0,.18) 72%, rgba(0,0,0,0) 86%)"
-          ></div>
+     
         </div>
 
-        <ui-strip-backdrop anchor="bottom-left" scale="md" />
+        <ui-strip-backdrop anchor="bottom-left" scale="lg" />
 
-        <div class="container-wide relative z-10 flex flex-col items-start gap-6">
+        <div class="container-wide relative z-10 flex flex-col items-start gap-4 mb-15">
           <p class="mono-label text-action">
             Role {{ pad(heroTitleIndex() + 1) }} / {{ pad(p!.heroTitles!.length) }}
           </p>
@@ -195,7 +192,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
            sentence reads as broken rather than bold — the same call made on
            the Work index heading. -->
       <section class="relative flex min-h-[78vh] items-end pt-20 pb-16 sm:pt-28">
-        <ui-strip-backdrop anchor="bottom-left" scale="lg" />
+        <!-- <ui-strip-backdrop anchor="bottom-left" scale="lg" /> -->
 
         <div class="container-wide stagger-in-lead relative flex flex-col items-start gap-7">
           <p class="mono-label text-action">{{ p.positioning }}</p>
@@ -238,7 +235,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     <!-- 3. Featured Work (02 §4.3) — leads with Scholarship, per brief §15. -->
     @if (featured().projects.length) {
       <section class="relative py-16">
-        <ui-strip-backdrop anchor="top-right" scale="sm" />
+        <!-- <ui-strip-backdrop anchor="top-right" scale="sm" /> -->
 
         <div class="container-wide relative">
           <ui-eyebrow index="01">Featured Work</ui-eyebrow>
@@ -368,7 +365,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
          the footer, so the page closes lit rather than trailing off. -->
     @if (p) {
       <section class="relative py-16">
-        <ui-strip-backdrop anchor="bottom-right" scale="sm" />
+        <!-- <ui-strip-backdrop anchor="bottom-right" scale="sm" /> -->
 
         <div class="container-wide relative">
           <ui-eyebrow index="05">Contact</ui-eyebrow>

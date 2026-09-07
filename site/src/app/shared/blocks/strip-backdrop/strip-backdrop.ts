@@ -93,7 +93,7 @@ export class UiStripBackdrop {
   private static readonly SCALES: Record<StripScale, string> = {
     sm: 'h-[60vw] w-[70vw] max-h-125 max-w-150',
     md: 'h-[80vw] w-[90vw] max-h-160 max-w-190',
-    lg: 'h-[110vw] w-[120vw] max-h-205 max-w-250',
+    lg: 'h-[160vw] w-[500vw] max-h-195 max-w-200',
   };
 
   /**
