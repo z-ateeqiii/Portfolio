@@ -24,12 +24,25 @@ export type StripScale = 'sm' | 'md' | 'lg';
  * so a new page can pick a corner but cannot invent a fourth glow geometry.
  * ─────────────────────────────────────────────────────────────────────────────
  *
- * REQUIREMENTS ON THE CALLER, and they are not optional:
- *  - the parent must be `relative`, or the glow anchors to the page.
- *  - the parent must be `overflow-hidden` (or `overflow-clip`). The glow is
- *    deliberately larger than its section and hangs past the corner; unclipped
- *    it would extend the page's scroll width. `body { overflow-x: clip }` in
- *    styles.css is the safety net, not the mechanism.
+ * ─── THE HOST DOES NOT CLIP, AND THAT IS THE WHOLE POINT (2026-09-07) ────────
+ * This used to be `overflow-hidden`, and its section used to be too. That drew
+ * a hard horizontal line across every page at the exact pixel the section
+ * ended: the glow is much larger than the block it lights, so clipping sliced
+ * it mid-gradient and the page read as two stacked boxes rather than one
+ * continuous surface. It was most obvious on /about, where a short header sat
+ * above a long column of prose.
+ *
+ * So nothing clips it now. The glow ends the way light actually ends — its own
+ * radial gradient reaches full transparency at 70% — and it is free to spill
+ * into whatever sits above or below, which is what makes consecutive sections
+ * read as one lit space. `body { overflow-x: clip }` in styles.css is what
+ * stops the horizontal spill from widening the page; that is now the
+ * mechanism, not merely a safety net.
+ *
+ * The one thing the caller still MUST do is set `relative` on the section, or
+ * the glow anchors to the nearest positioned ancestor instead — usually the
+ * page, which puts it somewhere unintended.
+ * ─────────────────────────────────────────────────────────────────────────────
  *
  * The host sits at `z-0` and every sibling that carries content needs to be
  * above it — `relative` on the content wrapper is enough, since the backdrop
@@ -39,12 +52,19 @@ export type StripScale = 'sm' | 'md' | 'lg';
   selector: 'ui-strip-backdrop',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'pointer-events-none absolute inset-0 z-0 overflow-hidden',
+    class: 'pointer-events-none absolute inset-0 z-0',
     'aria-hidden': 'true',
   },
   template: `
     <div [class]="glowClasses()"></div>
-    <div class="photo-strip-grain"></div>
+    <!--
+      The grain is scoped to the glow's own box rather than the whole section.
+      Overlay blend renders as black against a black backdrop, so grain outside
+      the lit area is invisible anyway — and an inset-0 grain layer whose
+      section had a hard edge was half of the seam this component just stopped
+      drawing. The page-level layer in the app shell carries the rest.
+    -->
+    <div [class]="grainClasses()"></div>
   `,
 })
 export class UiStripBackdrop {
@@ -85,5 +105,11 @@ export class UiStripBackdrop {
   protected readonly glowClasses = computed(
     () =>
       `photo-strip-glow ${UiStripBackdrop.ANCHORS[this.anchor()]} ${UiStripBackdrop.SCALES[this.scale()]}`,
+  );
+
+  /** Same box as the glow, so the texture sits exactly where the light is. */
+  protected readonly grainClasses = computed(
+    () =>
+      `photo-strip-grain ${UiStripBackdrop.ANCHORS[this.anchor()]} ${UiStripBackdrop.SCALES[this.scale()]}`,
   );
 }

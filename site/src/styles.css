@@ -97,8 +97,19 @@
   --tracking-label: 0.24em; /* section markers, metadata rows */
   --tracking-wordmark: 0.38em; /* the name itself, and nothing else */
 
-  /* --- Layout (07 §4) --- */
-  --container-content: 44rem; /* single readable column: Story, case studies */
+  /* --- Layout (07 §4) ---
+     `container-content` is the FRAME of a secondary page, not the measure of
+     its prose. Those are two different jobs and conflating them is what made
+     /about read as a narrow strip against the reference's proportions: the
+     frame was sized to the paragraph, so the eyebrow, title, rules and lists
+     were all pinched to a reading measure they never needed.
+
+     The reference draws the distinction itself — a 1440px case-study frame
+     with a ~620px text column inside it. So the frame widens here and the
+     paragraph measure moves to `prose-measure` below, which caps by CHARACTER
+     count rather than by page width. Widening the frame therefore cannot make
+     a line of prose longer. */
+  --container-content: 58rem; /* secondary-page frame: About, case studies */
   --container-wide: 78rem; /* Home sections, Work grid */
 
   /* --- Motion (07 §5) — durations are a system, not a per-component guess.
@@ -142,6 +153,14 @@
        resets this to `auto`, so a visitor who asked for less motion still gets
        an instant jump. */
     scroll-behavior: smooth;
+
+    /* WCAG 2.2 AA, "Focus Not Obscured (Minimum)" — flagged High severity by
+       ui-ux-pro-max, and the site was failing it. The header is sticky and
+       roughly 77px tall, so following the skip link (or any in-page anchor)
+       scrolled the target flush to the viewport top, where the header then
+       covered it. This reserves the header's height plus breathing room on
+       every scroll-into-view, including the browser's own focus scrolling. */
+    scroll-padding-top: 6rem;
   }
 
   /* Removes the ~300ms synthetic click delay on touch, without disabling
@@ -169,6 +188,31 @@
        rather than `html` so `position: sticky` on the header still works —
        `overflow` on the scrolling root would silently kill it. */
     overflow-x: clip;
+  }
+
+  /* Typographic polish, applied once at the base rather than per-heading.
+
+     `balance` distributes a short heading evenly across its lines instead of
+     leaving one orphaned word on the last line — which the oversized condensed
+     display sizes make very visible. It is a progressive enhancement: browsers
+     without it simply wrap normally, and nothing here depends on an exact line
+     count (ui-ux-pro-max, "Heading Line Balance": bound the measure, never
+     hardcode the break). Limited to headings because the algorithm is capped
+     at a few lines in every engine that ships it, so it silently does nothing
+     on a paragraph.
+
+     `pretty` is the paragraph equivalent — it prevents a single-word last line
+     without re-flowing the whole block. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
   }
 
   /* Focus states (07 §8) — visible on EVERY interactive element, no exceptions.
@@ -227,6 +271,15 @@
   border: 1px solid --alpha(var(--color-fg) / 12%);
 }
 
+/* The reading measure (07 §4).
+   Capped in `ch`, so it tracks the font rather than the layout: 68 characters
+   sits inside the 65-75 band ui-ux-pro-max gives for body text, and stays
+   there no matter how wide the frame around it grows. `min()` keeps it honest
+   on a narrow screen, where 68ch would otherwise exceed the viewport. */
+@utility prose-measure {
+  max-width: min(100%, 68ch);
+}
+
 /* ---------------------------------------------------------------------------
    Photo-strip visual system — Hero (with a real photo), Work Index and Home
    card cover images, and the Case Study header (visual-identity redesign,
@@ -281,9 +334,13 @@
   }
 }
 
+/* Position and size are the CALLER's job, exactly as for photo-strip-glow.
+   This deliberately no longer sets `inset: 0`: an inset-0 grain layer and a
+   caller-supplied `-top-56 h-160` would both be single-class utilities fighting
+   over the same properties, and which one won would come down to whichever
+   Tailwind happened to emit last. */
 @utility photo-strip-grain {
   position: absolute;
-  inset: 0;
   pointer-events: none;
   opacity: 0.16;
   mix-blend-mode: overlay;
@@ -328,6 +385,66 @@
     transparent 68%
   );
   animation: glow-breathe var(--duration-ambient-glow) var(--ease-out-soft) infinite;
+}
+
+/* ---------------------------------------------------------------------------
+   THE PAGE-LEVEL AMBIENT LAYER (07 §4a) — added 2026-09-07.
+
+   Two problems, one cause. Sections each carried their own glow inside an
+   `overflow-hidden` box, so (a) the glow was sliced off at the section's
+   bottom edge, drawing a hard horizontal seam that made a page read as stacked
+   boxes rather than one surface, and (b) every route change swapped the entire
+   lit backdrop, so moving between pages felt like jumping between separate
+   documents instead of staying in one room.
+
+   This layer fixes both by existing ONCE, in the app shell, outside the router
+   outlet. It is `position: fixed`, so it does not scroll and does not belong to
+   any section — there is no edge for it to end at — and it is never destroyed
+   or rebuilt on navigation, so the light in the room is literally the same
+   element from the first page to the last.
+
+   Sections still add their own glow for emphasis; those are now unclipped, so
+   they fade out through their own gradient instead of being cut.
+
+   Note on why the grain lives HERE rather than being painted over everything:
+   `mix-blend-mode: overlay` against a pure-black backdrop resolves to black
+   (overlay doubles the backdrop when it is below 0.5, and 2 x 0 is 0), so film
+   grain is only ever visible where something has already lit the area. Pairing
+   it with the glow in the same layer is not a stylistic choice; it is the only
+   place it renders at all.
+--------------------------------------------------------------------------- */
+@utility page-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* Clipped to the viewport, which a fixed element already matches — this only
+     stops the oversized glow inside from widening the page. */
+  overflow: hidden;
+}
+
+/* The persistent glow. Deliberately weaker and larger than a section's own:
+   it is the base light level of the site, not a highlight, and anything
+   stronger would compete with the per-section glows layered above it. */
+@utility page-ambient-glow {
+  position: absolute;
+  bottom: -30vh;
+  left: 50%;
+  width: 140vw;
+  height: 90vh;
+  margin-left: -70vw;
+  pointer-events: none;
+  border-radius: 9999px;
+  filter: blur(80px);
+  mix-blend-mode: screen;
+  opacity: 0.4;
+  background: radial-gradient(
+    ellipse at 50% 60%,
+    --alpha(var(--color-action) / 55%) 0%,
+    --alpha(var(--color-action-hover) / 18%) 40%,
+    transparent 70%
+  );
+  animation: glow-breathe calc(var(--duration-ambient-glow) * 1.6) var(--ease-out-soft) infinite;
 }
 
 /* The "viewfinder" crop-mark rectangle over a photo/screenshot. Decorative

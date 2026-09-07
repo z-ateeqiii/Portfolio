@@ -28,7 +28,7 @@ import { UiButton, UiEyebrow } from '../../shared/ui';
   template: `
     @let p = profile();
 
-    <section class="relative overflow-hidden py-20">
+    <section class="relative py-20">
       <ui-strip-backdrop anchor="bottom-right" scale="md" />
 
       <div class="container-content stagger-in-lead relative">
@@ -57,13 +57,13 @@ import { UiButton, UiEyebrow } from '../../shared/ui';
                   rel="noopener"
                   class="group flex min-h-16 items-center justify-between gap-4 border-t
                          border-fg/12 py-4 text-body-lg text-fg no-underline transition-colors
-                         duration-[--duration-base] ease-[--ease-out-strong] hover:border-action/60
+                         duration-(--duration-base) ease-out-strong hover:border-action/60
                          hover:text-action"
                 >
                   <span class="sweep-underline">{{ channel.label }}</span>
                   <span
-                    class="shrink-0 transition-transform duration-[--duration-base]
-                           ease-[--ease-out-strong] group-hover:translate-x-1"
+                    class="shrink-0 transition-transform duration-(--duration-base)
+                           ease-out-strong group-hover:translate-x-1"
                     aria-hidden="true"
                     >→</span
                   >

@@ -4,9 +4,27 @@
   >Skip to content</a
 >
 
+<!--
+  The page-level ambient layer (07 §4a).
+
+  It lives HERE, outside <router-outlet>, on purpose: it is never destroyed or
+  rebuilt on navigation, so the light behind the site is literally the same
+  element from the first page to the last. That is what makes moving between
+  Work, About and Beyond Code feel like staying in one room rather than
+  jumping between separate documents. Being `position: fixed` it also belongs
+  to no section, so there is no edge for it to be cut off at.
+
+  Decorative and inert: aria-hidden, pointer-events: none, and it sits at z-0
+  beneath every piece of content.
+-->
+<div class="page-ambient" aria-hidden="true">
+  <div class="page-ambient-glow"></div>
+  <div class="photo-strip-grain inset-0"></div>
+</div>
+
 <app-header [name]="profile()?.name ?? ''" [resumeUrl]="profile()?.resumeFile" />
 
-<main id="main">
+<main id="main" class="relative">
   <router-outlet />
 </main>
 

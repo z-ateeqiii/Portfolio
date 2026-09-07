@@ -25,7 +25,7 @@ import { UiCard, UiEyebrow } from '../../../shared/ui';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RevealDirective, UiCard, UiEyebrow, UiStripBackdrop],
   template: `
-    <section class="relative overflow-hidden py-20">
+    <section class="relative py-20">
       <ui-strip-backdrop anchor="top-right" scale="md" />
 
       <div class="container-wide relative">
@@ -42,8 +42,8 @@ import { UiCard, UiEyebrow } from '../../../shared/ui';
               <h2 class="display-condensed mt-5 text-display-3 font-display text-fg">
                 <a
                   [routerLink]="room.path"
-                  class="text-fg no-underline transition-colors duration-[--duration-base]
-                         ease-[--ease-out-strong] hover:text-action"
+                  class="text-fg no-underline transition-colors duration-(--duration-base)
+                         ease-out-strong hover:text-action"
                   >{{ room.title }}</a
                 >
               </h2>

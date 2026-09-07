@@ -66,7 +66,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         the outside, so nothing leaks about content that exists but is not
         public (05 §6). The query never returned it in the first place.
       -->
-      <section class="relative overflow-hidden py-20">
+      <section class="relative py-20">
         <ui-strip-backdrop anchor="top-right" scale="sm" />
 
         <div class="container-content stagger-in-lead relative">
@@ -100,7 +100,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
              wide container: it is the one full-bleed moment on a page that is
              otherwise a single reading column, which is what makes the switch
              to prose below it feel like arriving somewhere. -->
-        <header class="relative overflow-hidden pb-16">
+        <header class="relative pb-16">
           <ui-strip-backdrop anchor="bottom-right" scale="md" />
 
           <div
@@ -179,7 +179,19 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
           </div>
         </header>
 
-        <div class="container-content">
+        <!--
+          The body uses the SAME container as the header above it, not the
+          narrower reading container. Both are centred, so a 58rem body inside
+          a 78rem header stepped inward by 10rem on a wide screen — the section
+          eyebrows visibly indented from the project name they belong to.
+
+          Alignment comes from a shared frame; readability comes from the
+          prose-measure utility on the paragraphs, which caps them at 68
+          characters and leaves them left-aligned against it. That is the
+          reference's own arrangement: a wide frame with the text column on
+          one side of it.
+        -->
+        <div class="container-wide">
 
         <!-- Media (04 §6). Nothing is seeded yet, so this renders nothing —
              missing media never blocks a case study going live (brief §32).
@@ -199,7 +211,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
              order is carrying the same information the numbering does. -->
         <section appReveal mode="children" class="mt-16">
           <ui-eyebrow index="01">The Problem</ui-eyebrow>
-          <div class="mt-6 space-y-6">
+          <div class="prose-measure mt-6 space-y-6">
             @for (para of paragraphs(p.problem); track $index) {
               <p class="text-body-lg text-fg">{{ para }}</p>
             }
@@ -210,7 +222,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         @if (p.approach) {
           <section appReveal mode="children" class="mt-16">
             <ui-eyebrow index="02">The Approach</ui-eyebrow>
-            <div class="mt-6 space-y-6">
+            <div class="prose-measure mt-6 space-y-6">
               @for (para of paragraphs(p.approach); track $index) {
                 <p class="text-body-lg text-fg">{{ para }}</p>
               }
@@ -221,7 +233,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         <!-- 4. THE BUILD (03 §2.4) -->
         <section appReveal mode="children" class="mt-16">
           <ui-eyebrow [index]="p.approach ? '03' : '02'">The Build</ui-eyebrow>
-          <div class="mt-6 space-y-6">
+          <div class="prose-measure mt-6 space-y-6">
             @for (para of paragraphs(p.build); track $index) {
               <p class="text-body-lg text-fg">{{ para }}</p>
             }
@@ -243,7 +255,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         <!-- 6. OUTCOME (03 §2.6) -->
         <section appReveal mode="children" class="mt-16">
           <ui-eyebrow [index]="outcomeIndex()">Outcome</ui-eyebrow>
-          <div class="mt-6 space-y-6">
+          <div class="prose-measure mt-6 space-y-6">
             @for (para of paragraphs(p.outcome); track $index) {
               <p class="text-body-lg text-fg">{{ para }}</p>
             }

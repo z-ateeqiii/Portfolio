@@ -62,8 +62,8 @@ import { UiButton } from '../../shared/ui';
             routerLinkActive="text-fg nav-active"
             [routerLinkActiveOptions]="{ exact: item.exact }"
             class="nav-underline flex min-h-11 items-center px-3 text-body text-fg-muted
-                   no-underline transition-colors duration-[--duration-fast]
-                   ease-[--ease-out-strong] hover:text-fg"
+                   no-underline transition-colors duration-(--duration-fast)
+                   ease-out-strong hover:text-fg"
             >{{ item.label }}</a
           >
         }
@@ -88,8 +88,8 @@ import { UiButton } from '../../shared/ui';
         aria-controls="mobile-nav"
         [attr.aria-label]="open() ? 'Close menu' : 'Open menu'"
         class="flex size-11 shrink-0 flex-col items-center justify-center gap-1.5 rounded-sm
-               border border-fg/40 transition-colors duration-[--duration-fast]
-               ease-[--ease-out-strong] hover:border-action sm:hidden"
+               border border-fg/40 transition-colors duration-(--duration-fast)
+               ease-out-strong hover:border-action sm:hidden"
       >
         <!--
           A style binding, not a class binding: the offset that closes the 6px
@@ -98,13 +98,13 @@ import { UiButton } from '../../shared/ui';
           class-binding NAME are a template parse error, not just ugly.
         -->
         <span
-          class="block h-px w-5 bg-fg transition-transform duration-[--duration-base]
-                 ease-[--ease-out-strong]"
+          class="block h-px w-5 bg-fg transition-transform duration-(--duration-base)
+                 ease-out-strong"
           [style.transform]="open() ? 'translateY(3.5px) rotate(45deg)' : 'none'"
         ></span>
         <span
-          class="block h-px w-5 bg-fg transition-transform duration-[--duration-base]
-                 ease-[--ease-out-strong]"
+          class="block h-px w-5 bg-fg transition-transform duration-(--duration-base)
+                 ease-out-strong"
           [style.transform]="open() ? 'translateY(-3.5px) rotate(-45deg)' : 'none'"
         ></span>
       </button>

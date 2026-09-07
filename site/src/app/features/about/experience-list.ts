@@ -42,8 +42,8 @@ import { UiEyebrow, UiTag } from '../../shared/ui';
           @for (role of roles(); track role.id; let first = $first) {
             <details
               [open]="first"
-              class="group border-b border-fg/12 transition-colors duration-[--duration-base]
-                     ease-[--ease-out-strong] hover:border-fg/30"
+              class="group border-b border-fg/12 transition-colors duration-(--duration-base)
+                     ease-out-strong hover:border-fg/30"
             >
               <summary
                 class="flex min-h-14 cursor-pointer list-none items-center gap-4 py-4
@@ -58,13 +58,13 @@ import { UiEyebrow, UiTag } from '../../shared/ui';
                 -->
                 <span
                   class="size-2.25 shrink-0 border border-action transition-transform
-                         duration-[--duration-base] ease-[--ease-out-strong] group-open:rotate-45"
+                         duration-(--duration-base) ease-out-strong group-open:rotate-45"
                   aria-hidden="true"
                 ></span>
                 <span class="min-w-0 flex-1">
                   <span
-                    class="block text-body-lg text-fg transition-colors duration-[--duration-base]
-                           ease-[--ease-out-strong] group-hover:text-action"
+                    class="block text-body-lg text-fg transition-colors duration-(--duration-base)
+                           ease-out-strong group-hover:text-action"
                     >{{ role.role }}</span
                   >
                   <span class="block text-caption text-fg-muted">

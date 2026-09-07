@@ -30,7 +30,7 @@ import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdr
   selector: 'app-footer',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, UiStripBackdrop],
-  host: { class: 'relative mt-24 block overflow-hidden border-t border-fg/12' },
+  host: { class: 'relative mt-24 block border-t border-fg/12' },
   template: `
     <ui-strip-backdrop anchor="bottom-left" scale="sm" />
 
@@ -77,8 +77,8 @@ import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdr
                     target="_blank"
                     rel="noopener"
                     class="group flex min-h-11 items-center gap-3 text-body text-fg-muted
-                           no-underline transition-colors duration-[--duration-fast]
-                           ease-[--ease-out-strong] hover:text-fg"
+                           no-underline transition-colors duration-(--duration-fast)
+                           ease-out-strong hover:text-fg"
                   >
                     <!--
                       The same three-shape rhythm the tags and eyebrows use,
@@ -87,7 +87,7 @@ import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdr
                     -->
                     <span
                       class="size-2.25 shrink-0 border border-action transition-transform
-                             duration-[--duration-base] ease-[--ease-out-strong]
+                             duration-(--duration-base) ease-out-strong
                              group-hover:rotate-90"
                       [class.rotate-45]="i % 3 === 0"
                       [class.rounded-full]="i % 3 === 2"

@@ -110,7 +110,22 @@ Templates pick a step through the `mono-wordmark` / `mono-label` / `mono-mark` u
 ## 4. Layout & Spacing
 
 - **Base spacing unit**: 8px scale (8/16/24/32/48/64/96...) — predictable rhythm, easy to reason about across a project this size
-- **Container**: a single max-width content column for readability on Story/Case Study pages; Work index and Home sections can break wider for project grids
+- **Container**: two frame widths — `container-content` (58rem) for secondary pages, `container-wide` (78rem) for Home, the Work grid and the case-study frame
+
+**The frame and the measure are two different things** (corrected 2026-09-07). `container-content` was 44rem and was doing both jobs at once: it sized the page frame *and* capped the paragraph. The result was that every element on `/about` — eyebrow, title, rules, the experience list — was pinched to a reading measure none of them needed, and the page read as a narrow strip against the reference's proportions.
+
+They are now separate:
+
+- the **frame** is the container, and it sets where a page's content starts and how wide its structure runs;
+- the **measure** is `prose-measure`, capped at `min(100%, 68ch)` — by character count, so it tracks the font rather than the layout and sits inside the 65–75 character band. Widening a frame therefore cannot lengthen a line of prose.
+
+The reference draws exactly this distinction: a 1440px case-study frame with a ~620px text column inside it.
+
+**A page's header and its body must share one container.** Both are centred, so a 58rem body inside a 78rem header steps inward by 10rem on a wide screen and the section headings visibly indent from the page title they belong to. The case study hit this and now uses `container-wide` throughout, with `prose-measure` doing the reading work.
+
+**Page rhythm**, so secondary pages do not each invent their own: header `pt-20 pb-12`, body ending `pb-24`, eyebrow to title `mt-5`.
+
+**Heading sizes follow the content, not the page**: `display-hero` for a title (About, Business, Teaching, Contact, Social Media World, a project name), `display-1` for a heading that is a full sentence (the Work index, the Beyond hub, the Home statement).
 - **Grid**: 12-column on desktop, collapsing to a single column well before mobile — no exotic asymmetric grid system needed; the personality comes from typography and motion, not layout gymnastics (consistent with brief §24's rejection of "overly decorative UI")
 - **Breakpoints**: mobile-first, with the usual tablet/desktop/wide steps — nothing unusual required here given the content types involved (text, project cards, media)
 
@@ -122,7 +137,21 @@ Every page opens with the same three-layer stack, which is what makes the refere
 2. **Content** — the eyebrow, the title, the supporting line, then the metadata row.
 3. **Optional media panel** — a desaturated screenshot with the viewfinder frame, on the opposite side at `lg` and stacked below it under that.
 
-Two requirements on any section using it, and neither is optional: the section must be `relative` (or the glow anchors to the page) and `overflow-hidden` (or the glow, which is deliberately larger than its section, extends the page's scroll width). `body { overflow-x: clip }` is the safety net, not the mechanism.
+The one requirement on a section using it is `relative`, or the glow anchors to the nearest positioned ancestor instead.
+
+**Nothing clips the glow, and that is the point** (corrected 2026-09-07). Sections used to be `overflow-hidden`, which sliced the glow mid-gradient at the exact pixel the section ended and drew a hard horizontal seam across every page — so a page read as stacked boxes rather than one continuous surface. It was worst on `/about`, where a short header sits above a long column of prose. The glow now ends the way light ends, through its own gradient, and is free to spill into whatever sits above or below. `body { overflow-x: clip }` is what stops the horizontal spill from widening the page; that is the mechanism, not a safety net.
+
+Where a section genuinely must clip — the Hero's parallaxing photo — the clip goes on an inner wrapper around the photo, never on the section itself.
+
+### 4b. The page-level ambient layer (added 2026-09-07)
+
+One fixed layer in the app shell, outside the router outlet, holding a large weak glow and the grain that textures it.
+
+It solves the half of the continuity problem that unclipping does not. Per-section backdrops are destroyed and rebuilt on every navigation, so moving from Work to About swapped the entire lit backdrop and each page felt like a separate document. This layer is never rebuilt — the light behind the site is literally the same element from the first page to the last — and being `position: fixed` it belongs to no section, so there is no edge for it to end at.
+
+Section glows still exist, layered above it for emphasis. The ambient one is deliberately weaker and larger: it is the base light level, not a highlight.
+
+**Why the grain lives with the glow rather than over the whole page**: `mix-blend-mode: overlay` against pure black resolves to black, because overlay doubles the backdrop when it is below 0.5 and twice zero is zero. Film grain is therefore only ever visible where something has already lit the area. Pairing it with a glow is not a stylistic preference; it is the only place it renders at all.
 
 **Intensity varies by content, application does not.** Long-form prose pages (`/about`, the case-study body, `/beyond/*`) get the treatment on the page frame and keep it off the reading column: a glow behind two thousand words fights the reading. That is a decision about how much, not about whether.
 
@@ -162,6 +191,17 @@ A container with more than 8 children falls back to revealing as one block — s
 **Parallax is permitted, on the Hero only.** Superseding the earlier "no parallax stacking": the photo layer translates against the scroll, transform-only, rAF-throttled, and disabled outright under `prefers-reduced-motion` before a single scroll listener is attached. It is one layer moving against static text, which is what "no stacking" was guarding against.
 
 **Durations are a system**: `fast` 150ms (colour only), `base` 250ms (hovers, reveals), `slow` 420ms (the hero title crossfade, media push-in), plus two ambient durations measured in seconds. Easing is `ease-out-soft` for entrances and `ease-out-strong` for feedback — a hover should arrive decisively rather than glide.
+
+**How to reference a token from a Tailwind class, and the one way that silently fails.** Tailwind v4 takes a CSS variable in *parentheses*: `duration-(--duration-base)` compiles to `transition-duration: var(--duration-base)`. The square-bracket form does not — `duration-[--duration-base]` compiles to `transition-duration: --duration-base`, which is not a valid duration, so the browser discards the declaration and the transition falls back to `0s`.
+
+That bracket form was used in 42 places across the site and every one of those transitions was dead: the Hero's rotating title changed instantly, and so did every hover state. Nothing looked broken, because an instant transition looks like no transition rather than like an error. Fixed 2026-09-07 by moving to `duration-(--duration-base)` and to the bare `ease-out-soft` / `ease-out-strong` utilities, which Tailwind generates automatically from the `--ease-*` names in `@theme`.
+
+**The same trap applies to any two utilities that write one property.** They are single-class selectors of equal specificity, so the winner is whichever Tailwind emitted last — a property of Tailwind's output order, not of the template. Two real instances, both found by checking the built stylesheet rather than by reading the markup:
+
+- `class="p-0"` passed to `<ui-card>` against the component's own `p-6`. Tailwind emits `.p-0` before `.p-6`, so the card kept its padding and every "flush" cover image was silently inset by 24px. Fixed with a real `flush` input.
+- `translate-y-3` on a heading that `display-condensed` had already given a `scaleX` transform. The rise did nothing. Fixed by moving the crossfade to an inner span, so each element owns one transform.
+
+The rule: **when a component owns a property, expose an input for it — never pass a competing utility from outside.**
 
 ---
 
@@ -207,11 +247,15 @@ These are not aspirations; a change that breaks one of them is a regression.
 
 **Mobile is designed, not shrunk.** Below `sm` the header's four links plus Resume become a disclosure panel of full-width 48px rows, because five targets in one row at 375px produced roughly 30px tap areas packed against each other. Card grids, the featured two-column split, and the case-study header all collapse to a single column. The viewfinder frames are desktop-only.
 
-**No horizontal scroll, ever.** `body { overflow-x: clip }` on top of, not instead of, sections that clip their own glow. Clipped on `body` rather than `html` because `overflow` on the scrolling root silently kills `position: sticky` on the header. Note that clipping means an overflowing element is *cut off*, not scrollable — so oversized type has to be sized to fit rather than relying on the clip (see §3a).
+**No horizontal scroll, ever.** `body { overflow-x: clip }` is the sole mechanism now that section glows are deliberately unclipped (§4a). Clipped on `body` rather than `html` because `overflow` on the scrolling root silently kills `position: sticky` on the header. Note that clipping means an overflowing element is *cut off*, not scrollable — so oversized type has to be sized to fit rather than relying on the clip (see §3a).
+
+**Focus is never hidden behind the sticky header.** `scroll-padding-top: 6rem` on the root reserves the header's height on every scroll-into-view, including the browser's own focus scrolling and the skip link. Without it, following the skip link put `#main` flush against the viewport top where the header covered it — a WCAG 2.2 AA failure ("Focus Not Obscured (Minimum)"), fixed 2026-09-07.
+
+**Typographic polish is set once at the base**, not per heading: `text-wrap: balance` on `h1`–`h3` so a short heading does not orphan its last word at display sizes, and `text-wrap: pretty` on paragraphs and list items. Both are progressive — an engine without them simply wraps normally, and nothing depends on an exact line count.
 
 **Performance.** Below-the-fold images are `loading="lazy" decoding="async"`; images sit in aspect-ratio boxes so they reserve their space and do not shift layout. No effect in this system animates a layout property. GSAP stays dynamically imported and out of the initial bundle, and is never fetched at all by a visitor who asked for reduced motion. Where the skill-recommended technique and the budget disagreed, the lighter option was taken — the hover system is the main instance, and the grain's `steps()` timing the other.
 
-**Measured cost of the full visual pass** (2026-09-07): initial bundle 352.39 kB → 374.06 kB raw, 101.46 kB → 105.67 kB estimated transfer. **+4.21 kB transfer sitewide, and no new dependency.** The stylesheet accounts for about a kilobyte of that (7.22 → 8.20 kB transfer) and the header's mobile disclosure plus the shared backdrop component for most of the rest.
+**Measured cost of the full visual pass** (2026-09-07, including the continuity and polish corrections): initial bundle 352.39 kB → 374.88 kB raw, 101.46 kB → 105.93 kB estimated transfer. **+4.47 kB transfer sitewide, and no new dependency.** The stylesheet accounts for about a kilobyte of that, the header's mobile disclosure and the shared backdrop component for most of the rest.
 
 ---
 

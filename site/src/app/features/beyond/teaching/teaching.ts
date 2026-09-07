@@ -32,18 +32,18 @@ import { UiEyebrow, UiTag } from '../../../shared/ui';
   imports: [RouterLink, UiEyebrow, UiStripBackdrop, UiTag],
   template: `
     <article>
-      <header class="relative overflow-hidden pt-20 pb-10">
+      <header class="relative pt-20 pb-12">
         <ui-strip-backdrop anchor="top-right" scale="sm" />
 
         <div class="container-content stagger-in-lead relative">
           <ui-eyebrow>Beyond Code</ui-eyebrow>
           <h1 class="display-condensed mt-5 text-display-hero font-display text-fg">Teaching</h1>
 
-          <p class="mt-6 text-body-lg text-fg">{{ teaching.framing }}</p>
+          <p class="prose-measure mt-6 text-body-lg text-fg">{{ teaching.framing }}</p>
         </div>
       </header>
 
-      <div class="container-content pb-20">
+      <div class="container-content pb-24">
         <div class="rule-strip"></div>
 
         <!-- brief §21: what this experience is evidence of. Presented as what

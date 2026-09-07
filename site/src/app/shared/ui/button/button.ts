@@ -47,7 +47,7 @@ export class UiButton {
     'inline-flex min-h-11 items-center justify-center gap-2 rounded-sm px-6 py-3 ' +
     'font-sans text-body font-medium leading-none no-underline select-none ' +
     'transition-[color,background-color,border-color,transform] ' +
-    'duration-[--duration-base] ease-[--ease-out-strong] ' +
+    'duration-(--duration-base) ease-out-strong ' +
     'hover:-translate-y-0.5 active:translate-y-0 ' +
     'disabled:pointer-events-none disabled:opacity-50 disabled:hover:translate-y-0';
 

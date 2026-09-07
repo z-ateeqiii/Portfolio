@@ -42,7 +42,7 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RevealDirective, UiCard, UiEyebrow, UiStripBackdrop, UiTag],
   template: `
-    <section class="relative overflow-hidden py-20">
+    <section class="relative py-20">
       <ui-strip-backdrop anchor="top-right" scale="md" />
 
       <div class="container-wide relative">
@@ -73,7 +73,7 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
 
         @if (featured(); as lead) {
           <div class="mt-14">
-            <ui-card [interactive]="true" [accent]="true" class="overflow-hidden p-0">
+            <ui-card [interactive]="true" [accent]="true" [flush]="true">
               <div class="grid lg:grid-cols-[1.35fr_1fr]">
                 @if (cover(lead.slug); as image) {
                   <div class="relative overflow-hidden">
@@ -105,8 +105,8 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
                     <h2 class="display-condensed mt-5 text-display-2 font-display text-fg">
                       <a
                         [routerLink]="['/work', lead.slug]"
-                        class="text-fg no-underline transition-colors duration-[--duration-base]
-                               ease-[--ease-out-strong] hover:text-action"
+                        class="text-fg no-underline transition-colors duration-(--duration-base)
+                               ease-out-strong hover:text-action"
                         >{{ lead.name }}</a
                       >
                     </h2>
@@ -138,7 +138,7 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
           -->
           <div appReveal mode="grid" class="mt-8 grid gap-6 md:grid-cols-2">
             @for (project of rest(); track project.slug) {
-              <ui-card [interactive]="true" class="overflow-hidden p-0">
+              <ui-card [interactive]="true" [flush]="true">
                 @if (cover(project.slug); as image) {
                   <div class="overflow-hidden">
                     <img
@@ -156,8 +156,8 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
                   <h2 class="display-condensed text-display-3 font-display text-fg">
                     <a
                       [routerLink]="['/work', project.slug]"
-                      class="text-fg no-underline transition-colors duration-[--duration-base]
-                             ease-[--ease-out-strong] hover:text-action"
+                      class="text-fg no-underline transition-colors duration-(--duration-base)
+                             ease-out-strong hover:text-action"
                       >{{ project.name }}</a
                     >
                   </h2>

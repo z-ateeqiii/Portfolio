@@ -60,18 +60,28 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     @if (p?.heroImage && (p?.heroTitles?.length ?? 0) > 0) {
       <!-- 1. HERO — photo variant (00 §26, 04 §2). Bottom-anchored so the CTA
            row never moves between title states. -->
-      <section class="relative h-[92vh] min-h-160 w-full overflow-hidden bg-bg">
-        <div
-          #photoLayer
-          class="absolute inset-0 bg-cover bg-center grayscale contrast-125 brightness-[.82]"
-          [style.background-image]="'url(' + heroPhotoUrl() + ')'"
-          [attr.role]="'img'"
-          [attr.aria-label]="p!.heroImage!.alt"
-        ></div>
-        <div
-          class="absolute inset-0"
-          style="background:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.05) 32%, rgba(0,0,0,.72) 78%, rgba(0,0,0,.95) 100%)"
-        ></div>
+      <section class="relative h-[92vh] min-h-160 w-full bg-bg">
+        <!--
+          The photo and its gradient are clipped by THIS wrapper, not by the
+          section. The parallax layer is translated on scroll and genuinely has
+          to be contained — but putting the clip on the section would also
+          slice the glow below, redrawing the exact hard seam that the
+          backdrop component was just changed to stop causing.
+        -->
+        <div class="absolute inset-0 overflow-hidden">
+          <div
+            #photoLayer
+            class="absolute inset-0 bg-cover bg-center grayscale contrast-125 brightness-[.82]"
+            [style.background-image]="'url(' + heroPhotoUrl() + ')'"
+            [attr.role]="'img'"
+            [attr.aria-label]="p!.heroImage!.alt"
+          ></div>
+          <div
+            class="absolute inset-0"
+            style="background:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.05) 32%, rgba(0,0,0,.72) 78%, rgba(0,0,0,.98) 100%)"
+          ></div>
+        </div>
+
         <ui-strip-backdrop anchor="bottom-left" scale="lg" />
         <div
           class="photo-strip-frame top-16 right-16 hidden h-112 w-52 lg:block"
@@ -86,13 +96,24 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
             Role {{ pad(heroTitleIndex() + 1) }} / {{ pad(p!.heroTitles!.length) }}
           </p>
 
-          <h1
-            class="display-condensed font-display text-display-hero text-fg transition-all
-                   duration-[--duration-slow] ease-[--ease-out-soft]"
-            [class.opacity-0]="!heroTitleVisible()"
-            [class.translate-y-3]="!heroTitleVisible()"
-          >
-            {{ p!.heroTitles![heroTitleIndex()] }}
+          <!--
+            The crossfade lives on an INNER span, not on the <h1>.
+
+            The display-condensed utility sets a scaleX transform on the
+            heading, and Tailwind's translate-y utilities write the same
+            transform property — two single-class utilities fighting over one
+            property, where the winner is whichever Tailwind emitted last. The
+            rise silently did nothing.
+            Splitting them gives each element one transform to own: the heading
+            condenses, the span moves.
+          -->
+          <h1 class="display-condensed font-display text-display-hero text-fg">
+            <span
+              class="block transition-[opacity,transform] duration-(--duration-slow) ease-out-soft"
+              [class.opacity-0]="!heroTitleVisible()"
+              [class.translate-y-3]="!heroTitleVisible()"
+              >{{ p!.heroTitles![heroTitleIndex()] }}</span
+            >
           </h1>
 
           @if (p!.heroSubline) {
@@ -120,7 +141,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
            oversized size is for a short NAME or role word. Condensing a
            sentence reads as broken rather than bold — the same call made on
            the Work index heading. -->
-      <section class="relative flex min-h-[78vh] items-end overflow-hidden pt-20 pb-16 sm:pt-28">
+      <section class="relative flex min-h-[78vh] items-end pt-20 pb-16 sm:pt-28">
         <ui-strip-backdrop anchor="bottom-left" scale="lg" />
 
         <div class="container-wide stagger-in-lead relative flex flex-col items-start gap-7">
@@ -163,7 +184,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
     <!-- 3. Featured Work (02 §4.3) — leads with Scholarship, per brief §15. -->
     @if (featured().projects.length) {
-      <section class="relative overflow-hidden py-16">
+      <section class="relative py-16">
         <ui-strip-backdrop anchor="top-right" scale="sm" />
 
         <div class="container-wide relative">
@@ -175,7 +196,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
               <ui-card
                 [interactive]="true"
                 [accent]="project.tier === 'featured'"
-                class="overflow-hidden p-0"
+                [flush]="true"
               >
                 <!--
                   Cover image (04 §6's isFeatured), rendered only when a project
@@ -201,8 +222,8 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
                     <h3 class="display-condensed text-display-3 font-display text-fg">
                       <a
                         [routerLink]="['/work', project.slug]"
-                        class="text-fg no-underline transition-colors duration-[--duration-base]
-                               ease-[--ease-out-strong] hover:text-action"
+                        class="text-fg no-underline transition-colors duration-(--duration-base)
+                               ease-out-strong hover:text-action"
                         >{{ project.name }}</a
                       >
                     </h3>
@@ -245,8 +266,8 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
       <ol appReveal mode="grid" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         @for (movement of process; track movement.title) {
           <li
-            class="border-t border-fg/12 pt-4 transition-colors duration-[--duration-base]
-                   ease-[--ease-out-strong] hover:border-action/60"
+            class="border-t border-fg/12 pt-4 transition-colors duration-(--duration-base)
+                   ease-out-strong hover:border-action/60"
           >
             <p class="mono-label text-fg">{{ movement.title }}</p>
             <ul class="mt-3 space-y-2">
@@ -293,7 +314,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     <!-- 7. Contact / Closing CTA (02 §4.7). The last full-strip moment before
          the footer, so the page closes lit rather than trailing off. -->
     @if (p) {
-      <section class="relative overflow-hidden py-16">
+      <section class="relative py-16">
         <ui-strip-backdrop anchor="bottom-right" scale="sm" />
 
         <div class="container-wide relative">

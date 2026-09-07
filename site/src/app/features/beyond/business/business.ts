@@ -30,7 +30,7 @@ import { UiEyebrow } from '../../../shared/ui';
   imports: [RouterLink, RevealDirective, UiEyebrow, UiStripBackdrop],
   template: `
     <article>
-      <header class="relative overflow-hidden pt-20 pb-10">
+      <header class="relative pt-20 pb-12">
         <ui-strip-backdrop anchor="top-right" scale="sm" />
 
         <div class="container-content stagger-in-lead relative">
@@ -39,7 +39,7 @@ import { UiEyebrow } from '../../../shared/ui';
         </div>
       </header>
 
-      <div class="container-content pb-20">
+      <div class="container-content pb-24">
         @for (venture of ventures(); track venture.id) {
           <h2 class="display-condensed text-display-2 font-display text-fg">{{ venture.name }}</h2>
 
@@ -63,7 +63,7 @@ import { UiEyebrow } from '../../../shared/ui';
 
           <div class="rule-strip mt-12"></div>
 
-          <div class="mt-10 space-y-6">
+          <div class="prose-measure mt-10 space-y-6">
             @for (paragraph of paragraphs(venture.summary); track $index) {
               <p class="text-body-lg text-fg">{{ paragraph }}</p>
             }

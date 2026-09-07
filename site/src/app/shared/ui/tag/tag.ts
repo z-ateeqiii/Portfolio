@@ -57,8 +57,8 @@ export type UiTagIcon = 'diamond' | 'square' | 'circle';
   host: {
     class:
       'mono-mark inline-flex items-center gap-2 rounded-sm border border-fg/12 px-3 py-1 ' +
-      'text-fg-muted whitespace-nowrap transition-colors duration-[--duration-base] ' +
-      'ease-[--ease-out-strong] group-hover:border-fg/24 group-hover:text-fg ' +
+      'text-fg-muted whitespace-nowrap transition-colors duration-(--duration-base) ' +
+      'ease-out-strong group-hover:border-fg/24 group-hover:text-fg ' +
       'group-focus-within:border-fg/24 group-focus-within:text-fg',
   },
 })

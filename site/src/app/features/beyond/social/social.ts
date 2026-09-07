@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { SocialPlatform } from '../../../core/models';
 import { SeoService } from '../../../core/seo/seo.service';
@@ -31,28 +32,32 @@ import { UiEyebrow, UiStatusDot } from '../../../shared/ui';
 @Component({
   selector: 'app-beyond-social',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, RevealDirective, UiEyebrow, UiStatusDot, UiStripBackdrop],
+  imports: [DatePipe, RouterLink, RevealDirective, UiEyebrow, UiStatusDot, UiStripBackdrop],
   template: `
     <article>
-      <header class="relative overflow-hidden pt-20 pb-10">
+      <header class="relative pt-20 pb-12">
         <ui-strip-backdrop anchor="top-right" scale="sm" />
 
         <div class="container-content stagger-in-lead relative">
           <ui-eyebrow>Beyond Code</ui-eyebrow>
           <!-- "Social Media World" verbatim — the page's name in 02 §8.1, not
-               shortened to fit the larger type. -->
-          <h1 class="display-condensed mt-5 text-display-1 font-display text-fg">
+               shortened to fit the larger type. It is a TITLE, so it takes
+               display-hero like About, Business, Teaching and Contact; only
+               headings that are full sentences (the Work index, the Beyond
+               hub, the Home statement) drop to display-1. It wraps to two
+               lines at that size, which balanced text-wrap splits evenly. -->
+          <h1 class="display-condensed mt-5 text-display-hero font-display text-fg">
             Social Media World
           </h1>
 
-          <p class="mt-6 text-body-lg text-fg">
+          <p class="prose-measure mt-6 text-body-lg text-fg">
             Before software, this is where Muhammed built things for other people — editing video
             at 14, then making his own. The audience came from doing that for years.
           </p>
         </div>
       </header>
 
-      <div class="container-content pb-20">
+      <div class="container-content pb-24">
         @if (platforms().length) {
           <!-- The combined figure is short and it is the point of the page, so
                it gets the oversized condensed treatment the reference reserves
@@ -68,16 +73,16 @@ import { UiEyebrow, UiStatusDot } from '../../../shared/ui';
             @for (platform of platforms(); track platform.platform) {
               <li
                 class="group flex flex-wrap items-center justify-between gap-x-6 gap-y-2
-                       border-t border-fg/12 py-5 transition-colors duration-[--duration-base]
-                       ease-[--ease-out-strong] hover:border-fg/30"
+                       border-t border-fg/12 py-5 transition-colors duration-(--duration-base)
+                       ease-out-strong hover:border-fg/30"
               >
                 <a
                   [href]="platform.url"
                   target="_blank"
                   rel="noopener"
                   class="sweep-underline flex min-h-11 items-center text-body-lg text-fg
-                         capitalize no-underline transition-colors duration-[--duration-base]
-                         ease-[--ease-out-strong] hover:text-action"
+                         capitalize no-underline transition-colors duration-(--duration-base)
+                         ease-out-strong hover:text-action"
                   >{{ platform.platform }}</a
                 >
 
@@ -101,6 +106,18 @@ import { UiEyebrow, UiStatusDot } from '../../../shared/ui';
           "coming soon" shelf is worse than the section simply not existing
           (brief §32).
         -->
+
+        <!-- Every other page on the site ends with a way onward; this one
+             ended on its last list row, which made it the only dead end in the
+             navigation. Matches the closing nav on Business and Teaching. -->
+        <nav class="mt-16 border-t border-fg/12 pt-6">
+          <a
+            routerLink="/beyond"
+            class="sweep-underline inline-flex min-h-11 items-center text-body text-action
+                   no-underline"
+            >← Back to Beyond Code</a
+          >
+        </nav>
       </div>
     </article>
   `,

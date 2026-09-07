@@ -60,7 +60,7 @@ import { ExperienceList } from './experience-list';
            would fight the reading, and this is the one page most likely to be
            read start to finish (02 §7). Intensity is the variable here, not
            whether the language applies at all. -->
-      <header class="relative overflow-hidden pt-20 pb-10">
+      <header class="relative pt-20 pb-12">
         <ui-strip-backdrop anchor="top-right" scale="sm" />
 
         <div class="container-content stagger-in-lead relative">
@@ -70,13 +70,13 @@ import { ExperienceList } from './experience-list';
           </h1>
 
           @if (p) {
-            <p class="mt-6 text-body-lg text-fg">{{ p.bioShort }}</p>
+            <p class="prose-measure mt-6 text-body-lg text-fg">{{ p.bioShort }}</p>
           }
         </div>
       </header>
 
       @if (p) {
-        <div class="container-content pb-20">
+        <div class="container-content pb-24">
           <!-- The journey arc (brief §8) as a visual spine beside the prose.
                07 §7 allows sequence markers here because this genuinely is an
                ordered timeline rather than decorative numbering. Each stage now
@@ -99,7 +99,7 @@ import { ExperienceList } from './experience-list';
 
           <div class="rule-strip mt-10"></div>
 
-          <div class="mt-10 space-y-6">
+          <div class="prose-measure mt-10 space-y-6">
             @for (paragraph of paragraphs(); track $index) {
               <p class="text-body-lg text-fg">{{ paragraph }}</p>
             }
