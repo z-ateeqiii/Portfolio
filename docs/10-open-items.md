@@ -361,6 +361,20 @@ Reported after review of the first cut. All fixed.
 
 **Still needs doing in the dashboard, by Muhammed**: the stored `heroSubline` in Firestore still contains the stray space. The render-time repair stops it reaching a visitor, but the underlying value should be corrected in `/admin/profile` — the fix is in code because the same slip can be reintroduced from the dashboard at any time, not as a substitute for correcting the data.
 
+### 4n.3 Hero stabilisation (2026-09-07, same pass)
+
+Reported after looking at the rendered page. All fixed, and all verified in a real browser this time — see the note at the end.
+
+- [x] **The contrast strip made the headline unreadable.** It cut SOFTWARE mid-word and the rest never came back. Removed entirely; the headline is plain text again. The reason it failed is recorded in `07` §4c: in the mockup that look was *emergent* — white type crossing a lit sleeve in one photograph at one size — so reproducing it as a fixed layer meant it fired on every title at a fixed position, including where it landed on a letter that mattered.
+- [x] **The positioning block sat on the bright part of the photo** and was unreadable. Moved into the left column under the title, and a horizontal scrim now guarantees that column is legible in every title state and at every width — the block's width changes with the length of the word above it, so dodging the bright region by hand could never hold.
+- [x] **Dead space below the actions.** The hero had a fixed `80svh` height; it is now content-driven with a floor, so it fits what it contains. Featured Work now begins 48px after the actions.
+- [x] **The hero grew and shrank on a timer.** "Builder" is one line and "Frontend Specialist" is two, so every section below stepped up and down every few seconds. The title now reserves two lines of height. Measured identical in all three states.
+- [x] **233px of horizontal overflow at desktop widths**, from the deliberately-unclipped section glows. `overflow-x: clip` now also on the root. Sticky header confirmed still working afterwards.
+- [x] **Hard-edged rectangles in the background.** Both the glow and its grain mask had gradients that were still mid-colour when they hit the edge of their box, drawing a visible rectangle. Both now use `closest-side` sizing so the gradient ends at the nearest edge by definition.
+- [x] **The actions could fall below the fold on a short screen.** The hero type now scales on `min(11vw, 15vh)` rather than width alone.
+
+**Verification method changed.** Everything above was found by rendering the site in headless Chrome and looking at it, plus measuring the live layout over the DevTools Protocol — element boxes, document scroll width, and the header's position after a scroll, at six viewport sizes. Every one of these defects was invisible in the markup and in the build output; the previous passes reported "verified" on the strength of those alone, which is what let them through.
+
 ### Genuinely unresolved — needs Muhammed's decision, not a design call
 
 - [ ] **`Skill` and `Education` render nowhere on the public site.** Both are full entities with dashboard editors, both are exposed by `ContentService` (`skills()`, `education()`), and neither is resolved on a single public route — so anything entered there is invisible to visitors. This is pre-existing and predates this pass. It is not a design question: `02` §13 explicitly rules out standalone Skills/Certifications pages because they fragment the story, so the options are to surface them inside `/about` (where Experience already lives), to surface them somewhere else, or to remove the editors. Needs a content decision.

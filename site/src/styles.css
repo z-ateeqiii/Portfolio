@@ -69,7 +69,13 @@
 
      `display-condensed` additionally carries `overflow-wrap: break-word` as a
      backstop for a project name longer than any that exists today. */
-  --text-display-hero: clamp(2.75rem, 11vw, 9rem);
+  /* Sized against the SMALLER of width and height. 11vw alone is the
+     reference's ratio and is right on a normal screen, but on a short one — a
+     720p laptop, or any window with browser chrome eating the viewport — a
+     two-line title at that size pushed the Hero's actions below the fold.
+     Capping on vh as well keeps the headline proportionate to the space it
+     actually has, which is what a hero headline should do anyway. */
+  --text-display-hero: clamp(2.75rem, min(11vw, 15vh), 9rem);
   --text-display-hero--line-height: 0.86;
   --text-display-hero--letter-spacing: -0.03em;
   --text-display-hero--font-weight: 700;
@@ -161,6 +167,18 @@
        covered it. This reserves the header's height plus breathing room on
        every scroll-into-view, including the browser's own focus scrolling. */
     scroll-padding-top: 6rem;
+
+    /* Clipped on the ROOT as well as on body. Section glows are deliberately
+       unclipped so they fade out instead of ending on a seam (07 §4a), which
+       means they genuinely extend past the right edge — measured at 233px on a
+       1440 viewport. body's clip stops the scrollbar, but documentElement
+       still reported the overflow, and on the root that is the difference
+       between "cannot scroll sideways" and "happens not to have a scrollbar".
+
+       `clip`, never `hidden`: clip does not create a scroll container, so
+       position:sticky on the header keeps working. hidden here would silently
+       kill it. Verified by measuring the header's position after a scroll. */
+    overflow-x: clip;
   }
 
   /* Removes the ~300ms synthetic click delay on touch, without disabling
@@ -346,6 +364,22 @@
   mix-blend-mode: overlay;
   background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22220%22 height=%22220%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.82%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22220%22 height=%22220%22 filter=%22url(%23n)%22/%3E%3C/svg%3E');
   animation: grain-shimmer var(--duration-ambient-grain) steps(1, end) infinite;
+
+  /* THE GRAIN MUST FADE AT ITS EDGES, or it draws a rectangle.
+     A noise texture at a flat 16% opacity has a hard boundary wherever its box
+     ends, and on a dark page that boundary is clearly visible — it put a
+     lit-looking rectangle across the Hero, with a vertical seam down the middle
+     of the photo where the grain box happened to stop. The glow it accompanies
+     is a radial gradient that fades to nothing, so the texture over it has to
+     fade on the same curve or the two do not read as one layer.
+     Caught in a rendered screenshot; it is invisible in the markup. */
+  -webkit-mask-image: radial-gradient(
+    ellipse closest-side at 50% 50%,
+    #000 0%,
+    #000 45%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(ellipse closest-side at 50% 50%, #000 0%, #000 45%, transparent 100%);
 }
 
 /* Blurred radial glow, corner-anchored by whoever uses it (position/inset are
@@ -378,11 +412,19 @@
   filter: blur(50px);
   mix-blend-mode: screen;
   opacity: 0.85;
+  /* `closest-side`, not the default `farthest-corner`, and centred.
+     The gradient has to be fully transparent BEFORE it reaches any edge of its
+     box, or the box shows as a hard-edged rectangle. With the old off-centre
+     `circle at 40% 60%`, 68% of the farthest-corner distance was still short
+     of the near edge, so the left and bottom sides of every section glow cut
+     off mid-colour — clearly visible on /about, and invisible in the markup.
+     `closest-side` ties the gradient's end to the nearest edge by definition,
+     so this cannot regress if a box is ever resized. */
   background: radial-gradient(
-    circle at 40% 60%,
+    circle closest-side at 50% 50%,
     --alpha(var(--color-action) / 90%) 0%,
-    --alpha(var(--color-action-hover) / 30%) 38%,
-    transparent 68%
+    --alpha(var(--color-action-hover) / 30%) 45%,
+    transparent 100%
   );
   animation: glow-breathe var(--duration-ambient-glow) var(--ease-out-soft) infinite;
 }
@@ -435,14 +477,19 @@
   margin-left: -70vw;
   pointer-events: none;
   border-radius: 9999px;
-  filter: blur(80px);
+  filter: blur(90px);
   mix-blend-mode: screen;
-  opacity: 0.4;
+  /* Low, and deliberately so. This is the base light level of the whole site,
+     under every page at once — at 0.4 it stopped reading as ambience and
+     became a bright band across the bottom of the viewport, which made the
+     space below the Hero's actions look like a large empty stripe rather than
+     ordinary section spacing. Measured in a screenshot, not by eye. */
+  opacity: 0.26;
   background: radial-gradient(
-    ellipse at 50% 60%,
+    ellipse closest-side at 50% 50%,
     --alpha(var(--color-action) / 55%) 0%,
-    --alpha(var(--color-action-hover) / 18%) 40%,
-    transparent 70%
+    --alpha(var(--color-action-hover) / 18%) 45%,
+    transparent 100%
   );
   animation: glow-breathe calc(var(--duration-ambient-glow) * 1.6) var(--ease-out-soft) infinite;
 }
@@ -453,29 +500,6 @@
   position: absolute;
   pointer-events: none;
   border: 1px solid --alpha(var(--color-fg) / 80%);
-}
-
-/* The kinetic form of the contrast strip (07 §4c, §5a).
-
-   A band of light with a hard orange leading edge, swept across the Hero's
-   rotating title by GSAP while the word underneath changes. The soft body and
-   the single crisp edge are what make it read as the same device as the static
-   photo strip rather than as a generic shine: the strip's own edges are hard,
-   and orange is already the site's marker colour.
-
-   `screen` blending means it only ever adds light — it brightens the dark
-   ground it crosses and leaves the white letters essentially untouched, so the
-   word stays legible for the whole sweep instead of flashing out. */
-@utility title-wipe {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    --alpha(var(--color-fg) / 6%) 30%,
-    --alpha(var(--color-fg) / 16%) 70%,
-    --alpha(var(--color-action) / 34%) 100%
-  );
-  border-right: 1px solid var(--color-action);
-  mix-blend-mode: screen;
 }
 
 /* ---------------------------------------------------------------------------

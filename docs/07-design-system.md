@@ -91,7 +91,9 @@ The monospace utility face should appear consistently in the same handful of pla
 
 **`display-hero` is for a NAME, not a sentence.** The `display-condensed` utility that goes with it applies `scaleX(0.93)`, which reads as deliberate on a word and as broken on a paragraph. A section headline that is a full sentence stays at `display-1` however important it is — the Work index heading and the Home hero statement are both governed by this.
 
-`display-hero`'s floor is 2.75rem rather than the reference's implied larger minimum, because at a 3.5rem floor the word "Scholarship" overflows a 320px viewport. See the note in `styles.css`.
+`display-hero` is sized on `min(11vw, 15vh)` — the smaller of width and height. 11vw alone is the reference's ratio and is right on a normal screen, but on a short one (a 720p laptop, or any window with browser chrome eating the viewport) a two-line title at that size pushed the Hero's actions below the fold. A hero headline should be proportionate to the space it actually has.
+
+Its floor is 2.75rem rather than the reference's implied larger minimum, because at a 3.5rem floor the word "Scholarship" overflows a 320px viewport. See the note in `styles.css`.
 
 **Mono tracking.** Letter-spacing is a hierarchy of its own on the utility face, and there are exactly three steps. A fourth arbitrary value is a bug:
 
@@ -143,6 +145,8 @@ The one requirement on a section using it is `relative`, or the glow anchors to 
 
 Where a section genuinely must clip — the Hero's parallaxing photo — the clip goes on an inner wrapper around the photo, never on the section itself.
 
+**A glow's gradient must reach transparent before its box ends**, or the box itself shows as a hard-edged rectangle. Both the glow and the grain mask therefore use `closest-side` sizing, centred: that ties the gradient's end to the nearest edge by definition, so it cannot regress when a box is resized. The earlier off-centre `circle at 40% 60%` with a `68%` stop was still mid-colour when it hit the near edge, which drew a visible rectangle across the top-right of `/about`. It was invisible in the markup and obvious in a screenshot.
+
 ### 4b. The page-level ambient layer (added 2026-09-07)
 
 One fixed layer in the app shell, outside the router outlet, holding a large weak glow and the grain that textures it.
@@ -153,49 +157,29 @@ Section glows still exist, layered above it for emphasis. The ambient one is del
 
 **Why the grain lives with the glow rather than over the whole page**: `mix-blend-mode: overlay` against pure black resolves to black, because overlay doubles the backdrop when it is below 0.5 and twice zero is zero. Film grain is therefore only ever visible where something has already lit the area. Pairing it with a glow is not a stylistic preference; it is the only place it renders at all.
 
-### 4c. The Hero: the contrast strip, and its composition (added 2026-09-07)
+### 4c. The Hero (revised 2026-09-07)
 
-**The strip is the reference's signature and it is a real layer.** A second copy of the same photo, at the same size and position so it registers exactly with the layer beneath, lifted out of the darkening treatment and clipped to a vertical band. It paints **above the headline and below everything else**, so the giant word runs behind it and re-emerges on the other side.
+**The contrast strip was built and then removed.** The idea was the reference's: a second copy of the photo, undarkened and clipped to a vertical band, painted above the headline so the giant word ran behind it and re-emerged. Rendered, it did not read the way it does in the reference — it cut SOFTWARE mid-word and the rest never came back, so the one line a visitor must be able to read was the one thing on the page they could not.
 
-In the mockup this happened by accident — white type crossed a brightly lit white sleeve and the letters vanished into it. Making it a layer makes it deliberate and repeatable: it lands in the same place on every title.
+It is gone, and the lesson is recorded rather than the effect: **in the mockup that look was emergent**, white type crossing a brightly lit sleeve in a particular photograph at a particular size. Reproducing it as a deliberate layer meant it fired on every title at a fixed position, including the ones where it landed on top of a letter that mattered. An effect that depends on the content it covers cannot be applied by rule.
 
-**Layer order is the effect**, so it is set per child, never on a wrapper:
+The headline is plain text. The identity is carried by the photograph, the glow, the grain and the type — which is enough.
 
-| Layer | z |
-|---|---|
-| Photo, gradient, glow, grain | 0 |
-| **Headline** | 10 |
-| **Contrast strip** | 20 |
-| Role counter, rule, CTAs, positioning, subline, viewfinder | 30 |
+**The horizontal scrim is what makes the hero readable.** All copy sits in a left column over a high-contrast portrait whose brightest region is a lit sleeve just right of centre. Without a scrim the subline crossed it and became white-on-white — and *variably* so, because the block's width changes with the length of the rotating word above it. A left-to-right dark gradient removes the variable instead of dodging it, fading out before the subject's face so the portrait is still a photograph.
 
-The content wrapper carries `position: relative` with **no** z-index, deliberately. A relative element at `z-index: auto` creates no stacking context, so its children compete directly with the strip that is their parent's sibling. Putting a z-index on the wrapper traps every child in one context and the strip can never come between them.
+**Composition and the fold.** Height is content-driven with a floor (`min-h-[76svh]`), not a fixed viewport fraction: a fixed height forced dead space below the actions on a tall screen. `svh` not `vh`, because `vh` on mobile means the *largest* viewport, the one you only get once the browser chrome retracts.
 
-**The headline is uppercase.** Presentation, not content — the stored titles keep their casing and every other use of them is unaffected. It matters because the reference sets this headline in caps, and because Title Case is narrow enough that the shortest title would stop short of the strip entirely, firing the effect on some titles and not others.
+The rotating title reserves **two lines** of height (`min-h-[1.72em]`, two lines at the 0.86 line-height). Without it the hero grew and shrank on a timer — "Builder" is one line, "Frontend Specialist" is two — and every section below stepped up and down every few seconds. The reference's own note calls for this: bottom-anchored so the stack below never moves.
 
-**Desktop only.** Across a phone-width headline the band swallows a whole word rather than slicing a letter, and the title has to stay readable more than it has to be clever.
+Measured after the fix, at 390x844, 1280x720, 1366x640, 1440x900, 1536x864 and 1920x1080: the hero's height, the headline's height and the actions' position are **identical in all three title states**, and View Work and Resume are above the fold at every one of those sizes.
 
-**Accessibility**: the headline is real server-rendered text. The strip covers it visually and never touches the DOM, so the full title is always in the accessibility tree and always indexable.
+### 4d. The rotating-title transition (revised 2026-09-07)
 
-**Composition and the fold.** Height is `svh`-based with a cap at both ends: `h-[80svh] max-h-46rem min-h-34rem`. `vh` on mobile means the *largest* viewport, the one you only get once the browser chrome retracts, so a `92vh` hero with bottom-anchored content pushed the CTA row under the address bar on first paint. `svh` lays out what is actually visible. The cap stops the hero becoming a wall of empty photo on a tall monitor; the floor keeps it usable in landscape. Content stays bottom-anchored, as the reference requires so the block never moves between title states, but with enough bottom padding that it is lifted off the viewport edge rather than pressed against it.
+A cross-fade, driven by one signal and one CSS transition.
 
-The result that matters: **View Work and Resume are above the fold at every common screen height.** They are the two things a recruiter came to press (brief §28).
+An earlier version ran a GSAP timeline that swept a band across the word while it rolled out of a clipped frame odometer-style. It was more machinery than this needed and it depended on the contrast strip above, which is gone. Two CSS properties cannot break, need no library, and cost nothing to load.
 
-### 4d. The rotating-title transition (added 2026-09-07)
-
-A crossfade is what every site reaches for and it says nothing about this one. The motion is built from the site's own signature instead — the strip performs the change:
-
-1. A **wipe band**, the strip made kinetic, sweeps across the word.
-2. The word **rolls**: the outgoing title travels up out of a clipped frame and the incoming one arrives from below, like an odometer. That suits oversized condensed type far better than a fade, which dissolves the type into a ghost exactly where its presence is the point.
-
-The swap is timed to happen **while the band is over the word**, so the new title emerges from behind it. Nothing announces the change; the strip passes and the word has become the next one.
-
-Constraints it respects: **GSAP free core only** — no SplitText, no Club plugin, nothing needing a licence key. Everything animated is `transform` and `opacity`, so it stays on the compositor and never triggers layout. Positions are expressed in `xPercent`/`yPercent` rather than pixels, so no measurement is needed and it stays correct as the fluid type scale resizes the heading.
-
-Under `prefers-reduced-motion` **the rotation does not start at all** and the first title stays. The criterion is not only about how a transition looks but about content that changes on its own, and index 0 is a complete resting state rather than a loading one. GSAP is never fetched for that visitor either — the same rule `RevealDirective` follows.
-
-The clip frame carries vertical padding with a matching negative margin. The `display-hero` line-height is 0.86, tighter than the glyph box, so a flush `overflow-hidden` shaves the tops of the capitals; the negative margin takes the added height back out of the layout so the block below does not move.
-
-**Intensity varies by content, application does not.** Long-form prose pages (`/about`, the case-study body, `/beyond/*`) get the treatment on the page frame and keep it off the reading column: a glow behind two thousand words fights the reading. That is a decision about how much, not about whether.
+Under `prefers-reduced-motion` the rotation does not start at all and the first title stays. The criterion is not only about how a transition looks but about content that changes on its own, and index 0 is a complete resting state rather than a loading one.
 
 ---
 
@@ -289,7 +273,7 @@ These are not aspirations; a change that breaks one of them is a regression.
 
 **Mobile is designed, not shrunk.** Below `sm` the header's four links plus Resume become a disclosure panel of full-width 48px rows, because five targets in one row at 375px produced roughly 30px tap areas packed against each other. Card grids, the featured two-column split, and the case-study header all collapse to a single column. The viewfinder frames are desktop-only.
 
-**No horizontal scroll, ever.** `body { overflow-x: clip }` is the sole mechanism now that section glows are deliberately unclipped (§4a). Clipped on `body` rather than `html` because `overflow` on the scrolling root silently kills `position: sticky` on the header. Note that clipping means an overflowing element is *cut off*, not scrollable — so oversized type has to be sized to fit rather than relying on the clip (see §3a).
+**No horizontal scroll, ever.** `overflow-x: clip` on **both** the root and `body`, now that section glows are deliberately unclipped (§4a) and genuinely extend past the right edge — measured at 233px on a 1440 viewport. `body` alone stopped the scrollbar, but `documentElement.scrollWidth` still exceeded its client width, which is the difference between "cannot scroll sideways" and "happens not to have a scrollbar". `clip` never `hidden`: clip creates no scroll container, so `position: sticky` on the header keeps working — verified by measuring the header's position after a 600px scroll at six viewport sizes. Note that clipping means an overflowing element is *cut off*, not scrollable — so oversized type has to be sized to fit rather than relying on the clip (see §3a).
 
 **Focus is never hidden behind the sticky header.** `scroll-padding-top: 6rem` on the root reserves the header's height on every scroll-into-view, including the browser's own focus scrolling and the skip link. Without it, following the skip link put `#main` flush against the viewport top where the header covered it — a WCAG 2.2 AA failure ("Focus Not Obscured (Minimum)"), fixed 2026-09-07.
 
@@ -297,7 +281,7 @@ These are not aspirations; a change that breaks one of them is a regression.
 
 **Performance.** Below-the-fold images are `loading="lazy" decoding="async"`; images sit in aspect-ratio boxes so they reserve their space and do not shift layout. No effect in this system animates a layout property. GSAP stays dynamically imported and out of the initial bundle, and is never fetched at all by a visitor who asked for reduced motion. Where the skill-recommended technique and the budget disagreed, the lighter option was taken — the hover system is the main instance, and the grain's `steps()` timing the other.
 
-**Measured cost of the full visual pass** (2026-09-07, including the continuity, polish and Hero corrections): initial bundle 352.39 kB → 375.61 kB raw, 101.46 kB → 106.06 kB estimated transfer. **+4.60 kB transfer sitewide, and no new dependency.** GSAP stays in a lazy chunk despite the Hero now importing it — verified in the build output, not assumed. The stylesheet accounts for about a kilobyte of that, the header's mobile disclosure and the shared backdrop component for most of the rest.
+**Measured cost of the full visual pass** (2026-09-07, final): initial bundle 352.39 kB → 374.75 kB raw, 101.46 kB → 105.96 kB estimated transfer. **+4.50 kB transfer sitewide, and no new dependency.** The Hero no longer imports GSAP at all; it is still lazy-loaded by the scroll-reveal directive.
 
 ---
 
