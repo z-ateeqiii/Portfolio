@@ -5,6 +5,7 @@ import {
   ElementRef,
   OnInit,
   afterNextRender,
+  computed,
   inject,
   input,
   signal,
@@ -18,6 +19,7 @@ import { COPY, PROCESS } from '../../core/content/site-copy';
 import { ProofPoint } from '../../core/models';
 import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
+import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdrop';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
@@ -51,7 +53,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RevealDirective, UiButton, UiCard, UiEyebrow, UiTag],
+  imports: [RouterLink, RevealDirective, UiButton, UiCard, UiEyebrow, UiStripBackdrop, UiTag],
   template: `
     @let p = profile();
 
@@ -70,22 +72,23 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
           class="absolute inset-0"
           style="background:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.05) 32%, rgba(0,0,0,.72) 78%, rgba(0,0,0,.95) 100%)"
         ></div>
-        <div class="photo-strip-glow absolute -bottom-64 -left-56 h-205 w-250"></div>
-        <div class="photo-strip-grain"></div>
+        <ui-strip-backdrop anchor="bottom-left" scale="lg" />
         <div
-          class="photo-strip-frame absolute top-16 right-16 hidden h-112 w-52 lg:block"
+          class="photo-strip-frame top-16 right-16 hidden h-112 w-52 lg:block"
           aria-hidden="true"
         ></div>
 
         <div
-          class="absolute inset-x-6 bottom-10 flex flex-col items-start gap-6 sm:inset-x-14 sm:bottom-12"
+          class="absolute inset-x-6 bottom-10 z-10 flex flex-col items-start gap-6
+                 sm:inset-x-14 sm:bottom-12"
         >
-          <p class="font-mono text-label text-action uppercase">
+          <p class="mono-label text-action">
             Role {{ pad(heroTitleIndex() + 1) }} / {{ pad(p!.heroTitles!.length) }}
           </p>
 
           <h1
-            class="display-condensed font-display text-display-hero text-fg transition-all duration-[--duration-slow] ease-[--ease-out-soft]"
+            class="display-condensed font-display text-display-hero text-fg transition-all
+                   duration-[--duration-slow] ease-[--ease-out-soft]"
             [class.opacity-0]="!heroTitleVisible()"
             [class.translate-y-3]="!heroTitleVisible()"
           >
@@ -96,7 +99,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
             <p class="max-w-md text-body-lg text-fg">{{ p!.heroSubline }}</p>
           }
 
-          <div class="h-px w-full bg-fg/16"></div>
+          <div class="rule-strip"></div>
 
           <div class="flex flex-wrap items-center gap-4">
             <a uiButton routerLink="/work">View Work</a>
@@ -109,34 +112,49 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
         </div>
       </section>
     } @else if (p) {
-      <!-- 1. HERO — simple variant (02 §4.1), unchanged from before the
-           redesign: no photo, headline + subline only. -->
-      <section class="container-wide pt-20 pb-16 sm:pt-28 sm:pb-24">
-        <p class="font-mono text-label text-fg-muted uppercase">{{ p.positioning }}</p>
-        <h1 class="mt-6 max-w-4xl text-display-1 font-display text-fg">{{ p.heroStatement }}</h1>
-        @if (p.heroSubline) {
-          <p class="mt-6 max-w-2xl text-body-lg text-fg-muted">{{ p.heroSubline }}</p>
-        }
+      <!-- 1. HERO — simple variant (02 §4.1). No photo, so nothing is layered
+           over an image; the strip treatment is carried by the backdrop alone.
 
-        <div class="mt-10 flex flex-wrap items-center gap-4">
-          <a uiButton routerLink="/work">View Work</a>
-          @if (p.resumeFile) {
-            <a uiButton variant="secondary" [href]="p.resumeFile" target="_blank" rel="noopener">
-              Resume
-            </a>
+           The statement stays at display-1 rather than the oversized
+           display-hero: heroStatement is a full sentence, and the condensed
+           oversized size is for a short NAME or role word. Condensing a
+           sentence reads as broken rather than bold — the same call made on
+           the Work index heading. -->
+      <section class="relative flex min-h-[78vh] items-end overflow-hidden pt-20 pb-16 sm:pt-28">
+        <ui-strip-backdrop anchor="bottom-left" scale="lg" />
+
+        <div class="container-wide stagger-in-lead relative flex flex-col items-start gap-7">
+          <p class="mono-label text-action">{{ p.positioning }}</p>
+
+          <h1 class="max-w-4xl text-display-1 font-display text-fg">{{ p.heroStatement }}</h1>
+
+          @if (p.heroSubline) {
+            <p class="max-w-xl text-body-lg text-fg">{{ p.heroSubline }}</p>
           }
+
+          <div class="rule-strip mt-3"></div>
+
+          <div class="flex flex-wrap items-center gap-4">
+            <a uiButton routerLink="/work">View Work</a>
+            @if (p.resumeFile) {
+              <a uiButton variant="secondary" [href]="p.resumeFile" target="_blank" rel="noopener">
+                Resume
+              </a>
+            }
+          </div>
         </div>
       </section>
     }
 
     <!-- 2. Proof Strip (02 §4.2) — optional, and currently empty by design. -->
-    @if (proofPoints().length) {
+    @if (provenProofPoints().length) {
       <section class="container-wide pb-16">
-        <ul class="flex flex-wrap gap-x-12 gap-y-6">
-          @for (point of proofPoints(); track point.id) {
+        <div class="rule-strip"></div>
+        <ul appReveal mode="children" class="mt-8 flex flex-wrap gap-x-12 gap-y-6">
+          @for (point of provenProofPoints(); track point.id) {
             <li>
-              <p class="font-display text-display-3 text-fg">{{ point.value }}</p>
-              <p class="mt-1 font-mono text-label text-fg-muted uppercase">{{ point.label }}</p>
+              <p class="display-condensed font-display text-display-2 text-fg">{{ point.value }}</p>
+              <p class="mono-label mt-2 text-fg-muted">{{ point.label }}</p>
             </li>
           }
         </ul>
@@ -145,72 +163,92 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
     <!-- 3. Featured Work (02 §4.3) — leads with Scholarship, per brief §15. -->
     @if (featured().projects.length) {
-      <section appReveal class="container-wide py-16">
-        <ui-eyebrow index="01">Featured Work</ui-eyebrow>
-        <h2 class="mt-4 max-w-2xl text-display-2 font-display text-fg">{{ copy.featuredWork }}</h2>
+      <section class="relative overflow-hidden py-16">
+        <ui-strip-backdrop anchor="top-right" scale="sm" />
 
-        <div class="mt-10 grid gap-6 md:grid-cols-2">
-          @for (project of featured().projects; track project.slug; let i = $index) {
-            <ui-card [interactive]="true" [accent]="project.tier === 'featured'">
-              <!--
-                Cover image (04 §6's isFeatured), rendered only when a project
-                has one — a text-only card is the existing, already-correct
-                fallback (brief §32: missing media never blocks a page).
-                Desaturated per the visual-identity redesign (2026-09-06),
-                matching the treatment on /work's cards.
-              -->
-              @if (featured().covers[project.slug]; as cover) {
-                <img
-                  [src]="cover.url"
-                  [alt]="cover.alt"
-                  loading="lazy"
-                  decoding="async"
-                  class="mb-4 aspect-video w-full rounded-sm object-cover grayscale contrast-125"
-                />
-              }
-              <div class="flex items-baseline justify-between gap-4">
-                <h3 class="display-condensed text-display-3 font-display text-fg">
-                  <a
-                    [routerLink]="['/work', project.slug]"
-                    class="text-fg no-underline hover:text-action"
-                    >{{ project.name }}</a
-                  >
-                </h3>
-                @if (project.timeframe) {
-                  <span class="font-mono text-label text-fg-muted whitespace-nowrap">{{
-                    project.timeframe
-                  }}</span>
+        <div class="container-wide relative">
+          <ui-eyebrow index="01">Featured Work</ui-eyebrow>
+          <h2 class="mt-5 max-w-2xl text-display-2 font-display text-fg">{{ copy.featuredWork }}</h2>
+
+          <div appReveal mode="grid" class="mt-10 grid gap-6 md:grid-cols-2">
+            @for (project of featured().projects; track project.slug) {
+              <ui-card
+                [interactive]="true"
+                [accent]="project.tier === 'featured'"
+                class="overflow-hidden p-0"
+              >
+                <!--
+                  Cover image (04 §6's isFeatured), rendered only when a project
+                  has one — a text-only card is the existing, already-correct
+                  fallback (brief §32: missing media never blocks a page).
+                  Desaturated, and un-desaturating on hover, matching /work.
+                -->
+                @if (featured().covers[project.slug]; as cover) {
+                  <div class="overflow-hidden">
+                    <img
+                      [src]="cover.url"
+                      [alt]="cover.alt"
+                      loading="lazy"
+                      decoding="async"
+                      class="hover-reveal-media aspect-video w-full object-cover grayscale
+                             contrast-115"
+                    />
+                  </div>
                 }
-              </div>
 
-              <p class="mt-4 text-body text-fg-muted">{{ project.tagline }}</p>
+                <div class="p-6">
+                  <div class="flex items-baseline justify-between gap-4">
+                    <h3 class="display-condensed text-display-3 font-display text-fg">
+                      <a
+                        [routerLink]="['/work', project.slug]"
+                        class="text-fg no-underline transition-colors duration-[--duration-base]
+                               ease-[--ease-out-strong] hover:text-action"
+                        >{{ project.name }}</a
+                      >
+                    </h3>
+                    @if (project.timeframe) {
+                      <span class="mono-label shrink-0 text-fg-muted">{{ project.timeframe }}</span>
+                    }
+                  </div>
 
-              <ul class="mt-6 flex flex-wrap gap-2">
-                @for (tech of project.stack; track tech) {
-                  <li><ui-tag [icon]="tagIcon($index)">{{ tech }}</ui-tag></li>
-                }
-              </ul>
-            </ui-card>
-          }
+                  <p class="mt-4 text-body text-fg-muted">{{ project.tagline }}</p>
+
+                  <ul class="mt-6 flex flex-wrap gap-2">
+                    @for (tech of project.stack; track tech; let i = $index) {
+                      <li><ui-tag [icon]="tagIcon(i)">{{ tech }}</ui-tag></li>
+                    }
+                  </ul>
+                </div>
+              </ui-card>
+            }
+          </div>
+
+          <p class="mt-8">
+            <a
+              routerLink="/work"
+              class="sweep-underline inline-flex min-h-11 items-center text-body text-action
+                     no-underline"
+              >All work →</a
+            >
+          </p>
         </div>
-
-        <p class="mt-8">
-          <a routerLink="/work" class="text-body text-action no-underline hover:underline"
-            >All work →</a
-          >
-        </p>
       </section>
     }
 
-    <!-- 4. How I Work (02 §4.4) — condensed from brief §10, not the full list. -->
-    <section appReveal class="container-wide py-16">
+    <!-- 4. How I Work (02 §4.4) — condensed from brief §10, not the full list.
+         The four movements stagger as a grid: they are a sequence, and arriving
+         in sequence says so without numbering them. -->
+    <section class="container-wide py-16">
       <ui-eyebrow index="02">How I Work</ui-eyebrow>
-      <h2 class="mt-4 max-w-2xl text-display-2 font-display text-fg">{{ copy.process }}</h2>
+      <h2 class="mt-5 max-w-2xl text-display-2 font-display text-fg">{{ copy.process }}</h2>
 
-      <ol class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <ol appReveal mode="grid" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         @for (movement of process; track movement.title) {
-          <li class="border-t border-fg/12 pt-4">
-            <p class="font-mono text-label text-fg uppercase">{{ movement.title }}</p>
+          <li
+            class="border-t border-fg/12 pt-4 transition-colors duration-[--duration-base]
+                   ease-[--ease-out-strong] hover:border-action/60"
+          >
+            <p class="mono-label text-fg">{{ movement.title }}</p>
             <ul class="mt-3 space-y-2">
               @for (step of movement.steps; track step) {
                 <li class="text-caption text-fg-muted">{{ step }}</li>
@@ -223,12 +261,15 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
     <!-- 5. Story Teaser (02 §4.5) — a short excerpt, bridging into /about. -->
     @if (storyExcerpt(); as excerpt) {
-      <section appReveal class="container-wide py-16">
+      <section appReveal mode="children" class="container-wide py-16">
         <ui-eyebrow index="03">Story</ui-eyebrow>
-        <h2 class="mt-4 max-w-2xl text-display-2 font-display text-fg">{{ copy.storyTeaser }}</h2>
+        <h2 class="mt-5 max-w-2xl text-display-2 font-display text-fg">{{ copy.storyTeaser }}</h2>
         <p class="mt-6 max-w-2xl text-body-lg text-fg-muted">{{ excerpt }}</p>
         <p class="mt-8">
-          <a routerLink="/about" class="text-body text-action no-underline hover:underline"
+          <a
+            routerLink="/about"
+            class="sweep-underline inline-flex min-h-11 items-center text-body text-action
+                   no-underline"
             >The full story →</a
           >
         </p>
@@ -236,28 +277,36 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     }
 
     <!-- 6. Beyond Code Teaser (02 §4.6) — one line and a door, not a section. -->
-    <section appReveal class="container-wide py-16">
+    <section appReveal mode="children" class="container-wide py-16">
       <ui-eyebrow index="04">Beyond Code</ui-eyebrow>
-      <p class="mt-4 max-w-2xl text-display-3 font-display text-fg">{{ copy.beyondTeaser }}</p>
+      <p class="mt-5 max-w-2xl text-display-3 font-display text-fg">{{ copy.beyondTeaser }}</p>
       <p class="mt-8">
-        <a routerLink="/beyond" class="text-body text-action no-underline hover:underline"
+        <a
+          routerLink="/beyond"
+          class="sweep-underline inline-flex min-h-11 items-center text-body text-action
+                 no-underline"
           >Take a look →</a
         >
       </p>
     </section>
 
-    <!-- 7. Contact / Closing CTA (02 §4.7). -->
+    <!-- 7. Contact / Closing CTA (02 §4.7). The last full-strip moment before
+         the footer, so the page closes lit rather than trailing off. -->
     @if (p) {
-      <section appReveal class="container-wide py-16">
-        <ui-eyebrow index="05">Contact</ui-eyebrow>
-        <h2 class="mt-4 max-w-2xl text-display-2 font-display text-fg">{{ copy.contact }}</h2>
-        <div class="mt-8 flex flex-wrap items-center gap-4">
-          <a uiButton [href]="'mailto:' + p.contactEmail">Email me</a>
-          @if (p.resumeFile) {
-            <a uiButton variant="secondary" [href]="p.resumeFile" target="_blank" rel="noopener">
-              Resume
-            </a>
-          }
+      <section class="relative overflow-hidden py-16">
+        <ui-strip-backdrop anchor="bottom-right" scale="sm" />
+
+        <div class="container-wide relative">
+          <ui-eyebrow index="05">Contact</ui-eyebrow>
+          <h2 class="mt-5 max-w-2xl text-display-2 font-display text-fg">{{ copy.contact }}</h2>
+          <div class="mt-8 flex flex-wrap items-center gap-4">
+            <a uiButton [href]="'mailto:' + p.contactEmail">Email me</a>
+            @if (p.resumeFile) {
+              <a uiButton variant="secondary" [href]="p.resumeFile" target="_blank" rel="noopener">
+                Resume
+              </a>
+            }
+          </div>
         </div>
       </section>
     }
@@ -267,6 +316,25 @@ export class Home implements OnInit {
   /** Resolved per-route (see app.routes.ts). */
   readonly featured = input<ProjectsWithCovers>({ projects: [], covers: {} });
   readonly proofPoints = input<ProofPoint[]>([]);
+
+  /**
+   * Proof points that actually state something (found 2026-09-07).
+   *
+   * A ProofPoint created in the dashboard and never filled in is a real record
+   * with `value: ''` and `label: ''`, and the strip was rendering it as a blank
+   * list item — an empty figure presented as a credential. brief §22 requires
+   * proof-point numbers to be verified before they are published, and an empty
+   * one is unverified by definition.
+   *
+   * Filtered here rather than fixed in the data because the same empty record
+   * can be created again at any time from the dashboard. The section as a whole
+   * disappears when nothing survives the filter, which is the same rule the
+   * rest of the site follows: a missing section beats an empty shelf
+   * (brief §32).
+   */
+  protected readonly provenProofPoints = computed(() =>
+    this.proofPoints().filter((p) => p.value.trim() !== '' && p.label.trim() !== ''),
+  );
 
   /** Shared across every route, so it is read from the store, not re-fetched. */
   protected readonly profile = inject(SiteState).profile;

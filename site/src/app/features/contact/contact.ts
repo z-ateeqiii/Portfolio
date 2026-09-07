@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { COPY } from '../../core/content/site-copy';
 import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
+import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdrop';
 import { UiButton, UiEyebrow } from '../../shared/ui';
 
 /**
@@ -23,44 +24,64 @@ import { UiButton, UiEyebrow } from '../../shared/ui';
 @Component({
   selector: 'app-contact',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButton, UiEyebrow],
+  imports: [UiButton, UiEyebrow, UiStripBackdrop],
   template: `
     @let p = profile();
 
-    <section class="container-content py-20">
-      <ui-eyebrow>Contact</ui-eyebrow>
-      <h1 class="mt-4 text-display-1 font-display text-fg">Get in touch</h1>
+    <section class="relative overflow-hidden py-20">
+      <ui-strip-backdrop anchor="bottom-right" scale="md" />
 
-      @if (p) {
-        <p class="mt-6 text-body-lg text-fg-muted">{{ copy.contact }}</p>
+      <div class="container-content stagger-in-lead relative">
+        <ui-eyebrow>Contact</ui-eyebrow>
+        <h1 class="display-condensed mt-5 text-display-hero font-display text-fg">Get in touch</h1>
 
-        <div class="mt-10">
-          <a uiButton [href]="'mailto:' + p.contactEmail">{{ p.contactEmail }}</a>
-        </div>
+        @if (p) {
+          <p class="mt-6 max-w-lg text-body-lg text-fg">{{ copy.contact }}</p>
 
-        <ul class="mt-10 space-y-4">
-          @for (channel of channels(); track channel.label) {
-            <li class="border-t border-fg/12 pt-4">
-              <a
-                [href]="channel.href"
-                target="_blank"
-                rel="noopener"
-                class="text-body-lg text-fg no-underline hover:text-action"
-                >{{ channel.label }}</a
-              >
-            </li>
-          }
-        </ul>
-
-        <!-- 02 §10: the resume is repeated here as one of its entry points. -->
-        @if (p.resumeFile) {
-          <div class="mt-12 border-t border-fg/12 pt-8">
-            <a uiButton variant="secondary" [href]="p.resumeFile" target="_blank" rel="noopener">
-              Download resume
-            </a>
+          <div class="mt-10">
+            <a uiButton [href]="'mailto:' + p.contactEmail">{{ p.contactEmail }}</a>
           </div>
+
+          <!--
+            Each channel is a full row, not a word on a line: the whole row is
+            the target, which is what makes these comfortable on a phone. The
+            arrow slides on hover so the row reads as a door rather than a
+            label that happens to be blue.
+          -->
+          <ul class="mt-12">
+            @for (channel of channels(); track channel.label) {
+              <li>
+                <a
+                  [href]="channel.href"
+                  target="_blank"
+                  rel="noopener"
+                  class="group flex min-h-16 items-center justify-between gap-4 border-t
+                         border-fg/12 py-4 text-body-lg text-fg no-underline transition-colors
+                         duration-[--duration-base] ease-[--ease-out-strong] hover:border-action/60
+                         hover:text-action"
+                >
+                  <span class="sweep-underline">{{ channel.label }}</span>
+                  <span
+                    class="shrink-0 transition-transform duration-[--duration-base]
+                           ease-[--ease-out-strong] group-hover:translate-x-1"
+                    aria-hidden="true"
+                    >→</span
+                  >
+                </a>
+              </li>
+            }
+          </ul>
+
+          <!-- 02 §10: the resume is repeated here as one of its entry points. -->
+          @if (p.resumeFile) {
+            <div class="mt-12 border-t border-fg/12 pt-8">
+              <a uiButton variant="secondary" [href]="p.resumeFile" target="_blank" rel="noopener">
+                Download resume
+              </a>
+            </div>
+          }
         }
-      }
+      </div>
     </section>
   `,
 })

@@ -17,6 +17,17 @@ export type UiTagIcon = 'diamond' | 'square' | 'circle';
  * ever needs to be clickable, that is a new component, not an input here —
  * interactive elements carry the orange accent and these deliberately do not.
  *
+ * Sized with `mono-mark` (12px at 0.16em tracking) rather than `text-caption`
+ * since the visual alignment pass (2026-09-07): the reference sets tags at the
+ * narrowest of its three tracking steps, which is what keeps a five-tag row
+ * from reading as wide as the heading above it. 12px is the floor — the
+ * reference's 10px is below ui-ux-pro-max's small-text guidance.
+ *
+ * The hover state is inherited, not owned: a tag warms when the CARD around it
+ * is hovered or focused (UiCard puts `group` on every card). A tag on its own,
+ * outside a card, has no hover — correctly, since on its own it is not part of
+ * anything clickable.
+ *
  * `icon` is optional and off by default — every existing call site (About's
  * Experience tags, the case-study body, etc.) is unaffected. It's the small
  * outlined shape from the visual-identity redesign (2026-09-06), used only on
@@ -45,8 +56,10 @@ export type UiTagIcon = 'diamond' | 'square' | 'circle';
   `,
   host: {
     class:
-      'inline-flex items-center gap-2 rounded-sm border border-fg/12 px-3 py-1 ' +
-      'font-mono text-caption text-fg-muted whitespace-nowrap',
+      'mono-mark inline-flex items-center gap-2 rounded-sm border border-fg/12 px-3 py-1 ' +
+      'text-fg-muted whitespace-nowrap transition-colors duration-[--duration-base] ' +
+      'ease-[--ease-out-strong] group-hover:border-fg/24 group-hover:text-fg ' +
+      'group-focus-within:border-fg/24 group-focus-within:text-fg',
   },
 })
 export class UiTag {

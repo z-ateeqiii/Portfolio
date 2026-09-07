@@ -3,6 +3,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 
 import { SocialPlatform } from '../../../core/models';
 import { SeoService } from '../../../core/seo/seo.service';
+import { UiStripBackdrop } from '../../../shared/blocks/strip-backdrop/strip-backdrop';
+import { RevealDirective } from '../../../shared/motion/reveal.directive';
 import { UiEyebrow, UiStatusDot } from '../../../shared/ui';
 
 /**
@@ -29,47 +31,78 @@ import { UiEyebrow, UiStatusDot } from '../../../shared/ui';
 @Component({
   selector: 'app-beyond-social',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, UiEyebrow, UiStatusDot],
+  imports: [DatePipe, RevealDirective, UiEyebrow, UiStatusDot, UiStripBackdrop],
   template: `
-    <section class="container-content py-20">
-      <ui-eyebrow>Beyond Code</ui-eyebrow>
-      <h1 class="mt-4 text-display-1 font-display text-fg">Social Media World</h1>
+    <article>
+      <header class="relative overflow-hidden pt-20 pb-10">
+        <ui-strip-backdrop anchor="top-right" scale="sm" />
 
-      <p class="mt-6 text-body-lg text-fg-muted">
-        Before software, this is where Muhammed built things for other people — editing video at
-        14, then making his own. The audience came from doing that for years.
-      </p>
+        <div class="container-content stagger-in-lead relative">
+          <ui-eyebrow>Beyond Code</ui-eyebrow>
+          <!-- "Social Media World" verbatim — the page's name in 02 §8.1, not
+               shortened to fit the larger type. -->
+          <h1 class="display-condensed mt-5 text-display-1 font-display text-fg">
+            Social Media World
+          </h1>
 
-      @if (platforms().length) {
-        <p class="mt-12 font-display text-display-2 text-fg">{{ combined() }}</p>
-        <p class="mt-2 font-mono text-label text-fg-muted uppercase">Combined reach</p>
+          <p class="mt-6 text-body-lg text-fg">
+            Before software, this is where Muhammed built things for other people — editing video
+            at 14, then making his own. The audience came from doing that for years.
+          </p>
+        </div>
+      </header>
 
-        <ul class="mt-10 space-y-4">
-          @for (platform of platforms(); track platform.platform) {
-            <li class="flex flex-wrap items-baseline justify-between gap-4 border-t border-fg/12 pt-4">
-              <a
-                [href]="platform.url"
-                target="_blank"
-                rel="noopener"
-                class="text-body-lg text-fg no-underline capitalize hover:text-action"
-                >{{ platform.platform }}</a
+      <div class="container-content pb-20">
+        @if (platforms().length) {
+          <!-- The combined figure is short and it is the point of the page, so
+               it gets the oversized condensed treatment the reference reserves
+               for a single word. See the combined() computed below for why it
+               is never rounded up across the million boundary. -->
+          <div class="rule-strip"></div>
+          <p class="display-condensed mt-8 font-display text-display-hero text-fg">
+            {{ combined() }}
+          </p>
+          <p class="mono-label mt-3 text-fg-muted">Combined reach</p>
+
+          <ul appReveal mode="children" class="mt-12 space-y-0">
+            @for (platform of platforms(); track platform.platform) {
+              <li
+                class="group flex flex-wrap items-center justify-between gap-x-6 gap-y-2
+                       border-t border-fg/12 py-5 transition-colors duration-[--duration-base]
+                       ease-[--ease-out-strong] hover:border-fg/30"
               >
-              <span class="font-mono text-body text-fg">{{ format(platform.followerCount) }}</span>
-              <span class="font-mono text-label text-fg-muted"
-                >verified {{ platform.lastVerifiedDate | date: 'MMM yyyy' }}</span
-              >
-              <ui-status-dot label="Live" />
-            </li>
-          }
-        </ul>
-      }
+                <a
+                  [href]="platform.url"
+                  target="_blank"
+                  rel="noopener"
+                  class="sweep-underline flex min-h-11 items-center text-body-lg text-fg
+                         capitalize no-underline transition-colors duration-[--duration-base]
+                         ease-[--ease-out-strong] hover:text-action"
+                  >{{ platform.platform }}</a
+                >
 
-      <!--
-        A curated video archive is still open (02 §14, 10 §3) and no SocialVideo
-        records are seeded. Nothing is rendered for it: an empty "coming soon"
-        shelf is worse than the section simply not existing (brief §32).
-      -->
-    </section>
+                <span class="flex flex-wrap items-center gap-x-6 gap-y-2">
+                  <span class="font-mono text-body-lg text-fg">{{
+                    format(platform.followerCount)
+                  }}</span>
+                  <span class="mono-label text-fg-muted"
+                    >verified {{ platform.lastVerifiedDate | date: 'MMM yyyy' }}</span
+                  >
+                  <ui-status-dot label="Live" />
+                </span>
+              </li>
+            }
+          </ul>
+        }
+
+        <!--
+          A curated video archive is still open (02 §14, 10 §3) and no
+          SocialVideo records are seeded. Nothing is rendered for it: an empty
+          "coming soon" shelf is worse than the section simply not existing
+          (brief §32).
+        -->
+      </div>
+    </article>
   `,
 })
 export class BeyondSocial {

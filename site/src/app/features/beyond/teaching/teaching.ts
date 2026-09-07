@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 
 import { TEACHING } from '../../../core/content/site-copy';
 import { SeoService } from '../../../core/seo/seo.service';
+import { UiStripBackdrop } from '../../../shared/blocks/strip-backdrop/strip-backdrop';
 import { UiEyebrow, UiTag } from '../../../shared/ui';
 
 /**
@@ -28,29 +29,43 @@ import { UiEyebrow, UiTag } from '../../../shared/ui';
 @Component({
   selector: 'app-beyond-teaching',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, UiEyebrow, UiTag],
+  imports: [RouterLink, UiEyebrow, UiStripBackdrop, UiTag],
   template: `
-    <section class="container-content py-20">
-      <ui-eyebrow>Beyond Code</ui-eyebrow>
-      <h1 class="mt-4 text-display-1 font-display text-fg">Teaching</h1>
+    <article>
+      <header class="relative overflow-hidden pt-20 pb-10">
+        <ui-strip-backdrop anchor="top-right" scale="sm" />
 
-      <p class="mt-6 text-body-lg text-fg-muted">{{ teaching.framing }}</p>
+        <div class="container-content stagger-in-lead relative">
+          <ui-eyebrow>Beyond Code</ui-eyebrow>
+          <h1 class="display-condensed mt-5 text-display-hero font-display text-fg">Teaching</h1>
 
-      <!-- brief §21: what this experience is evidence of. Presented as what it
-           is — a short list of qualities — rather than inflated into a
-           section per item. -->
-      <ul class="mt-10 flex flex-wrap gap-2">
-        @for (item of teaching.evidences; track item) {
-          <li><ui-tag>{{ item }}</ui-tag></li>
-        }
-      </ul>
+          <p class="mt-6 text-body-lg text-fg">{{ teaching.framing }}</p>
+        </div>
+      </header>
 
-      <nav class="mt-16 border-t border-fg/12 pt-8">
-        <a routerLink="/beyond" class="text-body text-action no-underline hover:underline"
-          >← Back to Beyond Code</a
-        >
-      </nav>
-    </section>
+      <div class="container-content pb-20">
+        <div class="rule-strip"></div>
+
+        <!-- brief §21: what this experience is evidence of. Presented as what
+             it is — a short list of qualities — rather than inflated into a
+             section per item. -->
+        <p class="mono-label mt-8 text-fg-muted">Evidence of</p>
+        <ul class="mt-5 flex flex-wrap gap-2">
+          @for (item of teaching.evidences; track item; let i = $index) {
+            <li><ui-tag [icon]="tagIcon(i)">{{ item }}</ui-tag></li>
+          }
+        </ul>
+
+        <nav class="mt-16 border-t border-fg/12 pt-6">
+          <a
+            routerLink="/beyond"
+            class="sweep-underline inline-flex min-h-11 items-center text-body text-action
+                   no-underline"
+            >← Back to Beyond Code</a
+          >
+        </nav>
+      </div>
+    </article>
   `,
 })
 export class BeyondTeaching {
@@ -66,4 +81,13 @@ export class BeyondTeaching {
   }
 
   protected readonly teaching = TEACHING;
+
+  /**
+   * The three shapes cycle by position, the same purely-rhythmic alternation
+   * used for stack tags — these are qualities, not technologies, and there is
+   * no meaning to map a particular shape onto either.
+   */
+  protected tagIcon(index: number): 'diamond' | 'square' | 'circle' {
+    return (['diamond', 'square', 'circle'] as const)[index % 3];
+  }
 }

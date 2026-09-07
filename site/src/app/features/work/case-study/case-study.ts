@@ -13,6 +13,7 @@ import { Media, Project } from '../../../core/models';
 import { SeoService } from '../../../core/seo/seo.service';
 import { UiDisclosure } from '../../../shared/blocks/disclosure/disclosure';
 import { UiGallery } from '../../../shared/blocks/gallery/gallery';
+import { UiStripBackdrop } from '../../../shared/blocks/strip-backdrop/strip-backdrop';
 import { RevealDirective } from '../../../shared/motion/reveal.directive';
 import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
 
@@ -52,6 +53,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
     UiEyebrow,
     UiGallery,
     UiStatusDot,
+    UiStripBackdrop,
     UiTag,
   ],
   template: `
@@ -64,56 +66,73 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         the outside, so nothing leaks about content that exists but is not
         public (05 §6). The query never returned it in the first place.
       -->
-      <section class="container-content py-20">
-        <ui-eyebrow>404</ui-eyebrow>
-        <h1 class="mt-4 text-display-2 font-display text-fg">This case study isn’t here.</h1>
-        <p class="mt-6 text-body-lg text-fg-muted">
-          The link may be wrong, or the project may not be published.
-        </p>
-        <p class="mt-8">
-          <a routerLink="/work" class="text-body text-action no-underline hover:underline"
-            >See all work →</a
-          >
-        </p>
+      <section class="relative overflow-hidden py-20">
+        <ui-strip-backdrop anchor="top-right" scale="sm" />
+
+        <div class="container-content stagger-in-lead relative">
+          <ui-eyebrow>404</ui-eyebrow>
+          <h1 class="display-condensed mt-5 text-display-1 font-display text-fg">
+            This case study isn’t here.
+          </h1>
+          <p class="mt-6 text-body-lg text-fg-muted">
+            The link may be wrong, or the project may not be published.
+          </p>
+          <p class="mt-8">
+            <a
+              routerLink="/work"
+              class="sweep-underline inline-flex min-h-11 items-center text-body text-action
+                     no-underline"
+              >See all work →</a
+            >
+          </p>
+        </div>
       </section>
     } @else {
-      <article class="container-content py-20">
-        <!-- 1. SNAPSHOT (03 §2.1). Photo-strip treatment per the
-             visual-identity redesign (2026-09-06): glow + grain behind the
-             text, an oversized condensed name, and — when the project has a
-             cover screenshot — a side panel with the viewfinder crop-mark
-             frame. Text reveals in three steps on mount (pure CSS, no JS —
-             see the stagger-in utility in styles.css), distinct from the
-             scroll-triggered appReveal directive used further down this page. -->
-        <header class="relative overflow-visible">
-          <div class="photo-strip-glow absolute -bottom-64 -right-52 -z-10 h-175 w-205"></div>
-          <div class="photo-strip-grain -z-10"></div>
+      <article class="py-20">
+        <!-- 1. SNAPSHOT (03 §2.1). Photo-strip treatment: glow + grain behind
+             the text, an oversized condensed name, and — when the project has
+             a cover screenshot — a side panel with the viewfinder crop-mark
+             frame. Text reveals in three steps on mount (pure CSS, no JS — see
+             the stagger-in utilities in styles.css), distinct from the
+             scroll-triggered appReveal directive used further down this page.
 
-          <div class="grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+             This header deliberately breaks out of container-content to the
+             wide container: it is the one full-bleed moment on a page that is
+             otherwise a single reading column, which is what makes the switch
+             to prose below it feel like arriving somewhere. -->
+        <header class="relative overflow-hidden pb-16">
+          <ui-strip-backdrop anchor="bottom-right" scale="md" />
+
+          <div
+            class="container-wide relative grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:items-center"
+          >
             <div>
-              <div class="stagger-in" style="animation-delay:0ms">
+              <div class="stagger-in-lead">
                 <ui-eyebrow>{{ p.tier }} project</ui-eyebrow>
-                <h1 class="display-condensed mt-4 text-display-hero font-display text-fg">
+                <h1 class="display-condensed mt-5 text-display-hero font-display text-fg">
                   {{ p.name }}
                 </h1>
-                <p class="mt-6 max-w-md text-body-lg text-fg-muted">{{ p.tagline }}</p>
+                <p class="mt-6 max-w-lg text-body-lg text-fg">{{ p.tagline }}</p>
               </div>
 
-              <div class="stagger-in" style="animation-delay:120ms">
-                <dl class="mt-10 flex flex-wrap gap-x-10 gap-y-4">
-                  @if (p.role) {
-                    <div>
-                      <dt class="font-mono text-label text-fg-muted uppercase">Role</dt>
-                      <dd class="mt-1 text-body text-fg">{{ p.role }}</dd>
-                    </div>
-                  }
-                  @if (p.timeframe) {
-                    <div>
-                      <dt class="font-mono text-label text-fg-muted uppercase">Timeframe</dt>
-                      <dd class="mt-1 text-body text-fg">{{ p.timeframe }}</dd>
-                    </div>
-                  }
-                </dl>
+              <div class="stagger-in-lead" style="animation-delay:140ms">
+                <!-- The reference's metadata row: two facts with a short rule
+                     between them, not a definition list of labelled cells.
+                     Rendered only for what the project actually carries — the
+                     freelance sites have neither, and get no row at all. -->
+                @if (p.role || p.timeframe) {
+                  <div class="mt-9 flex flex-wrap items-center gap-x-5 gap-y-2">
+                    @if (p.role) {
+                      <span class="mono-label text-fg-muted">{{ p.role }}</span>
+                    }
+                    @if (p.role && p.timeframe) {
+                      <span class="h-px w-6 bg-fg/30" aria-hidden="true"></span>
+                    }
+                    @if (p.timeframe) {
+                      <span class="mono-label text-fg-muted">{{ p.timeframe }}</span>
+                    }
+                  </div>
+                }
 
                 <ul class="mt-8 flex flex-wrap gap-2">
                   @for (tech of p.stack; track tech; let i = $index) {
@@ -125,7 +144,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
                      because its main repo was never provided (10 §2) — an
                      absent link is honest, a guessed one is a broken promise. -->
                 @if (p.liveUrl || p.githubUrl) {
-                  <div class="mt-8 flex flex-wrap items-center gap-4">
+                  <div class="mt-9 flex flex-wrap items-center gap-4">
                     @if (p.liveUrl) {
                       <a uiButton [href]="p.liveUrl" target="_blank" rel="noopener">
                         <ui-status-dot />
@@ -143,9 +162,9 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
             </div>
 
             @if (headerImage(); as image) {
-              <div class="stagger-in relative" style="animation-delay:240ms">
+              <div class="stagger-in-lead relative" style="animation-delay:280ms">
                 <div
-                  class="photo-strip-frame absolute -top-4 -right-4 hidden h-[calc(100%+2rem)] w-3/5 lg:block"
+                  class="photo-strip-frame -top-5 -right-5 hidden h-[calc(100%+2.5rem)] w-3/5 lg:block"
                   aria-hidden="true"
                 ></div>
                 <img
@@ -160,6 +179,8 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
           </div>
         </header>
 
+        <div class="container-content">
+
         <!-- Media (04 §6). Nothing is seeded yet, so this renders nothing —
              missing media never blocks a case study going live (brief §32).
              A masonry grid a visitor can click through, not a static stack
@@ -170,8 +191,13 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
           </div>
         }
 
-        <!-- 2. THE PROBLEM (03 §2.2) -->
-        <section appReveal class="mt-16">
+        <!-- 2. THE PROBLEM (03 §2.2).
+
+             Each prose block reveals its own children in sequence (eyebrow,
+             then the paragraphs) rather than arriving as one slab. On a page
+             that is six ordered blocks by rule (03 §2), motion that arrives in
+             order is carrying the same information the numbering does. -->
+        <section appReveal mode="children" class="mt-16">
           <ui-eyebrow index="01">The Problem</ui-eyebrow>
           <div class="mt-6 space-y-6">
             @for (para of paragraphs(p.problem); track $index) {
@@ -182,7 +208,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
 
         <!-- 3. THE APPROACH (03 §2.3) — absent on compact tier, by data. -->
         @if (p.approach) {
-          <section appReveal class="mt-16">
+          <section appReveal mode="children" class="mt-16">
             <ui-eyebrow index="02">The Approach</ui-eyebrow>
             <div class="mt-6 space-y-6">
               @for (para of paragraphs(p.approach); track $index) {
@@ -193,7 +219,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         }
 
         <!-- 4. THE BUILD (03 §2.4) -->
-        <section appReveal class="mt-16">
+        <section appReveal mode="children" class="mt-16">
           <ui-eyebrow [index]="p.approach ? '03' : '02'">The Build</ui-eyebrow>
           <div class="mt-6 space-y-6">
             @for (para of paragraphs(p.build); track $index) {
@@ -215,7 +241,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         }
 
         <!-- 6. OUTCOME (03 §2.6) -->
-        <section appReveal class="mt-16">
+        <section appReveal mode="children" class="mt-16">
           <ui-eyebrow [index]="outcomeIndex()">Outcome</ui-eyebrow>
           <div class="mt-6 space-y-6">
             @for (para of paragraphs(p.outcome); track $index) {
@@ -224,15 +250,20 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
           </div>
         </section>
 
-        <!-- 02 §6: always a way back to /work and forward to contact/resume. -->
-        <nav class="mt-16 flex flex-wrap gap-x-8 gap-y-3 border-t border-fg/12 pt-8">
-          <a routerLink="/work" class="text-body text-action no-underline hover:underline"
-            >← All work</a
-          >
-          <a routerLink="/contact" class="text-body text-action no-underline hover:underline"
-            >Get in touch →</a
-          >
-        </nav>
+          <!-- 02 §6: always a way back to /work and forward to contact/resume. -->
+          <nav class="mt-16 flex flex-col items-start gap-1 border-t border-fg/12 pt-6 sm:flex-row sm:gap-x-8">
+            <a
+              routerLink="/work"
+              class="sweep-underline flex min-h-11 items-center text-body text-action no-underline"
+              >← All work</a
+            >
+            <a
+              routerLink="/contact"
+              class="sweep-underline flex min-h-11 items-center text-body text-action no-underline"
+              >Get in touch →</a
+            >
+          </nav>
+        </div>
       </article>
     }
   `,

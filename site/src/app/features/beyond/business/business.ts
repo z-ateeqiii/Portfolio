@@ -3,6 +3,8 @@ import { RouterLink } from '@angular/router';
 
 import { BusinessVenture } from '../../../core/models';
 import { SeoService } from '../../../core/seo/seo.service';
+import { UiStripBackdrop } from '../../../shared/blocks/strip-backdrop/strip-backdrop';
+import { RevealDirective } from '../../../shared/motion/reveal.directive';
 import { UiEyebrow } from '../../../shared/ui';
 
 /**
@@ -25,39 +27,59 @@ import { UiEyebrow } from '../../../shared/ui';
 @Component({
   selector: 'app-beyond-business',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, UiEyebrow],
+  imports: [RouterLink, RevealDirective, UiEyebrow, UiStripBackdrop],
   template: `
-    <section class="container-content py-20">
-      <ui-eyebrow>Beyond Code</ui-eyebrow>
-      <h1 class="mt-4 text-display-1 font-display text-fg">Business</h1>
+    <article>
+      <header class="relative overflow-hidden pt-20 pb-10">
+        <ui-strip-backdrop anchor="top-right" scale="sm" />
 
-      @for (venture of ventures(); track venture.id) {
-        <h2 class="mt-10 text-display-3 font-display text-fg">{{ venture.name }}</h2>
+        <div class="container-content stagger-in-lead relative">
+          <ui-eyebrow>Beyond Code</ui-eyebrow>
+          <h1 class="display-condensed mt-5 text-display-hero font-display text-fg">Business</h1>
+        </div>
+      </header>
 
-        @if (venture.metrics.length) {
-          <ul class="mt-8 flex flex-wrap gap-x-12 gap-y-6">
-            @for (metric of venture.metrics; track metric.label) {
-              <li>
-                <p class="font-display text-display-3 text-fg">{{ metric.value }}</p>
-                <p class="mt-1 font-mono text-label text-fg-muted uppercase">{{ metric.label }}</p>
-              </li>
+      <div class="container-content pb-20">
+        @for (venture of ventures(); track venture.id) {
+          <h2 class="display-condensed text-display-2 font-display text-fg">{{ venture.name }}</h2>
+
+          @if (venture.metrics.length) {
+            <!-- Metrics keep their stored qualifiers verbatim ("80+",
+                 "~80,000 EGP") — see the class note. The oversized condensed
+                 size is what the reference gives a short number; the qualifier
+                 travels with it because it is part of the value, not a
+                 formatting flourish that can be dropped. -->
+            <ul appReveal mode="children" class="mt-10 grid gap-8 sm:grid-cols-2">
+              @for (metric of venture.metrics; track metric.label) {
+                <li class="border-t border-fg/12 pt-5">
+                  <p class="display-condensed font-display text-display-2 text-fg">
+                    {{ metric.value }}
+                  </p>
+                  <p class="mono-label mt-3 text-fg-muted">{{ metric.label }}</p>
+                </li>
+              }
+            </ul>
+          }
+
+          <div class="rule-strip mt-12"></div>
+
+          <div class="mt-10 space-y-6">
+            @for (paragraph of paragraphs(venture.summary); track $index) {
+              <p class="text-body-lg text-fg">{{ paragraph }}</p>
             }
-          </ul>
+          </div>
         }
 
-        <div class="mt-10 space-y-6">
-          @for (paragraph of paragraphs(venture.summary); track $index) {
-            <p class="text-body-lg text-fg">{{ paragraph }}</p>
-          }
-        </div>
-      }
-
-      <nav class="mt-16 border-t border-fg/12 pt-8">
-        <a routerLink="/work" class="text-body text-action no-underline hover:underline"
-          >The same thinking, applied to software →</a
-        >
-      </nav>
-    </section>
+        <nav class="mt-16 border-t border-fg/12 pt-6">
+          <a
+            routerLink="/work"
+            class="sweep-underline inline-flex min-h-11 items-center text-body text-action
+                   no-underline"
+            >The same thinking, applied to software →</a
+          >
+        </nav>
+      </div>
+    </article>
   `,
 })
 export class BeyondBusiness {

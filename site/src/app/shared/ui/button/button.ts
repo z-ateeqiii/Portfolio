@@ -29,11 +29,27 @@ export type UiButtonVariant = 'primary' | 'secondary';
 export class UiButton {
   readonly variant = input<UiButtonVariant>('primary');
 
+  /**
+   * `min-h-11` is 44px — the platform touch-target guidance ui-ux-pro-max
+   * flags at High severity, and comfortably past the 24px WCAG 2.2 AA floor.
+   * The px-6/py-3 padding already produced roughly that at body size, but a
+   * minimum states it rather than leaving it as an accident of the type scale.
+   *
+   * The hover (visual alignment pass, 2026-09-07) is a 2px lift plus the
+   * colour change, transitioned on transform and colour only — both compositor
+   * properties, so it never triggers layout. Deliberately half the 4px lift a
+   * card gets: a button is small and already carries a fill, so it needs less
+   * movement to read as responsive. `active:translate-y-0` puts it back down
+   * on press, which is what makes it feel like a physical control rather than
+   * something that merely highlights.
+   */
   private static readonly BASE =
-    'inline-flex items-center justify-center gap-2 rounded-sm px-6 py-3 ' +
+    'inline-flex min-h-11 items-center justify-center gap-2 rounded-sm px-6 py-3 ' +
     'font-sans text-body font-medium leading-none no-underline select-none ' +
-    'transition-colors duration-[--duration-fast] ease-[--ease-out-soft] ' +
-    'disabled:pointer-events-none disabled:opacity-50';
+    'transition-[color,background-color,border-color,transform] ' +
+    'duration-[--duration-base] ease-[--ease-out-strong] ' +
+    'hover:-translate-y-0.5 active:translate-y-0 ' +
+    'disabled:pointer-events-none disabled:opacity-50 disabled:hover:translate-y-0';
 
   private static readonly VARIANTS: Record<UiButtonVariant, string> = {
     // Black text on orange — 7.4:1, comfortably past AA (07 §8).

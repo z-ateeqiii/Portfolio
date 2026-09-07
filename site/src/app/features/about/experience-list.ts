@@ -40,27 +40,43 @@ import { UiEyebrow, UiTag } from '../../shared/ui';
 
         <div class="mt-8">
           @for (role of roles(); track role.id; let first = $first) {
-            <details [open]="first" class="group border-b border-fg/12">
+            <details
+              [open]="first"
+              class="group border-b border-fg/12 transition-colors duration-[--duration-base]
+                     ease-[--ease-out-strong] hover:border-fg/30"
+            >
               <summary
-                class="flex cursor-pointer list-none items-baseline gap-4 py-4 marker:content-none"
+                class="flex min-h-14 cursor-pointer list-none items-center gap-4 py-4
+                       marker:content-none"
               >
-                <span class="text-fg-muted transition-transform group-open:rotate-45" aria-hidden="true"
-                  >+</span
-                >
+                <!--
+                  A rotating orange square rather than a "+" glyph: the same
+                  mark the eyebrows, tags and journey spine use, so the open/
+                  closed affordance is part of the system instead of a stray
+                  piece of punctuation. Decorative — the native <details>
+                  element already announces its own expanded state.
+                -->
+                <span
+                  class="size-2.25 shrink-0 border border-action transition-transform
+                         duration-[--duration-base] ease-[--ease-out-strong] group-open:rotate-45"
+                  aria-hidden="true"
+                ></span>
                 <span class="min-w-0 flex-1">
-                  <span class="block text-body-lg text-fg">{{ role.role }}</span>
+                  <span
+                    class="block text-body-lg text-fg transition-colors duration-[--duration-base]
+                           ease-[--ease-out-strong] group-hover:text-action"
+                    >{{ role.role }}</span
+                  >
                   <span class="block text-caption text-fg-muted">
                     {{ role.organization }}@if (role.engagement) {
                       <span> · {{ role.engagement }}</span>
                     }
                   </span>
                 </span>
-                <span class="font-mono text-label text-fg-muted whitespace-nowrap">{{
-                  role.timeframe
-                }}</span>
+                <span class="mono-label shrink-0 text-fg-muted">{{ role.timeframe }}</span>
               </summary>
 
-              <div class="pb-6 pl-8">
+              <div class="pb-6 pl-7">
                 <p class="text-body text-fg">{{ role.summary }}</p>
 
                 @if (role.tech?.length) {
@@ -73,11 +89,12 @@ import { UiEyebrow, UiTag } from '../../shared/ui';
 
                 <!-- Links to the case studies this role produced (04 §4). -->
                 @if (role.linkedProjectSlugs?.length) {
-                  <p class="mt-4 flex flex-wrap gap-x-4 gap-y-1">
+                  <p class="mt-4 flex flex-wrap gap-x-6 gap-y-1">
                     @for (slug of role.linkedProjectSlugs; track slug) {
                       <a
                         [routerLink]="['/work', slug]"
-                        class="text-caption text-action no-underline hover:underline"
+                        class="sweep-underline inline-flex min-h-11 items-center text-caption
+                               text-action no-underline"
                         >{{ label(slug) }} →</a
                       >
                     }

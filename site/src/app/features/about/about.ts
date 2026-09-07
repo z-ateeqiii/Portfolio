@@ -12,6 +12,7 @@ import { JOURNEY } from '../../core/content/site-copy';
 import { Experience, Profile } from '../../core/models';
 import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
+import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdrop';
 import { UiEyebrow } from '../../shared/ui';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { ExperienceList } from './experience-list';
@@ -49,52 +50,86 @@ import { ExperienceList } from './experience-list';
 @Component({
   selector: 'app-about',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RevealDirective, UiEyebrow, ExperienceList],
+  imports: [RouterLink, RevealDirective, UiEyebrow, UiStripBackdrop, ExperienceList],
   template: `
     @let p = profile();
 
-    <article class="container-content py-20">
-      <ui-eyebrow>About</ui-eyebrow>
-      <h1 class="mt-4 text-display-1 font-display text-fg">The long version</h1>
+    <article>
+      <!-- The page frame gets the strip treatment; the prose below it
+           deliberately does not. A glow behind two thousand words of body copy
+           would fight the reading, and this is the one page most likely to be
+           read start to finish (02 §7). Intensity is the variable here, not
+           whether the language applies at all. -->
+      <header class="relative overflow-hidden pt-20 pb-10">
+        <ui-strip-backdrop anchor="top-right" scale="sm" />
 
-      @if (p) {
-        <p class="mt-6 text-body-lg text-fg-muted">{{ p.bioShort }}</p>
+        <div class="container-content stagger-in-lead relative">
+          <ui-eyebrow>About</ui-eyebrow>
+          <h1 class="display-condensed mt-5 text-display-hero font-display text-fg">
+            The long version
+          </h1>
 
-        <!-- The journey arc (brief §8) as a visual spine beside the prose.
-             07 §7 allows sequence markers here because this genuinely is an
-             ordered timeline rather than decorative numbering. -->
-        <ol class="mt-12 flex flex-wrap gap-x-2 gap-y-3" aria-label="Journey">
-          @for (stage of journey; track stage; let last = $last) {
-            <li class="flex items-center gap-2">
-              <span class="font-mono text-label text-fg-muted uppercase">{{ stage }}</span>
-              @if (!last) {
-                <span class="text-fg-muted" aria-hidden="true">→</span>
-              }
-            </li>
-          }
-        </ol>
-
-        <div class="mt-12 space-y-6">
-          @for (paragraph of paragraphs(); track $index) {
-            <p class="text-body-lg text-fg">{{ paragraph }}</p>
+          @if (p) {
+            <p class="mt-6 text-body-lg text-fg">{{ p.bioShort }}</p>
           }
         </div>
+      </header>
 
-        <!-- 02 §7 item 4 — Experience, after the journey narrative. -->
-        <app-experience-list appReveal [roles]="experience()" />
+      @if (p) {
+        <div class="container-content pb-20">
+          <!-- The journey arc (brief §8) as a visual spine beside the prose.
+               07 §7 allows sequence markers here because this genuinely is an
+               ordered timeline rather than decorative numbering. Each stage now
+               carries the same small orange mark the eyebrows and tags use, and
+               the connectors are hairlines rather than arrow glyphs — a drawn
+               rule reads as a spine, a "→" reads as punctuation. -->
+          <ol class="flex flex-wrap items-center gap-x-3 gap-y-3" aria-label="Journey">
+            @for (stage of journey; track stage; let last = $last) {
+              <li class="flex items-center gap-3">
+                <span class="flex items-center gap-2.5">
+                  <span class="size-1.5 shrink-0 bg-action" aria-hidden="true"></span>
+                  <span class="mono-label text-fg-muted">{{ stage }}</span>
+                </span>
+                @if (!last) {
+                  <span class="h-px w-5 bg-fg/30" aria-hidden="true"></span>
+                }
+              </li>
+            }
+          </ol>
 
-        <!-- 02 §7.5 and §7.6 — bridges out, rather than ending flat. -->
-        <nav class="mt-16 flex flex-wrap gap-x-8 gap-y-3 border-t border-fg/12 pt-8">
-          <a routerLink="/work" class="text-body text-action no-underline hover:underline"
-            >See the work →</a
+          <div class="rule-strip mt-10"></div>
+
+          <div class="mt-10 space-y-6">
+            @for (paragraph of paragraphs(); track $index) {
+              <p class="text-body-lg text-fg">{{ paragraph }}</p>
+            }
+          </div>
+
+          <!-- 02 §7 item 4 — Experience, after the journey narrative. -->
+          <app-experience-list appReveal [roles]="experience()" />
+
+          <!-- 02 §7.5 and §7.6 — bridges out, rather than ending flat. -->
+          <nav
+            class="mt-16 flex flex-col items-start gap-1 border-t border-fg/12 pt-6
+                   sm:flex-row sm:gap-x-8"
           >
-          <a routerLink="/beyond" class="text-body text-action no-underline hover:underline"
-            >Beyond code →</a
-          >
-          <a routerLink="/contact" class="text-body text-action no-underline hover:underline"
-            >Get in touch →</a
-          >
-        </nav>
+            <a
+              routerLink="/work"
+              class="sweep-underline flex min-h-11 items-center text-body text-action no-underline"
+              >See the work →</a
+            >
+            <a
+              routerLink="/beyond"
+              class="sweep-underline flex min-h-11 items-center text-body text-action no-underline"
+              >Beyond code →</a
+            >
+            <a
+              routerLink="/contact"
+              class="sweep-underline flex min-h-11 items-center text-body text-action no-underline"
+              >Get in touch →</a
+            >
+          </nav>
+        </div>
       }
     </article>
   `,

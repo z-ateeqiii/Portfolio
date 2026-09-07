@@ -34,18 +34,31 @@ export class UiCard {
   readonly interactive = input(false);
   readonly accent = input(false);
 
-  private static readonly BASE = 'block rounded-md bg-surface p-6';
+  /**
+   * `group` is on every card, interactive or not, so descendants can react to
+   * the card being hovered — the cover image un-desaturating via
+   * `hover-reveal-media` is the main one. A non-interactive card simply has
+   * nothing inside it that listens.
+   */
+  private static readonly BASE = 'group block rounded-md bg-surface p-6';
+
   private static readonly BORDER: Record<'neutral' | 'accent', string> = {
-    neutral: 'border border-fg/12 hover:border-fg/40',
+    neutral: 'border border-fg/12 hover:border-fg/40 focus-within:border-fg/40',
     // Stays in the orange family on hover rather than reverting to neutral —
     // this card is the notable one before, during, and after interaction.
-    accent: 'border border-action/32 hover:border-action',
+    accent: 'border border-action/32 hover:border-action focus-within:border-action',
   };
 
+  /**
+   * `hover-lift` (styles.css) supplies the 4px rise and the transition, and
+   * mirrors it onto `:focus-within` so a keyboard user tabbing to the link
+   * inside sees the same response a mouse user does — ui-ux-pro-max flags
+   * hover-only feedback as a Critical anti-pattern.
+   */
   protected readonly hostClasses = computed(() => {
     const border = UiCard.BORDER[this.accent() ? 'accent' : 'neutral'];
     return this.interactive()
-      ? `${UiCard.BASE} ${border} transition-colors duration-[--duration-base] ease-[--ease-out-soft]`
+      ? `${UiCard.BASE} ${border} hover-lift`
       : `${UiCard.BASE} border ${this.accent() ? 'border-action/32' : 'border-fg/12'}`;
   });
 }

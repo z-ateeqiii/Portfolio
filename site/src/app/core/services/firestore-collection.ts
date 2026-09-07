@@ -112,6 +112,16 @@ function toDate(value: unknown): Date | undefined {
   return undefined;
 }
 
+/** True for a Firestore `Timestamp` — duck-typed, so this file still needs no
+ *  SDK import (see the module note on why that matters for bundle size). */
+function isTimestamp(value: unknown): value is { toDate(): Date } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { toDate?: unknown }).toDate === 'function'
+  );
+}
+
 /**
  * Strips Firestore bookkeeping into a domain object.
  *
@@ -119,14 +129,58 @@ function toDate(value: unknown): Date | undefined {
  * already passed the published filter, so re-exposing the field would only
  * invite a redundant `@if (project.status === 'published')` in a template —
  * the UI-level check 05 §6 exists to make unnecessary.
+ *
+ * ─── EVERY Timestamp is converted, not a named list of two (2026-09-07) ──────
+ * This previously converted `updatedAt` and `publishedAt` by name and passed
+ * everything else through untouched. `SocialPlatform.lastVerifiedDate` is
+ * typed as a `Date` and stored as a Timestamp, so it arrived in templates as a
+ * raw Timestamp — and `{{ date | date }}` on one of those throws.
+ *
+ * The visible symptom was much worse than a missing date: on /beyond/social the
+ * throw happened part-way through rendering the first platform row, so the row
+ * lost everything after the date AND the entire second platform vanished —
+ * Instagram's 100K simply was not on the page, while the combined total that
+ * included it still was. A missing field silently deleting a record from a
+ * published page is exactly the failure this codebase is written to avoid.
+ *
+ * An allow-list was the actual defect: it is correct only for as long as
+ * nobody adds a date field, and it fails silently and off-target when they do.
+ * This walks the document instead, so any Timestamp on any entity becomes a
+ * Date — including one added to the schema next year.
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * Nested objects are walked too (`Profile.heroImage` is a nested object today,
+ * and a nested timestamp is no less likely than a top-level one). Arrays are
+ * walked for the same reason — `BusinessVenture.metrics` is an array of
+ * objects. Depth is bounded by the document itself, which Firestore already
+ * caps at 20 levels and 1 MiB.
  */
+function convertTimestamps(value: unknown): unknown {
+  if (isTimestamp(value)) return value.toDate();
+  if (Array.isArray(value)) return value.map(convertTimestamps);
+  if (typeof value === 'object' && value !== null && !(value instanceof Date)) {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, convertTimestamps(v)]),
+    );
+  }
+  return value;
+}
+
 function hydrate<T>(id: string, data: Record<string, unknown>): T {
   const { status: _status, updatedAt, publishedAt, ...rest } = data;
   return {
-    ...rest,
+    ...(convertTimestamps(rest) as Record<string, unknown>),
     id,
+    /**
+     * These two keep explicit handling despite the generic walk above, because
+     * they carry defaults the walk cannot know about: `updatedAt` falls back to
+     * the epoch so sorting never sees `undefined`, and `publishedAt` must be
+     * ABSENT rather than `undefined` on an entity that has no publish workflow
+     * — writing `publishedAt: undefined` back to Firestore is rejected outright
+     * by the SDK, which is the bug this exact line was fixed for on 2026-09-06.
+     */
     updatedAt: toDate(updatedAt) ?? new Date(0),
-    publishedAt: toDate(publishedAt),
+    ...(publishedAt ? { publishedAt: toDate(publishedAt) } : {}),
   } as T;
 }
 

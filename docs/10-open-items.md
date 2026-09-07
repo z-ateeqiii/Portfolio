@@ -313,6 +313,38 @@ Safe to leave until after the site is live:
 
 ---
 
+## 4n. Full visual alignment pass (2026-09-07)
+
+Phase 1 (`4m`) applied the `design-reference/` language to the Hero, Work index and Case Study header. This pass took it across the **entire public site** and made `design-reference/` the source of truth for visual direction, updating `07` where the two disagreed rather than the other way round.
+
+**Doc conflicts resolved, all recorded inline in `07` §0.1:**
+
+- `08` §2 "Option A" (orange = interactive only) → superseded. Orange now also marks section openers and rhythm marks, never a large fill and never body prose (`07` §2).
+- `07` §5 "no parallax stacking" → superseded. Hero-only, one layer, transform-only, reduced-motion-gated (`07` §5a).
+- `07` §7 "browser-chrome or device frame" media framing → superseded by desaturation + the viewfinder crop-mark frame.
+- `07` §3 had no size or tracking scale at all → added as §3a.
+
+**What changed visually.** Header (mono wordmark, animated underlines, a real mobile disclosure), footer (closing frame with the name at display scale), About, Beyond hub, Social, Business, Teaching, Contact, plus the already-treated Home/Work/Case Study extended with the new hover and reveal systems. The admin dashboard is deliberately untouched — `05` §7 and `07` §9 already say it is a functional tool, not a brand surface, and it shares none of the restyled components.
+
+**Motion.** Three scroll-reveal modes replacing one; CSS-based hover states on every hoverable element; ambient grain shimmer and glow breathing. Hover is CSS rather than GSAP by deliberate choice — same properties, curve and durations as the GSAP preset, on the same compositor path, for zero added bytes and no first-hover load delay. Reasoned out in `07` §5a.
+
+**Cost**: +4.21 kB estimated transfer sitewide, no new dependency. Full figures in `07` §8a.
+
+### Two live-data bugs found while walking every entity, both fixed
+
+Both were **pre-existing** — confirmed by rebuilding the pre-change commit and reproducing them there, not assumed.
+
+- [x] **Instagram was invisible on `/beyond/social`.** `hydrate()` in `core/services/firestore-collection.ts` converted Firestore Timestamps by an allow-list of two field names (`updatedAt`, `publishedAt`). `SocialPlatform.lastVerifiedDate` is typed `Date` and stored as a Timestamp, so it reached the template as a raw Timestamp and `{{ … | date }}` threw. The throw landed mid-render: Facebook's row lost everything after its date, and **the entire Instagram row disappeared** — while the combined "~986K" that includes Instagram's 100K still rendered above it. Fixed by walking the document and converting every Timestamp, nested objects and arrays included, instead of naming fields. The allow-list was the defect: correct only until someone adds a date field, and silent when they do.
+- [x] **An empty Proof Point rendered as a blank row on Home.** A ProofPoint created in the dashboard and never filled in (`pp-1788200498314`, `value: ''`, `label: ''`) is a real record, and the strip rendered it. `brief` §22 requires proof-point numbers to be verified before publication, and an empty one is unverified by definition. Home now filters to proof points that actually state something, and the section disappears when none do. Filtered in code rather than fixed in the data, because the same empty record can be created again from the dashboard at any time. **The empty record is still in Firestore** — harmless now, but worth deleting from `/admin/proof-points`.
+
+### Genuinely unresolved — needs Muhammed's decision, not a design call
+
+- [ ] **`Skill` and `Education` render nowhere on the public site.** Both are full entities with dashboard editors, both are exposed by `ContentService` (`skills()`, `education()`), and neither is resolved on a single public route — so anything entered there is invisible to visitors. This is pre-existing and predates this pass. It is not a design question: `02` §13 explicitly rules out standalone Skills/Certifications pages because they fragment the story, so the options are to surface them inside `/about` (where Experience already lives), to surface them somewhere else, or to remove the editors. Needs a content decision.
+- [ ] **The three freelance projects are still not seeded.** `/work` renders 5 projects; Magic Touch, Creative Nails and Grandpa's Kitchen are in `tools/seed/seed-freelance-batch.ts` and have never been run. The Work index heading and its project count are now derived from the data rather than hardcoding "Five", so seeding them needs no code change.
+- [ ] **`design-reference/` is still untracked.** It contains a real personal photo of Muhammed (`uploads/pasted-…png`, also visible in both screenshots). Left out of every commit pending Muhammed's call on whether the repository is public.
+
+---
+
 ## 6. Resolved During Planning (for reference)
 
 Closed here so they don't get re-litigated during build — the reasoning lives in the referenced section if it needs revisiting:

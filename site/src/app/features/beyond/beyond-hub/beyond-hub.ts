@@ -3,6 +3,8 @@ import { RouterLink } from '@angular/router';
 
 import { COPY } from '../../../core/content/site-copy';
 import { SeoService } from '../../../core/seo/seo.service';
+import { UiStripBackdrop } from '../../../shared/blocks/strip-backdrop/strip-backdrop';
+import { RevealDirective } from '../../../shared/motion/reveal.directive';
 import { UiCard, UiEyebrow } from '../../../shared/ui';
 
 /**
@@ -21,23 +23,35 @@ import { UiCard, UiEyebrow } from '../../../shared/ui';
 @Component({
   selector: 'app-beyond-hub',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, UiCard, UiEyebrow],
+  imports: [RouterLink, RevealDirective, UiCard, UiEyebrow, UiStripBackdrop],
   template: `
-    <section class="container-wide py-20">
-      <ui-eyebrow>Beyond Code</ui-eyebrow>
-      <h1 class="mt-4 max-w-3xl text-display-1 font-display text-fg">{{ copy.beyondHub }}</h1>
+    <section class="relative overflow-hidden py-20">
+      <ui-strip-backdrop anchor="top-right" scale="md" />
 
-      <div class="mt-14 grid gap-6 md:grid-cols-3">
-        @for (room of rooms; track room.path) {
-          <ui-card [interactive]="true">
-            <h2 class="text-display-3 font-display text-fg">
-              <a [routerLink]="room.path" class="text-fg no-underline hover:text-action">{{
-                room.title
-              }}</a>
-            </h2>
-            <p class="mt-4 text-body text-fg-muted">{{ room.blurb }}</p>
-          </ui-card>
-        }
+      <div class="container-wide relative">
+        <div class="stagger-in-lead">
+          <ui-eyebrow>Beyond Code</ui-eyebrow>
+          <h1 class="mt-5 max-w-3xl text-display-1 font-display text-fg">{{ copy.beyondHub }}</h1>
+        </div>
+
+        <div appReveal mode="grid" class="mt-14 grid gap-6 md:grid-cols-3">
+          @for (room of rooms; track room.path; let i = $index) {
+            <ui-card [interactive]="true">
+              <p class="mono-label text-fg-muted">{{ pad(i + 1) }}</p>
+
+              <h2 class="display-condensed mt-5 text-display-3 font-display text-fg">
+                <a
+                  [routerLink]="room.path"
+                  class="text-fg no-underline transition-colors duration-[--duration-base]
+                         ease-[--ease-out-strong] hover:text-action"
+                  >{{ room.title }}</a
+                >
+              </h2>
+
+              <p class="mt-4 text-body text-fg-muted">{{ room.blurb }}</p>
+            </ui-card>
+          }
+        </div>
       </div>
     </section>
   `,
@@ -78,4 +92,9 @@ export class BeyondHub {
       blurb: 'Explaining technical things to people who are still learning them.',
     },
   ];
+
+  /** "01", "02" … — the zero-padded ordinals the reference uses on its cards. */
+  protected pad(n: number): string {
+    return String(n).padStart(2, '0');
+  }
 }

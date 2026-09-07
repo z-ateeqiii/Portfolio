@@ -54,11 +54,22 @@
   --text-display-3--letter-spacing: -0.008em;
   --text-display-3--font-weight: 600;
 
-  /* Oversized display size — the visual-identity redesign's rotating Hero
-     title and featured project names (2026-09-06). Bigger than display-1 and
-     deliberately condensed (paired with the `display-condensed` utility
-     below), never used for anything but a short name/word. */
-  --text-display-hero: clamp(3.5rem, 11vw, 9rem);
+  /* Oversized display size — the rotating Hero title, page titles and featured
+     project names. Bigger than display-1 and deliberately condensed (paired
+     with the `display-condensed` utility below), never used for anything but a
+     short name or title.
+
+     THE FLOOR IS 2.75rem, NOT 3.5rem, and that is a mobile-overflow fix rather
+     than a taste decision. 11vw is the reference's own ratio (148px at 1440px),
+     but below ~400px the clamp floor takes over, and at a 3.5rem/56px floor the
+     single word "Scholarship" measures roughly 300px against the 272px of
+     content a 320px viewport actually has. Because `body` is `overflow-x: clip`
+     the overflow would not even scroll — it would silently cut the page title
+     in half. 2.75rem/44px brings the same word to ~240px and fits.
+
+     `display-condensed` additionally carries `overflow-wrap: break-word` as a
+     backstop for a project name longer than any that exists today. */
+  --text-display-hero: clamp(2.75rem, 11vw, 9rem);
   --text-display-hero--line-height: 0.86;
   --text-display-hero--letter-spacing: -0.03em;
   --text-display-hero--font-weight: 700;
@@ -77,6 +88,15 @@
   --text-label--line-height: 1.4;
   --text-label--letter-spacing: 0.12em;
 
+  /* --- Letter-spacing scale for the mono utility face (07 §3a) ---
+     The design reference uses tracking as a hierarchy of its own on mono
+     labels: the wordmark is the widest thing on the page, section markers sit
+     a step below it, and a tag inside a card is nearly normal. Three named
+     steps, so a fourth arbitrary value can't quietly appear. */
+  --tracking-mark: 0.16em; /* stack tags — inside a card, must stay readable */
+  --tracking-label: 0.24em; /* section markers, metadata rows */
+  --tracking-wordmark: 0.38em; /* the name itself, and nothing else */
+
   /* --- Layout (07 §4) --- */
   --container-content: 44rem; /* single readable column: Story, case studies */
   --container-wide: 78rem; /* Home sections, Work grid */
@@ -89,6 +109,19 @@
   /* Hero rotating-title crossfade (visual-identity redesign, 2026-09-06) —
      the one deliberately slower transition on the site, reserved for that. */
   --duration-slow: 420ms;
+
+  /* Hover easing (07 §5a). Sharper out-curve than --ease-out-soft: a hover is
+     feedback, so it should arrive decisively rather than glide. Sourced from
+     the ui-ux-pro-max GSAP "Hover Micro-interaction / Standard" preset
+     (power2.out at 200–300ms), expressed as a CSS curve because these hovers
+     are pure CSS — see the note above @utility hover-lift. */
+  --ease-out-strong: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Continuous ambient motion (grain shimmer, glow breathing). Deliberately
+     an order of magnitude slower than any interaction duration so it reads as
+     atmosphere rather than as something responding to the visitor. */
+  --duration-ambient-grain: 6s;
+  --duration-ambient-glow: 14s;
 }
 
 /* ---------------------------------------------------------------------------
@@ -105,6 +138,20 @@
     background-color: var(--color-bg);
     color-scheme: dark;
     -webkit-text-size-adjust: 100%;
+    /* In-page anchors glide rather than jump. The reduced-motion block below
+       resets this to `auto`, so a visitor who asked for less motion still gets
+       an instant jump. */
+    scroll-behavior: smooth;
+  }
+
+  /* Removes the ~300ms synthetic click delay on touch, without disabling
+     pinch-zoom (ui-ux-pro-max "Touch / Tap Delay"). Applied to controls only,
+     so double-tap-to-zoom still works over ordinary text. */
+  a,
+  button,
+  summary,
+  [role='button'] {
+    touch-action: manipulation;
   }
 
   body {
@@ -115,6 +162,13 @@
     line-height: var(--text-body--line-height);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* No horizontal scrollbar, ever. The glow layers deliberately overhang
+       their sections, and one un-clipped decorative element must never turn
+       into a sideways-scrolling page on a 320px screen (ui-ux-pro-max
+       "Responsive / Horizontal Scroll", severity High). Clipped on `body`
+       rather than `html` so `position: sticky` on the header still works —
+       `overflow` on the scrolling root would silently kill it. */
+    overflow-x: clip;
   }
 
   /* Focus states (07 §8) — visible on EVERY interactive element, no exceptions.
@@ -187,10 +241,46 @@
 @utility display-condensed {
   transform: scaleX(0.93);
   transform-origin: left center;
+  /* Never let a single long word push past the viewport. `break-word` only
+     acts when a word genuinely cannot fit on a line of its own, so ordinary
+     headings are untouched — it is a floor, not a wrapping style. It matters
+     here specifically because project names are content: a name longer than
+     any that exists today can be typed into the dashboard at any time. */
+  overflow-wrap: break-word;
 }
 
 /* Film grain — the same SVG feTurbulence noise the design reference uses,
-   inlined as a data URI so it costs one CSS rule, not a network request. */
+   inlined as a data URI so it costs one CSS rule, not a network request.
+
+   The texture SHIMMERS rather than sitting still, which is what makes it read
+   as film rather than as a static overlay pattern. Crucially it does so on a
+   `steps()` timing function: the background-position jumps six times over six
+   seconds instead of being interpolated at 60fps. Animating background-position
+   smoothly would repaint a full-viewport layer every frame — a real main-thread
+   cost on the largest element on the page (ui-ux-pro-max "Performance / main
+   thread budget"). Six discrete repaints in six seconds is free, and stepped
+   grain is how actual film grain behaves anyway. */
+@keyframes grain-shimmer {
+  0% {
+    background-position: 0 0;
+  }
+  20% {
+    background-position: -60px 30px;
+  }
+  40% {
+    background-position: 40px -50px;
+  }
+  60% {
+    background-position: -30px -30px;
+  }
+  80% {
+    background-position: 55px 45px;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
 @utility photo-strip-grain {
   position: absolute;
   inset: 0;
@@ -198,12 +288,32 @@
   opacity: 0.16;
   mix-blend-mode: overlay;
   background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22220%22 height=%22220%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.82%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22220%22 height=%22220%22 filter=%22url(%23n)%22/%3E%3C/svg%3E');
+  animation: grain-shimmer var(--duration-ambient-grain) steps(1, end) infinite;
 }
 
 /* Blurred radial glow, corner-anchored by whoever uses it (position/inset are
    the caller's job — this utility only supplies the look). Built from
    --color-action/--color-action-hover, the same accent used everywhere else
-   interactive, not a new orange invented for this one effect. */
+   interactive, not a new orange invented for this one effect.
+
+   The glow BREATHES — a very slow opacity + scale drift. Both are compositor
+   properties on a layer the blur has already promoted, so this costs nothing
+   per frame; the blur is rasterised once and the animation only transforms the
+   cached result. At 14s it is below the threshold where the eye reads it as
+   "something is animating" and instead just makes the page feel lit rather
+   than printed. */
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.08);
+  }
+}
+
 @utility photo-strip-glow {
   position: absolute;
   pointer-events: none;
@@ -217,6 +327,7 @@
     --alpha(var(--color-action-hover) / 30%) 38%,
     transparent 68%
   );
+  animation: glow-breathe var(--duration-ambient-glow) var(--ease-out-soft) infinite;
 }
 
 /* The "viewfinder" crop-mark rectangle over a photo/screenshot. Decorative
@@ -227,11 +338,156 @@
   border: 1px solid --alpha(var(--color-fg) / 80%);
 }
 
-/* Load-time reveal for the Case Study header (distinct from the scroll-
-   triggered `appReveal` directive in shared/motion — this one plays once on
-   mount, no JS and no scroll position needed). Pure CSS, so it runs whether
-   or not JavaScript loads; the site-wide prefers-reduced-motion rule below
-   already zeroes every animation-duration, so this needs no separate guard. */
+/* ---------------------------------------------------------------------------
+   STRUCTURAL MARKS (07 §3a, §7) — the small repeated pieces that make the
+   design reference read as one language rather than three treated pages.
+--------------------------------------------------------------------------- */
+
+/* The wide-tracked mono label. Three tracking steps exist (see the @theme
+   block); these utilities are how a template picks one, so that no template
+   ever hardcodes a `tracking-[.28em]` arbitrary value and quietly invents a
+   fourth step. */
+@utility mono-mark {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--tracking-mark);
+  text-transform: uppercase;
+}
+
+@utility mono-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+@utility mono-wordmark {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--tracking-wordmark);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* The horizontal hairline that separates the reference's stacked rows. A
+   utility rather than `border-t border-fg/12` repeated everywhere, because
+   the reference's rule is a 1px line at 16% — between the card hairline (12%)
+   and a control edge (40%) — and that value should exist in exactly one place. */
+@utility rule-strip {
+  height: 1px;
+  width: 100%;
+  background-color: --alpha(var(--color-fg) / 16%);
+}
+
+/* ---------------------------------------------------------------------------
+   HOVER SYSTEM (07 §5a).
+
+   WHY THESE ARE CSS AND NOT GSAP. The ui-ux-pro-max GSAP domain offers a
+   "Hover Micro-interaction" preset (`gsap.to(el, { y: -4, scale: 1.02 })`,
+   with `quickTo` to avoid re-creating tweens). Its own performance note says
+   the reason to reach for `quickTo` is GC churn across 20+ hoverable cards —
+   i.e. the preset's cost is a JS cost that CSS simply does not have. These
+   hovers animate `transform`, `opacity` and `border-color` only, which is
+   exactly what the GSAP preset animates, on the same compositor path, at the
+   same durations and an equivalent curve — for zero added bytes, with no
+   first-hover load delay, and working before (or without) JavaScript. GSAP is
+   kept for what it is genuinely better at: the scroll-triggered, staggered,
+   sequenced reveals in shared/motion, where it is already lazy-loaded.
+
+   This is the "choose the lighter option" call the brief pre-authorised, not
+   a shortcut around the skill's guidance.
+--------------------------------------------------------------------------- */
+
+/* Card / panel lift. Pairs with a border-color change owned by the component
+   (see UiCard) — this utility only supplies the movement. */
+@utility hover-lift {
+  transition:
+    transform var(--duration-base) var(--ease-out-strong),
+    border-color var(--duration-base) var(--ease-out-strong),
+    background-color var(--duration-base) var(--ease-out-strong);
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Keyboard parity: a card whose only feedback is :hover is invisible to
+     anyone tabbing through it (ui-ux-pro-max "Touch / Reliance on hover
+     only"). :focus-within catches focus landing on the link inside. */
+  &:focus-within {
+    transform: translateY(-4px);
+  }
+}
+
+/* Image inside a hovered card: a slow push-in, and the desaturation lets go.
+   Colour returning on hover is the reward — it says "this one is live" without
+   spending the orange accent on it. Requires an `overflow-hidden` wrapper. */
+@utility hover-reveal-media {
+  transition:
+    transform var(--duration-slow) var(--ease-out-strong),
+    filter var(--duration-slow) var(--ease-out-strong);
+
+  .group:hover &,
+  .group:focus-within & {
+    transform: scale(1.04);
+    filter: grayscale(0.35) contrast(1.1);
+  }
+}
+
+/* Text link: the underline grows from the left rather than appearing all at
+   once. Uses a background-image gradient, not `text-decoration`, because only
+   the former can be transitioned. */
+@utility sweep-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition:
+    background-size var(--duration-base) var(--ease-out-strong),
+    color var(--duration-fast) var(--ease-out-strong);
+
+  &:hover,
+  &:focus-visible {
+    background-size: 100% 1px;
+  }
+}
+
+/* Nav link: the same idea, but the rule sits below the text baseline with a
+   little breathing room, and the active route keeps it permanently drawn. */
+@utility nav-underline {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.35rem;
+    height: 1px;
+    background-color: var(--color-action);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--duration-base) var(--ease-out-strong);
+  }
+
+  &:hover::after,
+  &:focus-visible::after,
+  &.nav-active::after {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   LOAD-TIME REVEAL.
+
+   Distinct from the scroll-triggered `appReveal` directive in shared/motion —
+   this one plays once on mount, no JS and no scroll position needed. Pure CSS,
+   so it runs whether or not JavaScript loads; the site-wide
+   prefers-reduced-motion rule in the base layer already zeroes every
+   animation-duration, so this needs no separate guard.
+--------------------------------------------------------------------------- */
 @keyframes stagger-in {
   from {
     opacity: 0;
@@ -245,6 +501,24 @@
 
 @utility stagger-in {
   animation: stagger-in var(--duration-base) var(--ease-out-soft) both;
+}
+
+/* A wider, slower sibling of `stagger-in` for a page's opening block — the
+   first thing a visitor sees on a route should arrive with more presence than
+   a section further down. Same single-direction rise, longer travel. */
+@keyframes stagger-in-lead {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility stagger-in-lead {
+  animation: stagger-in-lead var(--duration-slow) var(--ease-out-strong) both;
 }
 
 /* ---------------------------------------------------------------------------
