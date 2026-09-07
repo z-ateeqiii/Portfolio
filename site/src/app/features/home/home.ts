@@ -58,9 +58,20 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     @let p = profile();
 
     @if (p?.heroImage && (p?.heroTitles?.length ?? 0) > 0) {
-      <!-- 1. HERO — photo variant (00 §26, 04 §2). Bottom-anchored so the CTA
-           row never moves between title states. -->
-      <section class="relative h-[92vh] min-h-160 w-full bg-bg">
+      <!--
+        1. HERO — photo variant (00 §26, 04 §2, 07 §4c).
+
+        HEIGHT is svh-based and capped at both ends. vh on mobile means the
+        LARGEST viewport — the one you only get after the browser chrome
+        retracts — so a 92vh hero with bottom-anchored content pushed the CTA
+        row under the address bar on first paint. svh is the small viewport,
+        so what is laid out is what is actually visible. The max cap stops the
+        hero becoming a wall of empty photo on a tall monitor, and the min
+        keeps it usable on a short landscape screen. Net effect: View Work and
+        Resume are above the fold at every common screen height, which matters
+        because they are the two things a recruiter came to press (brief §28).
+      -->
+      <section class="relative flex h-[80svh] max-h-184 min-h-136 w-full items-end bg-bg">
         <!--
           The photo and its gradient are clipped by THIS wrapper, not by the
           section. The parallax layer is translated on scroll and genuinely has
@@ -78,59 +89,140 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
           ></div>
           <div
             class="absolute inset-0"
-            style="background:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.05) 32%, rgba(0,0,0,.72) 78%, rgba(0,0,0,.98) 100%)"
+            style="background:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.05) 30%, rgba(0,0,0,.74) 74%, rgba(0,0,0,.98) 100%)"
           ></div>
         </div>
 
         <ui-strip-backdrop anchor="bottom-left" scale="lg" />
-        <div
-          class="photo-strip-frame top-16 right-16 hidden h-112 w-52 lg:block"
-          aria-hidden="true"
-        ></div>
 
-        <div
-          class="absolute inset-x-6 bottom-10 z-10 flex flex-col items-start gap-6
-                 sm:inset-x-14 sm:bottom-12"
-        >
-          <p class="mono-label text-action">
+        <!--
+          LAYER ORDER IS THE EFFECT, so it is set per child rather than on this
+          wrapper: backdrop z-0, headline z-10, contrast strip z-20, everything
+          else z-30. Only the headline is left underneath the strip.
+
+          This wrapper deliberately carries position:relative with NO z-index.
+          A relative element at z-index auto does not create a stacking
+          context, so its children compete directly with the strip that is
+          their parent's sibling. Putting a z-index here instead would trap
+          every child inside one context and the strip could never come between
+          them — which is exactly the bug this replaced.
+        -->
+        <div class="container-wide relative flex flex-col items-start gap-6 pb-16 sm:pb-24">
+          <p class="relative z-30 mono-label text-action">
             Role {{ pad(heroTitleIndex() + 1) }} / {{ pad(p!.heroTitles!.length) }}
           </p>
 
           <!--
-            The crossfade lives on an INNER span, not on the <h1>.
+            THE ROTATING TITLE.
 
-            The display-condensed utility sets a scaleX transform on the
-            heading, and Tailwind's translate-y utilities write the same
-            transform property — two single-class utilities fighting over one
-            property, where the winner is whichever Tailwind emitted last. The
-            rise silently did nothing.
-            Splitting them gives each element one transform to own: the heading
-            condenses, the span moves.
+            Two nested spans, each owning exactly one thing, because the outer
+            <h1> already carries a scaleX from the display-condensed utility and a second
+            transform on the same element would silently overwrite it:
+              - the CLIP wrapper hides the word as it rolls out of frame;
+              - the ROLL span is the only thing GSAP translates.
+
+            The vertical padding on the clip wrapper is not decoration: the
+            display-hero line-height is 0.86, tighter than the glyph box, so a
+            flush overflow-hidden would shave the tops of the capitals. The
+            negative margin takes the added height back out of the layout so
+            the block below does not move.
+
+            SET IN UPPERCASE, which is presentation and not a content edit —
+            the stored titles keep their own casing and every other use of them
+            is unaffected. It matters for two reasons: the reference sets this
+            headline in caps, and Title Case is narrow enough that the shortest
+            title ("Builder") would stop short of the contrast strip entirely,
+            so the effect would fire on some titles and not others.
+
+            The word is real text in the server-rendered HTML, so it is
+            readable and indexable before any of this runs, and the full title
+            is always in the accessibility tree even while the strip visually
+            covers part of it.
           -->
-          <h1 class="display-condensed font-display text-display-hero text-fg">
-            <span
-              class="block transition-[opacity,transform] duration-(--duration-slow) ease-out-soft"
-              [class.opacity-0]="!heroTitleVisible()"
-              [class.translate-y-3]="!heroTitleVisible()"
-              >{{ p!.heroTitles![heroTitleIndex()] }}</span
-            >
+          <h1 class="display-condensed relative z-10 font-display text-display-hero text-fg uppercase">
+            <span class="relative my-[-0.08em] block overflow-hidden py-[0.08em]">
+              <span #titleRoll class="block will-change-transform">{{
+                p!.heroTitles![heroTitleIndex()]
+              }}</span>
+
+              <!--
+                The wipe band. Same idea as the contrast strip that cuts the
+                headline, but kinetic: it sweeps across the word each time the
+                title changes, and the swap happens while it is passing over —
+                so the new word emerges from behind it rather than dissolving
+                into place. Contained by the clip wrapper above, hidden until
+                GSAP drives it, and inert to assistive tech.
+              -->
+              <span
+                #titleWipe
+                class="title-wipe pointer-events-none absolute inset-y-0 left-0 w-1/4 opacity-0"
+                aria-hidden="true"
+              ></span>
+            </span>
           </h1>
 
-          @if (p!.heroSubline) {
-            <p class="max-w-md text-body-lg text-fg">{{ p!.heroSubline }}</p>
-          }
+          <div class="rule-strip relative z-30"></div>
 
-          <div class="rule-strip"></div>
+          <!--
+            The row below the rule: the two primary actions on the left, and
+            the positioning line plus subline on the right. The reference puts
+            a left/right pair here and the right half was empty, because the
+            only thing the mockup had there was a location, which is not a
+            field that exists (10 §1). These two are real Profile fields and
+            they belong together — positioning names the role, heroSubline
+            says how he works.
+          -->
+          <div class="relative z-30 flex w-full flex-col gap-8 md:flex-row md:items-end md:justify-between">
+            <div class="flex flex-wrap items-center gap-4">
+              <a uiButton routerLink="/work">View Work</a>
+              @if (p!.resumeFile) {
+                <a uiButton variant="secondary" [href]="p!.resumeFile" target="_blank" rel="noopener">
+                  Resume
+                </a>
+              }
+            </div>
 
-          <div class="flex flex-wrap items-center gap-4">
-            <a uiButton routerLink="/work">View Work</a>
-            @if (p!.resumeFile) {
-              <a uiButton variant="secondary" [href]="p!.resumeFile" target="_blank" rel="noopener">
-                Resume
-              </a>
-            }
+            <div class="max-w-md md:text-right">
+              <p class="mono-label text-fg-muted">{{ p!.positioning }}</p>
+              @if (p!.heroSubline) {
+                <p class="mt-3 text-body text-fg">{{ tidy(p!.heroSubline) }}</p>
+              }
+            </div>
           </div>
         </div>
+
+        <!--
+          THE CONTRAST STRIP (07 §4c) — the reference's signature.
+
+          The same photo, at the same size and position so it registers exactly
+          with the layer below, but lifted out of the darkening treatment and
+          clipped to a vertical band. Because it paints ABOVE the headline and
+          BELOW everything else, the giant word runs behind it and re-emerges
+          on the other side. That is the "high-contrast strip cutting through
+          the letters" — in the mockup it happened because white type crossed a
+          bright white sleeve; here it is a real layer, so it is deliberate and
+          it lands in the same place every time.
+
+          Desktop only. Across a phone-width headline the band would swallow a
+          whole word rather than slice a letter, and the title has to stay
+          readable more than it has to be clever.
+
+          It also doubles as the transition: the wipe band below sweeps a copy of
+          this same band across the word as it changes.
+        -->
+        <div
+          #stripLayer
+          class="pointer-events-none absolute inset-0 z-20 hidden bg-cover bg-center
+                 grayscale contrast-[1.45] brightness-[1.12] md:block"
+          [style.background-image]="'url(' + heroPhotoUrl() + ')'"
+          style="clip-path: inset(0 36% 0 48%)"
+          aria-hidden="true"
+        ></div>
+
+        <div
+          class="photo-strip-frame top-16 right-16 z-30 hidden h-112 w-52 lg:block"
+          aria-hidden="true"
+        ></div>
       </section>
     } @else if (p) {
       <!-- 1. HERO — simple variant (02 §4.1). No photo, so nothing is layered
@@ -367,13 +459,30 @@ export class Home implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly photoLayer = viewChild<ElementRef<HTMLElement>>('photoLayer');
+  private readonly stripLayer = viewChild<ElementRef<HTMLElement>>('stripLayer');
+  private readonly titleRoll = viewChild<ElementRef<HTMLElement>>('titleRoll');
+  private readonly titleWipe = viewChild<ElementRef<HTMLElement>>('titleWipe');
 
-  /** Which of `heroTitles` is showing, and whether it's mid-crossfade. */
+  /** Which of `heroTitles` is showing. */
   protected readonly heroTitleIndex = signal(0);
-  protected readonly heroTitleVisible = signal(true);
 
   private rotationTimer?: ReturnType<typeof setInterval>;
   private scrollHandler?: () => void;
+
+  /**
+   * Removes a space that sits before its punctuation ("myself , so" →
+   * "myself, so").
+   *
+   * This is a typographic repair, not a content edit: it deletes an erroneous
+   * character and can never change a word. It lives at render rather than in
+   * the data because `heroSubline` is edited through the dashboard, so the
+   * same slip can be reintroduced at any time — the same reasoning as the
+   * empty-proof-point filter above. The stored value should still be corrected
+   * in `/admin/profile`; this only stops it reaching a visitor meanwhile.
+   */
+  protected tidy(text: string): string {
+    return text.replace(/\s+([,.;:!?])/g, '$1');
+  }
 
   constructor() {
     /**
@@ -385,7 +494,7 @@ export class Home implements OnInit {
      */
     afterNextRender(() => {
       const titles = this.profile()?.heroTitles;
-      if (titles && titles.length > 1) this.startRotation(titles);
+      if (titles && titles.length > 1) void this.startRotation(titles.length);
       this.startParallax();
     });
 
@@ -414,17 +523,88 @@ export class Home implements OnInit {
     return (['diamond', 'square', 'circle'] as const)[index % 3];
   }
 
-  /** Crossfade + 12px rise, 420ms, 2.6s dwell — the design reference's timing. */
-  private startRotation(titles: readonly string[]): void {
-    const DWELL_MS = 2600;
-    const TRANSITION_MS = 420;
-    this.rotationTimer = setInterval(() => {
-      this.heroTitleVisible.set(false);
-      setTimeout(() => {
-        this.heroTitleIndex.update((i) => (i + 1) % titles.length);
-        this.heroTitleVisible.set(true);
-      }, TRANSITION_MS);
-    }, DWELL_MS + TRANSITION_MS);
+  /**
+   * The rotating-title transition (07 §5a).
+   *
+   * ─── Why this is not a crossfade ─────────────────────────────────────────────
+   * A fade between two words is the default every site reaches for, and it says
+   * nothing about this one. The motion here is built from the site's own
+   * signature instead: the contrast strip that cuts through the headline is
+   * what performs the change.
+   *
+   * Two things happen together:
+   *   1. A WIPE band — the strip made kinetic — sweeps across the word.
+   *   2. The word ROLLS: the outgoing title travels up out of a clipped frame
+   *      and the incoming one arrives from below, like an odometer. That reads
+   *      far better on oversized condensed type than a fade, because the type
+   *      is the thing with presence and movement keeps it solid rather than
+   *      dissolving it into a ghost.
+   *
+   * The swap itself is timed to happen WHILE the band is over the word, so the
+   * new title emerges from behind it. Nothing announces the change; the strip
+   * passes and the word has become the next one.
+   *
+   * Everything animated is `transform` and `opacity`, so it stays on the
+   * compositor and never triggers layout. GSAP's free core only — no
+   * SplitText, no Club plugin, nothing requiring a licence key.
+   * ─────────────────────────────────────────────────────────────────────────────
+   *
+   * Under `prefers-reduced-motion` the rotation does not start at all, and the
+   * first title stays. That is deliberate: this criterion is not only about
+   * how a transition looks but about content that changes on its own, and
+   * index 0 is a complete, honest resting state rather than a loading one. It
+   * also means GSAP is never fetched for that visitor — the same rule
+   * `RevealDirective` follows.
+   */
+  private async startRotation(count: number): Promise<void> {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let gsap: typeof import('gsap').gsap;
+    try {
+      ({ gsap } = await import('gsap'));
+    } catch {
+      /** No GSAP, no rotation. The first title is already on screen and
+       *  readable, so there is nothing to fall back to. */
+      return;
+    }
+
+    /** Dwell long enough to actually read the word before it moves again. */
+    const CYCLE_MS = 3400;
+    this.rotationTimer = setInterval(() => this.rollToNextTitle(gsap, count), CYCLE_MS);
+  }
+
+  private rollToNextTitle(gsap: typeof import('gsap').gsap, count: number): void {
+    const roll = this.titleRoll()?.nativeElement;
+    if (!roll) return;
+
+    const timeline = gsap.timeline();
+    const wipe = this.titleWipe()?.nativeElement;
+
+    if (wipe) {
+      /**
+       * The band is a quarter of the headline wide, so crossing the full width
+       * plus its own body is roughly 500% of itself. Expressed in `xPercent`
+       * rather than pixels so it needs no measurement and stays correct when
+       * the fluid type scale resizes the heading.
+       */
+      timeline
+        .fromTo(
+          wipe,
+          { xPercent: -140, opacity: 1 },
+          { xPercent: 500, duration: 0.78, ease: 'power2.inOut' },
+          0,
+        )
+        .set(wipe, { opacity: 0 });
+    }
+
+    timeline
+      /** Out through the top of the clipped frame. */
+      .to(roll, { yPercent: -130, duration: 0.28, ease: 'power3.in' }, 0.14)
+      /** Swapped while the band covers it — this is the moment of the trick. */
+      .add(() => this.heroTitleIndex.update((i) => (i + 1) % count))
+      .set(roll, { yPercent: 130 })
+      /** And in from below. */
+      .to(roll, { yPercent: 0, duration: 0.38, ease: 'power3.out' });
   }
 
   /**
@@ -438,12 +618,23 @@ export class Home implements OnInit {
     const layer = this.photoLayer()?.nativeElement;
     if (!layer) return;
 
+    /**
+     * The contrast strip is the same photo at the same size and position, so
+     * it MUST travel with the base layer — a pixel of drift between them and
+     * the illusion that one continuous image is being sliced falls apart.
+     * Hence the identical transform rather than a second, separately-tuned
+     * parallax factor.
+     */
+    const strip = this.stripLayer()?.nativeElement;
+
     let ticking = false;
     this.scrollHandler = () => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
-        layer.style.transform = `translateY(${window.scrollY * -0.15}px)`;
+        const shift = `translateY(${window.scrollY * -0.15}px)`;
+        layer.style.transform = shift;
+        if (strip) strip.style.transform = shift;
         ticking = false;
       });
     };

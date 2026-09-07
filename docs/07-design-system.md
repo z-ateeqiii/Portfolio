@@ -153,6 +153,48 @@ Section glows still exist, layered above it for emphasis. The ambient one is del
 
 **Why the grain lives with the glow rather than over the whole page**: `mix-blend-mode: overlay` against pure black resolves to black, because overlay doubles the backdrop when it is below 0.5 and twice zero is zero. Film grain is therefore only ever visible where something has already lit the area. Pairing it with a glow is not a stylistic preference; it is the only place it renders at all.
 
+### 4c. The Hero: the contrast strip, and its composition (added 2026-09-07)
+
+**The strip is the reference's signature and it is a real layer.** A second copy of the same photo, at the same size and position so it registers exactly with the layer beneath, lifted out of the darkening treatment and clipped to a vertical band. It paints **above the headline and below everything else**, so the giant word runs behind it and re-emerges on the other side.
+
+In the mockup this happened by accident — white type crossed a brightly lit white sleeve and the letters vanished into it. Making it a layer makes it deliberate and repeatable: it lands in the same place on every title.
+
+**Layer order is the effect**, so it is set per child, never on a wrapper:
+
+| Layer | z |
+|---|---|
+| Photo, gradient, glow, grain | 0 |
+| **Headline** | 10 |
+| **Contrast strip** | 20 |
+| Role counter, rule, CTAs, positioning, subline, viewfinder | 30 |
+
+The content wrapper carries `position: relative` with **no** z-index, deliberately. A relative element at `z-index: auto` creates no stacking context, so its children compete directly with the strip that is their parent's sibling. Putting a z-index on the wrapper traps every child in one context and the strip can never come between them.
+
+**The headline is uppercase.** Presentation, not content — the stored titles keep their casing and every other use of them is unaffected. It matters because the reference sets this headline in caps, and because Title Case is narrow enough that the shortest title would stop short of the strip entirely, firing the effect on some titles and not others.
+
+**Desktop only.** Across a phone-width headline the band swallows a whole word rather than slicing a letter, and the title has to stay readable more than it has to be clever.
+
+**Accessibility**: the headline is real server-rendered text. The strip covers it visually and never touches the DOM, so the full title is always in the accessibility tree and always indexable.
+
+**Composition and the fold.** Height is `svh`-based with a cap at both ends: `h-[80svh] max-h-46rem min-h-34rem`. `vh` on mobile means the *largest* viewport, the one you only get once the browser chrome retracts, so a `92vh` hero with bottom-anchored content pushed the CTA row under the address bar on first paint. `svh` lays out what is actually visible. The cap stops the hero becoming a wall of empty photo on a tall monitor; the floor keeps it usable in landscape. Content stays bottom-anchored, as the reference requires so the block never moves between title states, but with enough bottom padding that it is lifted off the viewport edge rather than pressed against it.
+
+The result that matters: **View Work and Resume are above the fold at every common screen height.** They are the two things a recruiter came to press (brief §28).
+
+### 4d. The rotating-title transition (added 2026-09-07)
+
+A crossfade is what every site reaches for and it says nothing about this one. The motion is built from the site's own signature instead — the strip performs the change:
+
+1. A **wipe band**, the strip made kinetic, sweeps across the word.
+2. The word **rolls**: the outgoing title travels up out of a clipped frame and the incoming one arrives from below, like an odometer. That suits oversized condensed type far better than a fade, which dissolves the type into a ghost exactly where its presence is the point.
+
+The swap is timed to happen **while the band is over the word**, so the new title emerges from behind it. Nothing announces the change; the strip passes and the word has become the next one.
+
+Constraints it respects: **GSAP free core only** — no SplitText, no Club plugin, nothing needing a licence key. Everything animated is `transform` and `opacity`, so it stays on the compositor and never triggers layout. Positions are expressed in `xPercent`/`yPercent` rather than pixels, so no measurement is needed and it stays correct as the fluid type scale resizes the heading.
+
+Under `prefers-reduced-motion` **the rotation does not start at all** and the first title stays. The criterion is not only about how a transition looks but about content that changes on its own, and index 0 is a complete resting state rather than a loading one. GSAP is never fetched for that visitor either — the same rule `RevealDirective` follows.
+
+The clip frame carries vertical padding with a matching negative margin. The `display-hero` line-height is 0.86, tighter than the glyph box, so a flush `overflow-hidden` shaves the tops of the capitals; the negative margin takes the added height back out of the layout so the block below does not move.
+
 **Intensity varies by content, application does not.** Long-form prose pages (`/about`, the case-study body, `/beyond/*`) get the treatment on the page frame and keep it off the reading column: a glow behind two thousand words fights the reading. That is a decision about how much, not about whether.
 
 ---
@@ -255,7 +297,7 @@ These are not aspirations; a change that breaks one of them is a regression.
 
 **Performance.** Below-the-fold images are `loading="lazy" decoding="async"`; images sit in aspect-ratio boxes so they reserve their space and do not shift layout. No effect in this system animates a layout property. GSAP stays dynamically imported and out of the initial bundle, and is never fetched at all by a visitor who asked for reduced motion. Where the skill-recommended technique and the budget disagreed, the lighter option was taken — the hover system is the main instance, and the grain's `steps()` timing the other.
 
-**Measured cost of the full visual pass** (2026-09-07, including the continuity and polish corrections): initial bundle 352.39 kB → 374.88 kB raw, 101.46 kB → 105.93 kB estimated transfer. **+4.47 kB transfer sitewide, and no new dependency.** The stylesheet accounts for about a kilobyte of that, the header's mobile disclosure and the shared backdrop component for most of the rest.
+**Measured cost of the full visual pass** (2026-09-07, including the continuity, polish and Hero corrections): initial bundle 352.39 kB → 375.61 kB raw, 101.46 kB → 106.06 kB estimated transfer. **+4.60 kB transfer sitewide, and no new dependency.** GSAP stays in a lazy chunk despite the Hero now importing it — verified in the build output, not assumed. The stylesheet accounts for about a kilobyte of that, the header's mobile disclosure and the shared backdrop component for most of the rest.
 
 ---
 

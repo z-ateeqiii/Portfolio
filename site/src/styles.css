@@ -455,6 +455,29 @@
   border: 1px solid --alpha(var(--color-fg) / 80%);
 }
 
+/* The kinetic form of the contrast strip (07 §4c, §5a).
+
+   A band of light with a hard orange leading edge, swept across the Hero's
+   rotating title by GSAP while the word underneath changes. The soft body and
+   the single crisp edge are what make it read as the same device as the static
+   photo strip rather than as a generic shine: the strip's own edges are hard,
+   and orange is already the site's marker colour.
+
+   `screen` blending means it only ever adds light — it brightens the dark
+   ground it crosses and leaves the white letters essentially untouched, so the
+   word stays legible for the whole sweep instead of flashing out. */
+@utility title-wipe {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    --alpha(var(--color-fg) / 6%) 30%,
+    --alpha(var(--color-fg) / 16%) 70%,
+    --alpha(var(--color-action) / 34%) 100%
+  );
+  border-right: 1px solid var(--color-action);
+  mix-blend-mode: screen;
+}
+
 /* ---------------------------------------------------------------------------
    STRUCTURAL MARKS (07 §3a, §7) — the small repeated pieces that make the
    design reference read as one language rather than three treated pages.
