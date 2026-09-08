@@ -2,6 +2,7 @@ import { Injectable, TransferState, inject, makeStateKey, signal } from '@angula
 
 import { Profile } from '../models';
 import { ContentService } from './content.service';
+import { reviveDates } from './transfer';
 
 const PROFILE_KEY = makeStateKey<Profile | null>('profile');
 
@@ -43,18 +44,4 @@ export class SiteState {
     this._profile.set(profile);
     this.transferState.set(PROFILE_KEY, profile);
   }
-}
-
-/**
- * TransferState serialises to JSON, which turns Dates into strings. The models
- * declare `updatedAt`/`publishedAt` as Date, so they are restored here rather
- * than left as strings that only fail later, at a `.getFullYear()` call in
- * some unrelated template.
- */
-function reviveDates(profile: Profile): Profile {
-  return {
-    ...profile,
-    updatedAt: new Date(profile.updatedAt),
-    publishedAt: profile.publishedAt ? new Date(profile.publishedAt) : undefined,
-  };
 }

@@ -375,6 +375,23 @@ Reported after looking at the rendered page. All fixed, and all verified in a re
 
 **Verification method changed.** Everything above was found by rendering the site in headless Chrome and looking at it, plus measuring the live layout over the DevTools Protocol — element boxes, document scroll width, and the header's position after a scroll, at six viewport sizes. Every one of these defects was invisible in the markup and in the build output; the previous passes reported "verified" on the strength of those alone, which is what let them through.
 
+### 4o. Every case study rendered blank in the browser (2026-09-08)
+
+`TypeError: project.publishedAt.toISOString is not a function`, thrown from `SeoService.caseStudySchema` inside `CaseStudy.ngOnInit`. Because it threw during hydration Angular abandoned the component, so the case study was **completely empty** in the browser — measured `h1 = null`, zero rendered characters — on all five projects, not just the one that was noticed.
+
+**Runtime type at the failure point: a string.** Not a Firestore `Timestamp`. `hydrate()` in `firestore-collection.ts` already converts Timestamps correctly and the server had a real `Date`; the corruption happens later. TransferState serialises to JSON, JSON has no date type, and the browser gets `"2026-08-28T15:05:27.925Z"` back as a plain string. Confirmed by reading the `ng-state` block out of the served HTML rather than by inference.
+
+Every model still declares these fields as `Date`, so **TypeScript agrees they are Dates and always will** — the type is accurate on the server and a lie after hydration, and no compiler pass can see the difference.
+
+**Why SSR checks never caught it.** The server-rendered HTML for these URLs was complete and correct the whole time. Curling it — which is how the previous passes verified — exercises only the path where the value really is a `Date`. The bug lives exclusively on the other side of the transfer.
+
+**Fixed at the boundary**, in `transferred()`: values read back out of TransferState are walked and ISO-8601 instants restored to `Date`. Past that function the declared types are true again and nothing downstream needs to know a transfer happened. Repairing `caseStudySchema` instead would have fixed one call site and left the trap set for every other consumer.
+
+Matched on the value's **shape**, not on a list of field names. A name list has to be found and extended by whoever adds the next date field, and nothing would tell them to — not the compiler, and not SSR. `Profile` had already hit this and grown its own field-name reviver in `site-state.ts`; that has been deleted in favour of the shared one, so there is now one mechanism rather than two that can drift.
+
+- [x] Verified in a real browser with console capture, before and after. Before: all five case studies blank with the exact error. After: all fourteen public routes render fully with zero console errors, on both the production SSR build and `ng serve`.
+- [x] **The second console error (`reportAllChanges` / `startTime`) is unrelated and is not ours.** `web-vitals` exists in `node_modules` only as a transitive dependency of `@firebase/performance`, which this codebase never imports; `reportAllChanges` appears nowhere in `dist/site/browser/`; and the error does not occur in a clean browser with no extensions against either the production build or the dev server. It is coming from a browser extension.
+
 ### Genuinely unresolved — needs Muhammed's decision, not a design call
 
 - [ ] **`Skill` and `Education` render nowhere on the public site.** Both are full entities with dashboard editors, both are exposed by `ContentService` (`skills()`, `education()`), and neither is resolved on a single public route — so anything entered there is invisible to visitors. This is pre-existing and predates this pass. It is not a design question: `02` §13 explicitly rules out standalone Skills/Certifications pages because they fragment the story, so the options are to surface them inside `/about` (where Experience already lives), to surface them somewhere else, or to remove the editors. Needs a content decision.
