@@ -168,7 +168,7 @@ export const PROJECTS: readonly ProjectSeed[] = [
     role: '',
     timeframe: '',
     stack: ['Angular 17', 'SSR (Express)', 'JWT Authentication', 'Tailwind CSS', 'Flowbite'],
-    liveUrl: 'https://freshcarteco.netlify.app/login',
+    liveUrl: 'https://e-commerce-angular1.vercel.app/login',
     githubUrl: 'https://github.com/z-ateeqiii/eCommerceAngular',
     problem:
       'As a capstone assignment, the brief was to build a complete eCommerce flow — browsing, cart, checkout — against a real backend rather than static or mocked data, which is what separates a capstone from a course exercise.',

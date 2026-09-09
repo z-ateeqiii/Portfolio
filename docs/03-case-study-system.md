@@ -137,7 +137,7 @@ Delivered as a complete, working multi-view analytics dashboard within the asses
 **Snapshot**
 - eCommerce web application, built as the capstone project for the Angular course Muhammed was taking
 - Stack: Angular 17, SSR via Express, JWT authentication, Tailwind CSS + Flowbite
-- Live: freshcarteco.netlify.app/login
+- Live: e-commerce-angular1.vercel.app/login
 - GitHub: z-ateeqiii/eCommerceAngular
 
 **The Problem**
