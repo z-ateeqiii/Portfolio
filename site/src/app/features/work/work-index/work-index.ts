@@ -136,24 +136,30 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
             reads as "here is a set" rather than as six identical, independent,
             simultaneous fades.
           -->
-          <div appReveal mode="grid" class="mt-8 grid gap-6 md:grid-cols-2">
+          <!--
+            Three columns from xl. At five projects two columns was right; the
+            set is eight now and still growing, and a two-wide column of eight
+            cards is a scroll, not an index. The breakpoint is where a third
+            card still has room for a readable tagline — below it, three
+            columns squeeze the text before it squeezes the grid.
+          -->
+          <div appReveal mode="grid" class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             @for (project of rest(); track project.slug) {
               <ui-card [interactive]="true" [flush]="true">
                 @if (cover(project.slug); as image) {
-                  <div class="overflow-hidden">
+                  <div class="media-frame aspect-video w-full">
                     <img
                       [src]="image.url"
                       [alt]="image.alt"
                       loading="lazy"
                       decoding="async"
-                      class="hover-reveal-media aspect-video w-full object-cover grayscale
-                             contrast-115"
+                      class="hover-reveal-media size-full object-cover grayscale contrast-115"
                     />
                   </div>
                 }
 
-                <div class="p-6">
-                  <h2 class="display-condensed text-display-3 font-display text-fg">
+                <div class="flex flex-1 flex-col p-6">
+                  <h2 class="display-condensed text-display-4 font-display text-fg">
                     <a
                       [routerLink]="['/work', project.slug]"
                       class="text-fg no-underline transition-colors duration-(--duration-base)
@@ -162,13 +168,13 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
                     >
                   </h2>
 
-                  <p class="mt-4 text-body text-fg-muted">{{ project.tagline }}</p>
+                  <p class="mt-3 text-body text-fg-muted">{{ project.tagline }}</p>
 
                   @if (meta(project); as line) {
                     <p class="mono-label mt-4 text-fg-muted">{{ line }}</p>
                   }
 
-                  <ul class="mt-6 flex flex-wrap gap-2">
+                  <ul class="mt-auto flex flex-wrap gap-2 pt-6">
                     @for (tech of project.stack; track tech; let j = $index) {
                       <li><ui-tag [icon]="tagIcon(j)">{{ tech }}</ui-tag></li>
                     }

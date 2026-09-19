@@ -58,8 +58,18 @@ export class UiCard {
    * `overflow-hidden` is unconditional: the card has a radius, and a flush
    * cover image must be clipped to it or its square corners poke out past the
    * rounded border.
+   *
+   * `flex h-full flex-col` (2026-09-19) is what lets a row of cards line up.
+   * Grid items stretch by default, so the CARDS were already equal height —
+   * but their contents were not, so a project with a one-line tagline put its
+   * tags halfway up the card while its neighbour put them at the bottom, and
+   * the row read as ragged. A column lets the body claim the leftover space
+   * and push the tags to a shared baseline. It matters more as the set grows:
+   * at eight projects and rising, every tagline length difference is another
+   * misaligned row.
    */
-  private static readonly BASE = 'group block overflow-hidden rounded-md bg-surface';
+  private static readonly BASE =
+    'group flex h-full flex-col overflow-hidden rounded-md bg-surface';
 
   private static readonly BORDER: Record<'neutral' | 'accent', string> = {
     neutral: 'border border-fg/12 hover:border-fg/40 focus-within:border-fg/40',

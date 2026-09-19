@@ -19,6 +19,7 @@ import { COPY, PROCESS } from '../../core/content/site-copy';
 import { ProofPoint } from '../../core/models';
 import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
+import { UiMarquee, type MarqueeItem } from '../../shared/blocks/marquee/marquee';
 import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdrop';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
@@ -53,7 +54,16 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RevealDirective, UiButton, UiCard, UiEyebrow, UiStripBackdrop, UiTag],
+  imports: [
+    RouterLink,
+    RevealDirective,
+    UiButton,
+    UiCard,
+    UiEyebrow,
+    UiMarquee,
+    UiStripBackdrop,
+    UiTag,
+  ],
   template: `
     @let p = profile();
 
@@ -232,6 +242,35 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
       </section>
     }
 
+    <!--
+      2b. THE TWO STRIPS (07 §5b).
+
+      Placed between the Hero and Featured Work on purpose: they are the
+      handoff between "who is this" and "show me the work", and they answer
+      both halves in one glance — what he builds with, and what he calls
+      himself. Neither is new content. The stack is the stack this site is
+      actually built on, and the identity terms are the ones already in the
+      brief and in Profile.positioning; nothing here was written for the strip.
+
+      Full-bleed rather than inside container-wide, because a strip that stops
+      at a container edge reads as a component and a strip that runs off both
+      sides reads as motion passing through the page.
+    -->
+    <section class="border-y border-fg/12 py-7">
+      <ui-marquee [items]="stackMarks" label="Technologies this site is built with" [seconds]="34" />
+    </section>
+
+    <section class="border-b border-fg/12 py-7">
+      <!-- Runs the other way, so the two strips read as a system rather than
+           as the same element repeated. -->
+      <ui-marquee
+        [items]="identityMarks"
+        label="How Muhammed describes his work"
+        [seconds]="42"
+        [reverse]="true"
+      />
+    </section>
+
     <!-- 3. Featured Work (02 §4.3) — leads with Scholarship, per brief §15. -->
     @if (featured().projects.length) {
       <section class="relative py-16">
@@ -255,21 +294,20 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
                   Desaturated, and un-desaturating on hover, matching /work.
                 -->
                 @if (featured().covers[project.slug]; as cover) {
-                  <div class="overflow-hidden">
+                  <div class="media-frame aspect-video w-full">
                     <img
                       [src]="cover.url"
                       [alt]="cover.alt"
                       loading="lazy"
                       decoding="async"
-                      class="hover-reveal-media aspect-video w-full object-cover grayscale
-                             contrast-115"
+                      class="hover-reveal-media size-full object-cover grayscale contrast-115"
                     />
                   </div>
                 }
 
-                <div class="p-6">
+                <div class="flex flex-1 flex-col p-6">
                   <div class="flex items-baseline justify-between gap-4">
-                    <h3 class="display-condensed text-display-3 font-display text-fg">
+                    <h3 class="display-condensed text-display-4 font-display text-fg">
                       <a
                         [routerLink]="['/work', project.slug]"
                         class="text-fg no-underline transition-colors duration-(--duration-base)
@@ -282,9 +320,9 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
                     }
                   </div>
 
-                  <p class="mt-4 text-body text-fg-muted">{{ project.tagline }}</p>
+                  <p class="mt-3 text-body text-fg-muted">{{ project.tagline }}</p>
 
-                  <ul class="mt-6 flex flex-wrap gap-2">
+                  <ul class="mt-auto flex flex-wrap gap-2 pt-6">
                     @for (tech of project.stack; track tech; let i = $index) {
                       <li><ui-tag [icon]="tagIcon(i)">{{ tech }}</ui-tag></li>
                     }
@@ -409,6 +447,35 @@ export class Home implements OnInit {
 
   /** Shared across every route, so it is read from the store, not re-fetched. */
   protected readonly profile = inject(SiteState).profile;
+
+  /**
+   * The stack THIS site is built on — not a list of everything Muhammed has
+   * touched. Each of the six is a real dependency or platform in use here, so
+   * the strip is a statement that can be checked rather than a skills cloud.
+   */
+  protected readonly stackMarks: readonly MarqueeItem[] = [
+    { label: 'Angular', icon: 'angular' },
+    { label: 'TypeScript', icon: 'typescript' },
+    { label: 'Firebase', icon: 'firebase' },
+    { label: 'Cloudinary', icon: 'cloudinary' },
+    { label: 'Tailwind CSS', icon: 'tailwind' },
+    { label: 'GSAP', icon: 'gsap' },
+  ];
+
+  /**
+   * Identity terms, all of them already established elsewhere — the brief's
+   * positioning, Profile.positioning, and the Beyond Code sections that exist
+   * because he teaches and creates. Nothing was coined to fill the strip; if a
+   * seventh is ever wanted it has to come from the same places.
+   */
+  protected readonly identityMarks: readonly MarqueeItem[] = [
+    { label: 'Software Engineer' },
+    { label: 'Builder' },
+    { label: 'Problem Solver' },
+    { label: 'Entrepreneurial Thinker' },
+    { label: 'Content Creator' },
+    { label: 'Educator' },
+  ];
 
   protected readonly copy = COPY;
   protected readonly process = PROCESS;

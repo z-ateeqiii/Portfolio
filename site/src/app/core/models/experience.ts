@@ -47,6 +47,26 @@ export interface Experience extends Editable {
   readonly tech?: readonly string[];
 
   /**
+   * The "What I Did" bullet list, shown when a role expands (04 §4, added
+   * 2026-09-19).
+   *
+   * Deliberately separate from `summary` rather than replacing it. They answer
+   * different questions and the accordion shows them at different moments:
+   * `summary` is the prose a visitor reads while scanning, visible on every
+   * collapsed row; this is the CV-style detail they opened the row to get.
+   * Collapsing the two into one field would force a choice between a scannable
+   * page and a complete one.
+   *
+   * Sourced verbatim from Muhammed's CV, never paraphrased — these are claims
+   * about what he actually did, so rewording them for rhythm would be
+   * inventing content (brief §22, 09 §3).
+   *
+   * Optional: a role with no bullets simply has no expandable section, the
+   * same way a role with no `tech` renders no tags.
+   */
+  readonly highlights?: readonly string[];
+
+  /**
    * Projects this role produced (added 2026-08-30, a 04 §4 schema change).
    *
    * 04 §4 had a singular `linkedProjectSlug` and used "Smart Technology → ST

@@ -532,6 +532,12 @@ export const EXPERIENCE: readonly Seed<Experience>[] = [
     summary:
       'Frontend development, internal applications, and business workflow tooling. Designed and built the Employee Portal Guide (Angular 21, Tailwind, RxJS, Signals) — an internal training and onboarding app. Designed and developed the Scholarship Management Platform (Angular, Firebase) supporting Instructor and Operations/Admin workflows. Implemented role-based access with route guards, reactive state with Angular Signals, a lazy-loaded modular architecture, and a fully responsive UI — delivered to production.',
     tech: ['Angular 21', 'Tailwind', 'RxJS', 'Angular Signals', 'Firebase'],
+    highlights: [
+      'Designed and built the Employee Portal Guide (Angular 21, Tailwind CSS, RxJS, Angular Signals): an internal training and onboarding app structuring company knowledge into categories and guided workflows, reducing manual onboarding effort.',
+      'Designed and developed the Scholarship Management Platform for the Engineers Syndicate scholarship using Angular and Firebase, supporting both Instructor and Operations/Admin workflows.',
+      'Implemented role-based access with route guards, reactive state with Angular Signals, lazy-loaded modular architecture, and a fully responsive UI — delivered to production.',
+      'Owned application design and business logic — translated internal training operations into working software, beyond UI implementation alone.',
+    ],
     // Both seeded projects came out of this role, which is why 04 §4's
     // singular link was widened to an array — see core/models/experience.ts.
     linkedProjectSlugs: ['st-employees-portal', 'scholarship-operation-dashboard'],
@@ -546,6 +552,11 @@ export const EXPERIENCE: readonly Seed<Experience>[] = [
     summary:
       'Introduced AI concepts to Grade 5 students; guided them through building their first AI project from concept to completion; simplified machine learning and automation for young learners.',
     tech: [],
+    highlights: [
+      'Introduced AI concepts to Grade 5 students in an engaging, age-appropriate manner.',
+      'Guided students through building their first AI project from concept to completion.',
+      'Simplified complex topics such as machine learning and automation for young learners.',
+    ],
   },
   {
     id: 'mindset-training',
@@ -557,6 +568,10 @@ export const EXPERIENCE: readonly Seed<Experience>[] = [
     summary:
       'Delivered HTML, CSS, and JavaScript fundamentals to students aged 18–20. Achieved 95% positive feedback.',
     tech: ['HTML', 'CSS', 'JavaScript'],
+    highlights: [
+      'Delivered HTML, CSS, and JavaScript fundamentals to students aged 18–20.',
+      'Achieved 95% positive feedback through effective technical communication and practical exercises.',
+    ],
   },
   {
     id: 'codology',
@@ -568,6 +583,10 @@ export const EXPERIENCE: readonly Seed<Experience>[] = [
     summary:
       'Migrated a production CRM from Angular v11 to v16, resolving breaking changes and modernising the codebase. Integrated multiple REST API endpoints; applied scalable Angular module architecture in a live production environment.',
     tech: ['Angular', 'REST APIs'],
+    highlights: [
+      'Migrated a production CRM from Angular v11 to v16, resolving breaking changes and modernizing the codebase.',
+      'Integrated multiple REST API endpoints and applied scalable Angular module architecture in a live production environment.',
+    ],
   },
 ];
 

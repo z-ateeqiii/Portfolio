@@ -63,6 +63,18 @@
   --text-display-3--letter-spacing: -0.008em;
   --text-display-3--font-weight: 600;
 
+  /* Card headings inside a MULTI-COLUMN grid (07 §3a, added 2026-09-19).
+     display-3 tops out at 2.25rem, which was right when the work grid was two
+     columns and each card was ~600px wide. At three columns a card is ~380px
+     and that size broke every project name onto two or three lines — "Cyber50
+     Dashboard" and "ST Employees Portal" both wrapped, so the grid read as a
+     wall of headline rather than a set of cards. This is a step down that
+     still reads as a heading against body copy beneath it. */
+  --text-display-4: clamp(1.25rem, 1.8vw, 1.625rem);
+  --text-display-4--line-height: 1.2;
+  --text-display-4--letter-spacing: -0.006em;
+  --text-display-4--font-weight: 600;
+
   /* Oversized display size — the rotating Hero title, page titles and featured
      project names. Bigger than display-1 and deliberately condensed (paired
      with the `display-condensed` utility below), never used for anything but a
@@ -512,6 +524,97 @@
 }
 
 /* ---------------------------------------------------------------------------
+   THE MARQUEE (07 §5b) — the two infinite strips on Home.
+--------------------------------------------------------------------------- */
+@utility marquee {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  /* The strip runs the full width of the viewport, so it has to end by fading
+     rather than by hitting an edge — a word sliced in half at x=0 reads as a
+     layout bug, not as motion. */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 7%,
+    #000 93%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
+}
+
+@utility marquee-track {
+  display: flex;
+  width: max-content;
+  /* transform only, so this stays on the compositor. A strip that never stops
+     is the one animation on the site where a main-thread cost would be paid
+     continuously rather than for a few hundred milliseconds. */
+  animation: marquee-scroll var(--marquee-duration, 38s) linear infinite;
+  will-change: transform;
+}
+
+@utility marquee-run {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+@utility marquee-item {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: --spacing(2.5);
+  padding-inline: --spacing(7);
+}
+
+/* -50% lands on the start of the second copy, which is identical to the first
+   — that is what makes the loop seamless. It only works because the component
+   renders the list exactly twice. */
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Same travel, opposite direction. Implemented as a direction flip rather
+   than a second keyframe set so both strips share one definition of the
+   -50% seam rule. */
+.marquee-track.marquee-reverse {
+  animation-direction: reverse;
+}
+
+/* Hovering holds the strip still so a name can actually be read. */
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The global reduce rule collapses animations to 0.01ms, which for a
+     marquee means it snaps to -50% and stays there — the strip would sit
+     permanently offset with its first items scrolled off screen. So the
+     animation is removed outright, the duplicate copy is dropped, and the
+     strip becomes something the visitor can scroll by hand instead. */
+  .marquee {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .marquee-track {
+    animation: none;
+    will-change: auto;
+  }
+
+  .marquee-run[aria-hidden='true'] {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    STRUCTURAL MARKS (07 §3a, §7) — the small repeated pieces that make the
    design reference read as one language rather than three treated pages.
 --------------------------------------------------------------------------- */
@@ -597,6 +700,18 @@
 /* Image inside a hovered card: a slow push-in, and the desaturation lets go.
    Colour returning on hover is the reward — it says "this one is live" without
    spending the orange accent on it. Requires an `overflow-hidden` wrapper. */
+/* The cover image of a project card, and the main thing that makes a card feel
+   like a live project rather than a screenshot of one (07 §7a).
+
+   Three things move together on hover, deliberately at the SLOW duration so it
+   reads as the image waking up rather than as a control responding: the
+   desaturation lifts all the way off, the frame pushes in slightly, and the
+   image drifts up a couple of pixels behind its own crop. The colour is the
+   real signal — every cover sits in greyscale until touched, so colour
+   arriving is unambiguous and needs no shadow or outline to announce it.
+
+   Previously this only went to `grayscale(0.35)`, a half-measure that read as
+   a rendering artefact rather than an intention. */
 @utility hover-reveal-media {
   transition:
     transform var(--duration-slow) var(--ease-out-strong),
@@ -604,8 +719,39 @@
 
   .group:hover &,
   .group:focus-within & {
-    transform: scale(1.04);
-    filter: grayscale(0.35) contrast(1.1);
+    transform: scale(1.06) translateY(-0.5%);
+    filter: grayscale(0) contrast(1.05) saturate(1.06);
+  }
+}
+
+/* The crop the cover sits in. Owns the clipping, the aspect ratio and a single
+   pass of light that crosses the image on hover — the "something is alive in
+   here" cue, done with one pseudo-element and a transform rather than a
+   second image or a JS crossfade. */
+@utility media-frame {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+      105deg,
+      transparent 38%,
+      --alpha(var(--color-fg) / 10%) 50%,
+      transparent 62%
+    );
+    transform: translateX(-100%);
+    transition: transform var(--duration-slow) var(--ease-out-strong);
+  }
+
+  .group:hover &::after,
+  .group:focus-within &::after {
+    transform: translateX(100%);
   }
 }
 

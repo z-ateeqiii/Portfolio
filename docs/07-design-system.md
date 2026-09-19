@@ -80,14 +80,15 @@ The monospace utility face should appear consistently in the same handful of pla
 
 ### 3a. Scale (added 2026-09-07)
 
-**Display sizes.** Four steps, all fluid via `clamp()`:
+**Display sizes.** Five steps, all fluid via `clamp()`:
 
 | Token | Range | Used for |
 |---|---|---|
 | `display-hero` | 2.75 → 9rem (11vw) | A page title or a short name. Always paired with `display-condensed`. |
 | `display-1` | 2.75 → 5.5rem (7vw) | A section headline that is a full sentence. |
 | `display-2` | 2 → 3.5rem (4.5vw) | Sub-section headings, a featured project name, a big number. |
-| `display-3` | 1.5 → 2.25rem (2.75vw) | Card headings. |
+| `display-3` | 1.5 → 2.25rem (2.75vw) | Sub-section headings, a card heading in a single- or two-column layout. |
+| `display-4` | 1.25 → 1.625rem (1.8vw) | A card heading inside a multi-column grid. |
 
 **`display-hero` is for a NAME, not a sentence.** The `display-condensed` utility that goes with it applies `scaleX(0.93)`, which reads as deliberate on a word and as broken on a paragraph. A section headline that is a full sentence stays at `display-1` however important it is — the Work index heading and the Home hero statement are both governed by this.
 
@@ -181,6 +182,20 @@ An earlier version ran a GSAP timeline that swept a band across the word while i
 
 Under `prefers-reduced-motion` the rotation does not start at all and the first title stays. The criterion is not only about how a transition looks but about content that changes on its own, and index 0 is a complete resting state rather than a loading one.
 
+### 5b. The marquee strips (added 2026-09-19)
+
+Two infinite horizontal strips sit between the Hero and Featured Work on Home: the stack the site is built with, and the terms Muhammed already uses to describe his work. Neither carries new content — the stack is this repository's own dependencies, and the identity terms come from the brief and `Profile.positioning`.
+
+One component, `ui-marquee`, because the scrolling is the hard part and it is identical for both; only the payload differs, which is why items carry an optional icon rather than the component being forked.
+
+**The seam is hidden by rendering the list exactly twice and translating the track by exactly -50%.** At the end of a cycle the second copy sits precisely where the first began, so the loop restarts on an identical frame. Render the list once, or three times, and -50% no longer lands on a matching frame. The duplicate is `aria-hidden`, so the content is announced once rather than twice.
+
+Animated on `transform` via CSS, never JS. This is the one animation on the site that never stops, so it is the one place where a main-thread cost would be paid continuously rather than for a few hundred milliseconds.
+
+**`prefers-reduced-motion` needs an explicit rule here**, not the global one. That global rule collapses animations to 0.01ms, which for a transition means "arrive instantly" but for a marquee means the track jumps to -50% and stays there — the strip would sit permanently offset with its first items scrolled off screen. So the stylesheet stops the animation outright, drops the clone, and turns the strip into something that can be scrolled by hand.
+
+The strips run in opposite directions and fade out at both edges with a mask, because a strip that stops at a container edge reads as a component while one that runs off both sides reads as motion passing through the page.
+
 ---
 
 ## 5. Motion System
@@ -253,6 +268,14 @@ High-level only — full specs belong in implementation, not this planning docum
 - **Timeline** (for the Story page's journey, per `02` §7): a simple vertical or horizontal sequence — this is one of the rare cases where numbered/sequential markers are actually justified, since the content genuinely is a real ordered timeline (per the design-principles caution against decorative numbering). Connectors are drawn hairlines, not "→" glyphs: a rule reads as a spine, an arrow reads as punctuation
 - **Media framing** (superseding the earlier browser-chrome direction, 2026-09-07): screenshots and photos are **desaturated** (`grayscale` + slight contrast lift) and, where they anchor a page, overlaid with the **viewfinder** — a 1px white crop-mark rectangle, decorative and `pointer-events: none`. On a card, hovering releases the desaturation: colour returning is the reward, which lets the card respond without spending the orange accent on it. The viewfinder is desktop-only; across a phone-sized image it reads as clutter rather than as a photographic reference
 - **Disclosure rows** (`<details>`): native element, so keyboard support and screen-reader announcement come from the platform and the content is present before JavaScript. The toggle affordance is the same small orange square used everywhere else, rotated 45° when open — not a "+" glyph
+
+### 7a. Project cards (revised 2026-09-19)
+
+**Cards in a row line up, and so do their contents.** Grid items stretch by default, so the cards were always equal height — but their contents were not, and a project with a one-line tagline put its tags halfway up the card while its neighbour put them at the bottom. `UiCard` is now a flex column and the body claims the leftover space, so the tag lists share a baseline. This matters more as the set grows: at eight projects and rising, every difference in tagline length was another misaligned row.
+
+**The grid goes to three columns at `xl`.** Two was right for five projects; a two-wide column of eight is a scroll, not an index. Verified by cloning the grid to 18 cards in a live browser: 3/2/1 columns at 1440/1024/390, zero ragged rows, no horizontal overflow.
+
+**The hover is the card coming alive.** Every cover sits in greyscale until touched; on hover the desaturation lifts all the way off, the image pushes in and drifts up behind its own crop, and a single pass of light crosses it. Colour arriving is the real signal and needs no shadow or outline to announce it — it says the project is a live thing rather than a screenshot of one. The previous hover only went to `grayscale(0.35)`, a half-measure that read as a rendering artefact rather than an intention.
 
 ---
 

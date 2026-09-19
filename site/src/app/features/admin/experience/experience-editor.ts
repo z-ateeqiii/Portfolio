@@ -6,10 +6,11 @@ import { AdminService } from '../../../core/services/admin.service';
 
 type ExperienceForm = Omit<
   Experience,
-  'status' | 'updatedAt' | 'publishedAt' | 'tech' | 'linkedProjectSlugs'
+  'status' | 'updatedAt' | 'publishedAt' | 'tech' | 'linkedProjectSlugs' | 'highlights'
 > & {
   techText: string;
   linkedText: string;
+  highlightsText: string;
 };
 
 const EMPTY = (id: string, order: number): ExperienceForm => ({
@@ -22,6 +23,7 @@ const EMPTY = (id: string, order: number): ExperienceForm => ({
   summary: '',
   techText: '',
   linkedText: '',
+  highlightsText: '',
 });
 
 /**
@@ -189,6 +191,19 @@ export class AdminExperienceEditor {
     { key: 'summary', label: 'Summary', multiline: true, hint: 'Prose, not bullets.' },
     { key: 'techText', label: 'Tech', multiline: false, hint: 'Comma separated. Only tech actually used.' },
     {
+      key: 'highlightsText',
+      label: 'What I did',
+      multiline: true,
+      /**
+       * ONE PER LINE, not comma separated like the two fields either side of
+       * it. These are CV bullets and they contain commas of their own — a
+       * comma split would shred every sentence into fragments at the first
+       * subordinate clause. The separator has to be something the content
+       * cannot contain.
+       */
+      hint: 'One bullet per line. Verbatim from the CV — do not reword.',
+    },
+    {
       key: 'linkedText',
       label: 'Linked project slugs',
       multiline: false,
@@ -240,6 +255,7 @@ export class AdminExperienceEditor {
       summary: e.summary,
       techText: (e.tech ?? []).join(', '),
       linkedText: (e.linkedProjectSlugs ?? []).join(', '),
+      highlightsText: (e.highlights ?? []).join('\n'),
     });
 
     /** A saved draft wins over the live record, so reopening shows the edit. */
@@ -258,13 +274,24 @@ export class AdminExperienceEditor {
   }
 
   private toModel(form: ExperienceForm) {
-    const { techText, linkedText, ...rest } = form;
+    const { techText, linkedText, highlightsText, ...rest } = form;
     const split = (t: string) =>
       t
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean);
-    return { ...rest, tech: split(techText), linkedProjectSlugs: split(linkedText) };
+    /** See the field hint: bullets contain commas, so they split on lines. */
+    const splitLines = (t: string) =>
+      t
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
+    return {
+      ...rest,
+      tech: split(techText),
+      linkedProjectSlugs: split(linkedText),
+      highlights: splitLines(highlightsText),
+    };
   }
 
   protected async saveDraft(role: ExperienceForm): Promise<void> {
