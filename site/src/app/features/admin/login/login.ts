@@ -24,12 +24,29 @@ import { AuthService } from '../../../core/auth/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule],
   template: `
-    <div class="container-content flex min-h-screen items-center py-20">
+    <!--
+      Centred in the viewport, both axes. It used to be a max-w-sm block left
+      aligned inside a 58rem container, which put the form at neither the
+      centre nor the edge — it read as content that had lost its layout. A
+      sign-in screen has exactly one thing on it, so that thing belongs in the
+      middle.
+
+      min-h-dvh, not min-h-screen: on mobile the screen unit resolves to the largest
+      viewport, so the form sat lower than centre with the browser chrome up.
+    -->
+    <div class="flex min-h-dvh items-center justify-center px-6 py-16">
       <div class="w-full max-w-sm">
         <h1 class="font-display text-display-3 text-fg">Dashboard</h1>
         <p class="mt-2 text-caption text-fg-muted">Sign in to manage site content.</p>
 
-        <form class="mt-8 space-y-4" (ngSubmit)="signIn()">
+        <!--
+          A bordered surface, which is structure rather than art direction —
+          05 §7 keeps the public site's treatment off the dashboard, and this
+          is the same hairline-on-surface the admin editors already use. It
+          gives the fields an edge to sit against; without it the inputs were
+          dark boxes on a dark page with nothing to say where one ended.
+        -->
+        <form class="mt-6 rounded-md border border-fg/12 bg-surface p-6" (ngSubmit)="signIn()">
           <label class="block">
             <span class="font-mono text-label text-fg-muted uppercase">Email</span>
             <input
@@ -38,11 +55,12 @@ import { AuthService } from '../../../core/auth/auth.service';
               autocomplete="username"
               required
               [(ngModel)]="email"
-              class="mt-2 w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
+              class="mt-2 min-h-11 w-full rounded-sm border border-fg/40 bg-bg px-3 py-2.5
+                     text-body text-fg"
             />
           </label>
 
-          <label class="block">
+          <label class="mt-4 block">
             <span class="font-mono text-label text-fg-muted uppercase">Password</span>
             <input
               name="password"
@@ -50,31 +68,50 @@ import { AuthService } from '../../../core/auth/auth.service';
               autocomplete="current-password"
               required
               [(ngModel)]="password"
-              class="mt-2 w-full rounded-sm border border-fg/40 bg-surface px-3 py-2 text-body text-fg"
+              class="mt-2 min-h-11 w-full rounded-sm border border-fg/40 bg-bg px-3 py-2.5
+                     text-body text-fg"
             />
           </label>
 
           @if (error(); as message) {
-            <p class="text-caption text-action" role="alert">{{ message }}</p>
+            <p class="mt-4 text-caption text-action" role="alert">{{ message }}</p>
           }
 
           <button
             type="submit"
             [disabled]="busy()"
-            class="w-full rounded-sm bg-action px-6 py-3 text-body font-medium text-bg disabled:opacity-50"
+            class="mt-6 min-h-11 w-full rounded-sm bg-action px-6 py-3 text-body font-medium
+                   text-bg transition-colors duration-(--duration-base) ease-out-strong
+                   hover:bg-action-hover disabled:pointer-events-none disabled:opacity-50"
           >
             {{ busy() ? 'Signing in…' : 'Sign in' }}
           </button>
+
+          <!--
+            Separated from the primary action by a rule and a label, so the two
+            are not read as a pair of equal buttons. They are one action and
+            one alternative route to it.
+          -->
+          <p
+            class="mt-6 flex items-center gap-3 font-mono text-label text-fg-muted uppercase
+                   before:h-px before:flex-1 before:bg-fg/12 before:content-['']
+                   after:h-px after:flex-1 after:bg-fg/12 after:content-['']"
+          >
+            or
+          </p>
+
+                    <button
+            type="button"
+            [disabled]="busy()"
+            (click)="signInWithGoogle()"
+            class="mt-6 min-h-11 w-full rounded-sm border border-fg/40 px-6 py-3 text-body text-fg
+                   transition-colors duration-(--duration-base) ease-out-strong hover:border-action
+                   hover:text-action disabled:pointer-events-none disabled:opacity-50"
+          >
+            Continue with Google
+          </button>
         </form>
 
-        <button
-          type="button"
-          [disabled]="busy()"
-          (click)="signInWithGoogle()"
-          class="mt-3 w-full rounded-sm border border-fg/40 px-6 py-3 text-body text-fg disabled:opacity-50"
-        >
-          Continue with Google
-        </button>
       </div>
     </div>
   `,
