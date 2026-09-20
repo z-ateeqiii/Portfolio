@@ -1,12 +1,21 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import {
+  NavigationCancel,
+  NavigationEnd,
+  NavigationError,
+  NavigationStart,
+  Router,
+  RouterOutlet,
+} from '@angular/router';
 import { filter, map } from 'rxjs';
 
 import { SiteState } from './core/services/site-state';
+import { ProgressService } from './core/ui/progress.service';
 import { AppFooter } from './layout/footer/footer';
 import { AppHeader } from './layout/header/header';
+import { UiProgressBar } from './shared/ui/progress-bar/progress-bar';
 
 /**
  * Root shell: header, routed page, footer (02 §3).
@@ -18,7 +27,7 @@ import { AppHeader } from './layout/header/header';
  */
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, AppHeader, AppFooter],
+  imports: [RouterOutlet, AppHeader, AppFooter, UiProgressBar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
   styleUrl: './app.css',
@@ -50,6 +59,34 @@ export class App {
    * client-rendered behind the auth guard, so this never runs on the server
    * for them.
    */
+  private readonly progress = inject(ProgressService);
+
+  /**
+   * Route navigation drives the top progress bar (07 §5c).
+   *
+   * A navigation is the one async wait a visitor has no other feedback for:
+   * resolvers run before the new page renders, so the old page just sits
+   * there looking unresponsive. Subscribed in the constructor rather than
+   * through an effect because these are events, not state — an effect would
+   * need somewhere to store the last one just to react to it.
+   *
+   * Every terminal event releases, not only NavigationEnd: a cancelled
+   * navigation (a guard redirecting to /admin/login) and a failed one both
+   * end the wait, and handling only the success case would leave the bar
+   * stuck at 90% for exactly the cases where something went wrong.
+   */
+  constructor() {
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationStart) this.progress.start();
+      else if (
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      )
+        this.progress.stop();
+    });
+  }
+
   protected readonly isAdmin = toSignal(
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),

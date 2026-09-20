@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   computed,
+  effect,
   input,
   signal,
   viewChild,
@@ -39,6 +40,44 @@ import { Media } from '../../../core/models';
   styles: `
     dialog::backdrop {
       background: rgb(0 0 0 / 0.8);
+    }
+
+    /* A ring that spins, in the accent. Component-scoped rather than a global
+       utility because nothing else on the site has a spinner — the rest of
+       the page loads with the top progress bar instead. */
+    .gallery-spinner {
+      display: block;
+      width: 1.75rem;
+      height: 1.75rem;
+      border: 2px solid rgb(255 255 255 / 0.18);
+      border-top-color: var(--color-action);
+      border-radius: 9999px;
+      animation: gallery-spin 0.7s linear infinite;
+    }
+
+    @keyframes gallery-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Reduced motion gets a pulse instead of a rotation — the point is "still
+       working", and that does not require something to go round. */
+    @media (prefers-reduced-motion: reduce) {
+      .gallery-spinner {
+        animation: gallery-pulse 1.2s ease-in-out infinite;
+        border-top-color: var(--color-action);
+      }
+
+      @keyframes gallery-pulse {
+        0%,
+        100% {
+          opacity: 0.35;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
     }
   `,
   template: `
@@ -79,11 +118,35 @@ import { Media } from '../../../core/models';
               ✕
             </button>
 
-            <img
-              [src]="fullSrc(item)"
-              [alt]="item.alt"
-              class="max-h-[80vh] max-w-full rounded-sm object-contain"
-            />
+            <!--
+              The loading state is layered UNDER the image rather than swapped
+              with it. Removing the <img> while it loads and re-adding it on
+              load would restart the download every time, and would collapse
+              the figure to nothing in between, so the dialog would jump size
+              on every arrow press.
+            -->
+            <div class="relative flex min-h-40 w-full items-center justify-center">
+              @if (!loaded()) {
+                <div
+                  class="absolute inset-0 flex items-center justify-center"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <span class="sr-only">Loading image</span>
+                  <span class="gallery-spinner" aria-hidden="true"></span>
+                </div>
+              }
+
+              <img
+                [src]="fullSrc(item)"
+                [alt]="item.alt"
+                (load)="loaded.set(true)"
+                (error)="loaded.set(true)"
+                [class.opacity-0]="!loaded()"
+                class="max-h-[80vh] max-w-full rounded-sm object-contain
+                       transition-opacity duration-(--duration-base) ease-out-soft"
+              />
+            </div>
 
             <div class="mt-3 flex w-full items-center justify-between gap-4">
               @if (item.caption) {
@@ -133,6 +196,61 @@ export class UiGallery {
     return i >= 0 ? (this.items()[i] ?? null) : null;
   });
 
+  /**
+   * Whether the CURRENT full-size image has decoded.
+   *
+   * The lightbox requests a 1600px render and the thumbnail it opened from was
+   * 480px, so there is always a real wait — and with nothing on screen during
+   * it, the dialog opened to an empty box and read as a hang. This drives a
+   * spinner under the image and a fade in when it arrives.
+   *
+   * `(error)` also sets it, so a broken or blocked image ends as a visible
+   * broken-image icon rather than as a spinner that never stops.
+   */
+  protected readonly loaded = signal(false);
+
+  /**
+   * Full-size renders already fetched, so re-opening or stepping back to an
+   * image never shows the spinner twice. Keyed by URL rather than by index
+   * because the index means nothing once the set is reordered.
+   */
+  private readonly warmed = new Set<string>();
+
+  constructor() {
+    /**
+     * Preloads the NEIGHBOURS of whatever is open.
+     *
+     * Stepping through a gallery is almost always sequential, so by the time
+     * an arrow is pressed the next image has usually been in flight for as
+     * long as the current one has been on screen — the wait disappears
+     * instead of being decorated. Both directions, because the arrow keys go
+     * both ways.
+     *
+     * Runs only in the browser: `new Image()` does not exist during SSR, and
+     * prefetching screenshots on the server would spend the server's
+     * bandwidth on something no visitor asked for. Only ever triggered by
+     * opening the lightbox, so a visitor who never opens it downloads none
+     * of this.
+     */
+    effect(() => {
+      const index = this.active();
+      if (index < 0 || typeof Image === 'undefined') return;
+
+      const items = this.items();
+      const total = items.length;
+      if (!total) return;
+
+      for (const offset of [1, -1]) {
+        const neighbour = items[(index + offset + total) % total];
+        if (!neighbour) continue;
+        const url = this.fullSrc(neighbour);
+        if (this.warmed.has(url)) continue;
+        this.warmed.add(url);
+        new Image().src = url;
+      }
+    });
+  }
+
   protected thumbSrc(item: Media): string {
     return imageUrl(item.publicId, 480);
   }
@@ -142,8 +260,21 @@ export class UiGallery {
   }
 
   protected open(index: number): void {
-    this.active.set(index);
+    this.show(index);
     this.dialog()?.nativeElement.showModal();
+  }
+
+  /**
+   * Moves to an image and decides whether a spinner is even needed. An image
+   * already fetched paints from cache in the same frame, so showing a spinner
+   * for it would be a flash of loading state for something that is not
+   * loading.
+   */
+  private show(index: number): void {
+    const item = this.items()[index];
+    this.loaded.set(item ? this.warmed.has(this.fullSrc(item)) : false);
+    this.active.set(index);
+    if (item) this.warmed.add(this.fullSrc(item));
   }
 
   protected close(): void {
@@ -152,12 +283,12 @@ export class UiGallery {
 
   protected prev(): void {
     const len = this.items().length;
-    this.active.set((this.active() - 1 + len) % len);
+    this.show((this.active() - 1 + len) % len);
   }
 
   protected next(): void {
     const len = this.items().length;
-    this.active.set((this.active() + 1) % len);
+    this.show((this.active() + 1) % len);
   }
 
   /** Clicking the backdrop closes the dialog — only the <dialog> element

@@ -16,10 +16,11 @@ import { RouterLink } from '@angular/router';
 import { imageUrl } from '../../core/cloudinary/cloudinary.config';
 import type { ProjectsWithCovers } from '../../core/content/project-covers';
 import { COPY, PROCESS } from '../../core/content/site-copy';
-import { ProofPoint } from '../../core/models';
+import { ProofPoint, Skill } from '../../core/models';
 import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
 import { UiMarquee, type MarqueeItem } from '../../shared/blocks/marquee/marquee';
+import { skillIcon } from '../../shared/ui/skill-icon/skill-icons';
 import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdrop';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
@@ -255,10 +256,20 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
       Full-bleed rather than inside container-wide, because a strip that stops
       at a container edge reads as a component and a strip that runs off both
       sides reads as motion passing through the page.
+
+      The tech strip is absent entirely when no seeded skill has a brand mark,
+      rather than rendering an empty bordered band — the same rule the Proof
+      Strip follows (brief §32: a missing section beats an empty shelf).
     -->
-    <section class="border-y border-fg/12 py-7">
-      <ui-marquee [items]="stackMarks" label="Technologies this site is built with" [seconds]="34" />
-    </section>
+    @if (stackMarks().length) {
+      <section class="border-y border-fg/12 py-7">
+        <ui-marquee
+          [items]="stackMarks()"
+          label="Technologies Muhammed works with"
+          [seconds]="34"
+        />
+      </section>
+    }
 
     <section class="border-b border-fg/12 py-7">
       <!-- Runs the other way, so the two strips read as a system rather than
@@ -500,11 +511,8 @@ export class Home implements OnInit {
   /** Shared across every route, so it is read from the store, not re-fetched. */
   protected readonly profile = inject(SiteState).profile;
 
-  /**
-   * The stack THIS site is built on — not a list of everything Muhammed has
-   * touched. Each of the six is a real dependency or platform in use here, so
-   * the strip is a statement that can be checked rather than a skills cloud.
-   */
+  readonly skills = input<Skill[]>([]);
+
   /**
    * The lead card on Home, chosen by `tier` exactly as /work chooses its own —
    * not by taking the first of `featuredOnHome`. Those are two different
@@ -520,14 +528,27 @@ export class Home implements OnInit {
     return this.featured().projects.filter((p) => p !== lead);
   });
 
-  protected readonly stackMarks: readonly MarqueeItem[] = [
-    { label: 'Angular', icon: 'angular' },
-    { label: 'TypeScript', icon: 'typescript' },
-    { label: 'Firebase', icon: 'firebase' },
-    { label: 'Cloudinary', icon: 'cloudinary' },
-    { label: 'Tailwind CSS', icon: 'tailwind' },
-    { label: 'GSAP', icon: 'gsap' },
-  ];
+  /**
+   * The tech strip, built from the seeded Skill records (04 §5) rather than
+   * from a list typed into this file.
+   *
+   * The hardcoded version named six technologies and was accurate, but it was
+   * a second place the truth lived: adding a skill in the dashboard changed
+   * /about and left Home saying something older. Now there is one source, and
+   * the strip cannot disagree with it.
+   *
+   * Only skills that HAVE a brand mark ride the strip. A scrolling row of
+   * logos is a visual device, and "Code Reviews" or "SDLC" in it would be a
+   * text item drifting past with nothing to look at — those belong to About's
+   * Stack section, which shows everything. This filters on the same icon map
+   * the tag component uses, so the two can never disagree about what has a
+   * logo.
+   */
+  protected readonly stackMarks = computed<readonly MarqueeItem[]>(() =>
+    this.skills()
+      .map((skill) => ({ label: skill.name, path: skillIcon(skill.name)?.path }))
+      .filter((item): item is { label: string; path: string } => Boolean(item.path)),
+  );
 
   /**
    * Identity terms, all of them already established elsewhere — the brief's

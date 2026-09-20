@@ -392,6 +392,17 @@ Matched on the value's **shape**, not on a list of field names. A name list has 
 - [x] Verified in a real browser with console capture, before and after. Before: all five case studies blank with the exact error. After: all fourteen public routes render fully with zero console errors, on both the production SSR build and `ng serve`.
 - [x] **The second console error (`reportAllChanges` / `startTime`) is unrelated and is not ours.** `web-vitals` exists in `node_modules` only as a transitive dependency of `@firebase/performance`, which this codebase never imports; `reportAllChanges` appears nowhere in `dist/site/browser/`; and the error does not occur in a clean browser with no extensions against either the production build or the dev server. It is coming from a browser extension.
 
+### 4n.4 Six-item batch (2026-09-20)
+
+- [x] **Top progress bar** for route navigation and tracked async work (`07` §5c). A counter rather than a boolean, a 120ms delay so fast loads show nothing, and every terminal router event releases it — including cancellation, which is what a guard redirect produces.
+- [x] **Em-dash copy pass.** 38 em-dashes across the seeded copy and 1 in `site-copy.ts`, all rewritten as varied sentence structure. Facts and claims untouched — only construction changed. Live values were diffed against the seed first: 25 fields matched exactly, 1 had drifted (`heroSubline`, the "myself , so" typo, which this rewrite corrects at source), and 17 were absent because they belong to Cyber50 and the three unseeded freelance projects. Nothing unrelated is at risk from a re-seed.
+- [x] **Skills given a public surface** (`07` §7c). 45 seeded records drove nothing; they now feed the Home tech strip and a Stack section on About, grouped by Muhammed's own four levels. Logos from Simple Icons via an explicit map, 24 matched and 21 rendering as plain text tags.
+- [x] **Cloudinary crop widget removed entirely** — from the media editor and the profile editor, and the service deleted. Replaced with direct multi-file upload (drag-and-drop or picker) straight to the unsigned endpoint. The alt-text gate is unchanged: it is a `04` §6 data rule, not a property of whichever uploader triggered it.
+- [x] **Lightbox load feedback and neighbour preloading** (`07` §7d).
+- [x] **Full-site pass**: 12 routes driven in a real browser — zero console errors, zero broken images, zero horizontal overflow at any of them.
+
+**Still needs Muhammed, unchanged from the last batch**: the three freelance projects are still unseeded (5 projects live, not 8), `Project.category` is unseeded so the `/work` filter tabs stay hidden until it is set, and `bioShort` still says "five shipped projects" — a factual staleness this copy pass deliberately did not touch, since correcting a count is a content decision rather than a style one.
+
 ### Genuinely unresolved — needs Muhammed's decision, not a design call
 
 - [ ] **`Skill` and `Education` render nowhere on the public site.** Both are full entities with dashboard editors, both are exposed by `ContentService` (`skills()`, `education()`), and neither is resolved on a single public route — so anything entered there is invisible to visitors. This is pre-existing and predates this pass. It is not a design question: `02` §13 explicitly rules out standalone Skills/Certifications pages because they fragment the story, so the options are to surface them inside `/about` (where Experience already lives), to surface them somewhere else, or to remove the editors. Needs a content decision.

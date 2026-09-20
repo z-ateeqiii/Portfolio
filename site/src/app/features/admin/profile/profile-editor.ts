@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule } from '@angular/forms';
 
 import { imageUrl, profileFolder } from '../../../core/cloudinary/cloudinary.config';
-import { CloudinaryWidgetService } from '../../../core/cloudinary/upload-widget.service';
+import { uploadToCloudinary } from '../../../core/cloudinary/direct-upload';
 import { HeroImage, Profile } from '../../../core/models';
 import { AdminService } from '../../../core/services/admin.service';
 import { PROFILE_DOC_ID } from '../../../core/services/firestore-collection';
@@ -43,7 +43,7 @@ const EMPTY: ProfileForm = {
  *
  * `heroTitles`/`heroImage` (04 §2, added 2026-09-06 for the visual-identity
  * redesign — see `00` §26) DO get real upload UI here, via the same
- * `CloudinaryWidgetService` the media editor uses. Home only switches into the
+ * direct upload helper the media editor uses. Home only switches into the
  * new photo Hero once BOTH are set (`features/home/home.ts`), so it is fine to
  * save one before the other — the site just keeps rendering the simpler Hero
  * until both are in place.
@@ -130,13 +130,15 @@ const EMPTY: ProfileForm = {
         }
 
         <div class="mt-3 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            (click)="uploadHeroPhoto()"
-            class="rounded-sm border border-fg/40 px-4 py-2 text-caption text-fg hover:border-action hover:text-action"
+          <!-- A label over a hidden input: one direct upload, no modal and no
+               crop step, matching the media editor. -->
+          <label
+            class="cursor-pointer rounded-sm border border-fg/40 px-4 py-2 text-caption text-fg
+                   hover:border-action hover:text-action"
           >
-            {{ form().heroImage ? 'Replace photo' : 'Upload photo' }}
-          </button>
+            <input type="file" accept="image/*" hidden (change)="onHeroPick($event)" />
+            {{ heroUploading() ? 'Uploading…' : form().heroImage ? 'Replace photo' : 'Upload photo' }}
+          </label>
           @if (form().heroImage) {
             <button
               type="button"
@@ -195,7 +197,6 @@ const EMPTY: ProfileForm = {
 })
 export class AdminProfileEditor {
   private readonly admin = inject(AdminService);
-  private readonly widget = inject(CloudinaryWidgetService);
   protected readonly docId = PROFILE_DOC_ID;
 
   private readonly loaded = signal<ProfileForm>(EMPTY);
@@ -256,21 +257,44 @@ export class AdminProfileEditor {
     return imageUrl(publicId, 480);
   }
 
-  protected async uploadHeroPhoto(): Promise<void> {
+  protected readonly heroUploading = signal(false);
+
+  /**
+   * Straight to Cloudinary, no widget (06 §5).
+   *
+   * The crop step is gone here too, and it mattered least of all on this
+   * field: the hero photo renders as a full-bleed `background-size: cover`
+   * layer, so the browser is already choosing the visible area from the
+   * viewport's aspect ratio. Cropping it in advance only threw away pixels
+   * that a different screen size would have used.
+   *
+   * Existing alt text is deliberately carried over on a replace. Swapping the
+   * photo is usually correcting the image rather than changing the subject,
+   * and silently blanking the alt text would drop an accessibility
+   * requirement (04 §2) at the moment attention is on the picture.
+   */
+  protected async onHeroPick(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.heroUploadError.set('Only image files can be uploaded.');
+      return;
+    }
+
     this.heroUploadError.set('');
+    this.heroUploading.set(true);
     try {
-      await this.widget.openWidget(
-        profileFolder(),
-        (result) => {
-          const previousAlt = this.form().heroImage?.alt ?? '';
-          const image: HeroImage = { url: result.url, publicId: result.publicId, alt: previousAlt };
-          this.form.set({ ...this.form(), heroImage: image });
-        },
-        // Full-bleed background, not a fixed-ratio card — free-form crop.
-        { croppingAspectRatio: null, multiple: false },
-      );
+      const asset = await uploadToCloudinary(file, profileFolder());
+      const previousAlt = this.form().heroImage?.alt ?? '';
+      const image: HeroImage = { url: asset.url, publicId: asset.publicId, alt: previousAlt };
+      this.form.set({ ...this.form(), heroImage: image });
     } catch (e) {
-      this.heroUploadError.set(e instanceof Error ? e.message : 'Could not open the uploader.');
+      this.heroUploadError.set(e instanceof Error ? e.message : 'Could not upload the photo.');
+    } finally {
+      this.heroUploading.set(false);
     }
   }
 

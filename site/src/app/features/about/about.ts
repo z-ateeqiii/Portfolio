@@ -9,10 +9,11 @@ import {
 import { RouterLink } from '@angular/router';
 
 import { JOURNEY } from '../../core/content/site-copy';
-import { Experience, Profile } from '../../core/models';
+import { Experience, Profile, Skill, SkillLevel } from '../../core/models';
 import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
 import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdrop';
+import { UiSkillIcon } from '../../shared/ui/skill-icon/skill-icon';
 import { UiEyebrow } from '../../shared/ui';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { ExperienceList } from './experience-list';
@@ -50,7 +51,14 @@ import { ExperienceList } from './experience-list';
 @Component({
   selector: 'app-about',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RevealDirective, UiEyebrow, UiStripBackdrop, ExperienceList],
+  imports: [
+    RouterLink,
+    RevealDirective,
+    UiEyebrow,
+    UiSkillIcon,
+    UiStripBackdrop,
+    ExperienceList,
+  ],
   template: `
     @let p = profile();
 
@@ -108,6 +116,46 @@ import { ExperienceList } from './experience-list';
           <!-- 02 §7 item 4 — Experience, after the journey narrative. -->
           <app-experience-list appReveal [roles]="experience()" />
 
+          <!--
+            STACK (04 §5). 45 Skill records were seeded and had no public
+            surface at all until now — they existed only in the dashboard.
+
+            Grouped by LEVEL rather than by category, because level is the
+            thing Muhammed actually framed them with ("Strong / Good /
+            Learning / Interested in", 04 §5) and it is what a hiring manager
+            is reading for. Category is an internal taxonomy; "state-data" is
+            not a sentence anyone wants to read.
+
+            Honesty rules the ordering: "Learning" and "Interested in" are
+            shown, not hidden behind the strong list. Publishing only the
+            strong half would make the page a claim rather than a summary
+            (brief §22), and the levels are Muhammed's own words.
+          -->
+          @if (skillGroups().length) {
+            <section appReveal class="mt-16 border-t border-fg/12 pt-12">
+              <ui-eyebrow>Stack</ui-eyebrow>
+              <h2 class="mt-4 text-display-3 font-display text-fg">What I build with</h2>
+
+              <div class="mt-10 space-y-10">
+                @for (group of skillGroups(); track group.level) {
+                  <div>
+                    <p class="mono-label flex items-center gap-2.5 text-action">
+                      <span class="size-1.5 shrink-0 bg-action" aria-hidden="true"></span>
+                      {{ group.label }}
+                      <span class="text-fg-muted">{{ pad(group.skills.length) }}</span>
+                    </p>
+
+                    <ul class="mt-5 flex flex-wrap gap-2">
+                      @for (skill of group.skills; track skill.id) {
+                        <li><ui-skill-icon [name]="skill.name" /></li>
+                      }
+                    </ul>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
           <!-- 02 §7.5 and §7.6 — bridges out, rather than ending flat. -->
           <nav
             class="mt-16 flex flex-col items-start gap-1 border-t border-fg/12 pt-6
@@ -144,6 +192,33 @@ export class About implements OnInit {
   /** Resolved per-route; empty in the dashboard preview, which previews the
    *  Profile draft rather than the Experience records. */
   readonly experience = input<Experience[]>([]);
+  readonly skills = input<Skill[]>([]);
+
+  /**
+   * Skills in Muhammed's own four levels, strongest first, with empty levels
+   * dropped.
+   *
+   * The order is fixed here rather than taken from the data: Firestore
+   * returns reference records unordered (04 §12), and "Interested in" landing
+   * above "Strong" would misrepresent him. Within a level the seeded order is
+   * kept, which is the curation order from the brief.
+   */
+  protected readonly skillGroups = computed(() => {
+    const levels: { level: SkillLevel; label: string }[] = [
+      { level: 'strong', label: 'Strong' },
+      { level: 'good', label: 'Good' },
+      { level: 'learning', label: 'Learning' },
+      { level: 'interested', label: 'Interested in' },
+    ];
+    return levels
+      .map((entry) => ({ ...entry, skills: this.skills().filter((s) => s.level === entry.level) }))
+      .filter((group) => group.skills.length > 0);
+  });
+
+  /** Zero-padded counts, matching the mono counters used elsewhere. */
+  protected pad(n: number): string {
+    return String(n).padStart(2, '0');
+  }
 
   private readonly live = inject(SiteState).profile;
 

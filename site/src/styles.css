@@ -524,6 +524,41 @@
 }
 
 /* ---------------------------------------------------------------------------
+   THE TOP PROGRESS BAR (07 §5c)
+--------------------------------------------------------------------------- */
+@utility progress-bar-host {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* Above the sticky header (z-40) so it reads as belonging to the window
+     rather than to the page, and clear of the native <dialog> top layer,
+     which always paints above regardless. */
+  z-index: 60;
+  display: block;
+  width: 100%;
+  height: 2px;
+  pointer-events: none;
+}
+
+@utility progress-bar {
+  height: 100%;
+  width: 100%;
+  /* Scaled from the left rather than animating `width`, so the whole thing
+     stays on the compositor and never triggers layout while it trickles. */
+  transform-origin: left center;
+  transform: scaleX(0);
+  opacity: 0;
+  background: linear-gradient(90deg, var(--color-action), var(--color-action-hover));
+  transition:
+    transform var(--duration-base) var(--ease-out-soft),
+    opacity var(--duration-base) var(--ease-out-soft);
+}
+
+@utility progress-bar-visible {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------------------
    THE MARQUEE (07 §5b) — the two infinite strips on Home.
 --------------------------------------------------------------------------- */
 @utility marquee {

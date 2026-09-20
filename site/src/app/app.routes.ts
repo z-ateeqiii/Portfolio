@@ -1,14 +1,7 @@
 import { inject } from '@angular/core';
 import { ResolveFn, Routes } from '@angular/router';
 
-import {
-  BusinessVenture,
-  Experience,
-  Media,
-  Project,
-  ProofPoint,
-  SocialPlatform,
-} from './core/models';
+import { BusinessVenture, Experience, Media, Project, ProofPoint, Skill, SocialPlatform } from './core/models';
 import { ContentService } from './core/services';
 import { authGuard, guestGuard } from './core/auth/auth.guard';
 import { ProjectsWithCovers, withCovers } from './core/content/project-covers';
@@ -57,6 +50,14 @@ const experience: ResolveFn<Experience[]> = transferred('experience', () =>
 );
 
 /**
+ * Skills are reference data (04 §12) with no publish workflow, and they now
+ * have a public surface on two pages — the Home strip and About's Stack
+ * section. Resolved and transferred like everything else, so both render in
+ * the server response rather than appearing after hydration.
+ */
+const skills: ResolveFn<Skill[]> = transferred('skills', () => inject(ContentService).skills());
+
+/**
  * A single case study. Keyed per slug so two different case studies visited in
  * one session do not collide in the transfer cache.
  *
@@ -84,7 +85,7 @@ export const routes: Routes = [
     pathMatch: 'full',
     title: 'Muhammed Al-Ateeqi — Software Engineer & Builder',
     loadComponent: () => import('./features/home/home').then((m) => m.Home),
-    resolve: { featured: featuredProjects, proofPoints },
+    resolve: { featured: featuredProjects, proofPoints, skills },
   },
   {
     path: 'work',
@@ -111,7 +112,7 @@ export const routes: Routes = [
     path: 'about',
     title: 'About — Muhammed Al-Ateeqi',
     loadComponent: () => import('./features/about/about').then((m) => m.About),
-    resolve: { experience },
+    resolve: { experience, skills },
   },
   {
     path: 'beyond',

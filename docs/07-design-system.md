@@ -182,6 +182,18 @@ An earlier version ran a GSAP timeline that swept a band across the word while i
 
 Under `prefers-reduced-motion` the rotation does not start at all and the first title stays. The criterion is not only about how a transition looks but about content that changes on its own, and index 0 is a complete resting state rather than a loading one.
 
+### 5c. The top progress bar (added 2026-09-20)
+
+A 2px bar at the very top of the viewport, driven by a shared counter that route navigation and any tracked async work both feed.
+
+**A counter, not a boolean.** Two overlapping loads finishing at different times would each set a boolean false, so the first to finish would hide the bar while the second was still running. Counting makes it disappear when the last thing finishes, which is the only moment it is honest.
+
+**It fakes its own progress, and that is not a lie.** Neither a navigation nor a Firestore read reports how far along it is. The bar trickles toward 90% on a decelerating curve and stops there; only completion moves it to 100%. It says "still working", and a linear trickle that parks at 90% looks frozen where an easing one is always still moving.
+
+**Nothing shows for a fast load.** The bar waits 120ms before appearing at all — a cached route resolves well inside that, and flashing a progress bar for 40ms reads as a glitch rather than as feedback.
+
+Every terminal router event releases it, not only `NavigationEnd`: a guard redirecting to `/admin/login` cancels rather than completes, and handling only the success case would strand the bar at 90% in exactly the cases where something went wrong. `aria-hidden` and `pointer-events: none` — the routed content is what assistive tech should announce, not a busy indicator talking over it.
+
 ### 5b. The marquee strips (added 2026-09-19)
 
 Two infinite horizontal strips sit between the Hero and Featured Work on Home: the stack the site is built with, and the terms Muhammed already uses to describe his work. Neither carries new content — the stack is this repository's own dependencies, and the identity terms come from the brief and `Profile.positioning`.
@@ -269,6 +281,20 @@ High-level only — full specs belong in implementation, not this planning docum
 - **Media framing** (superseding the earlier browser-chrome direction, 2026-09-07): screenshots and photos are **desaturated** (`grayscale` + slight contrast lift) and, where they anchor a page, overlaid with the **viewfinder** — a 1px white crop-mark rectangle, decorative and `pointer-events: none`. On a card, hovering releases the desaturation: colour returning is the reward, which lets the card respond without spending the orange accent on it. The viewfinder is desktop-only; across a phone-sized image it reads as clutter rather than as a photographic reference
 - **Disclosure rows** (`<details>`): native element, so keyboard support and screen-reader announcement come from the platform and the content is present before JavaScript. The toggle affordance is the same small orange square used everywhere else, rotated 45° when open — not a "+" glyph
 
+### 7c. Skill marks (added 2026-09-20)
+
+45 Skill records were seeded and had no public surface at all — they existed only in the dashboard. They now drive the Home tech strip and a Stack section on About.
+
+**Logos come from Simple Icons through an explicit map, not a slug guess.** Deriving a slug from a skill name matched 12 of 36, and the near-misses were worse than the misses: "sharp" is a real Simple Icons entry for an image-resizing library, so a naive guess would have put its logo beside C#.
+
+**Most skills have no logo, deliberately.** Over half of what Muhammed lists is practice rather than product — Accessibility, Lazy Loading, Code Reviews, SDLC. None has a mark, and inventing one would either say nothing or say something false. Those render as plain text tags in the same shape; nothing is skipped or broken. On About all 45 appear, 24 with a mark and 21 without.
+
+The Home strip carries only the skills that **have** a mark, because a scrolling row of logos is a visual device and a text item drifting past it has nothing to look at. Both surfaces read the same icon map, so they cannot disagree about what has a logo.
+
+Marks render in `currentColor`, so they inherit surrounding text and cannot introduce a colour outside the palette — a wall of brand colours is the sticker-sheet look `00` §24 rules out.
+
+Only the 24 icons used are imported by name; the other ~3,300 in the package are dropped. Verified against the built bundle, which grew 0.57 kB transfer for the icons, the progress bar and both skill surfaces together.
+
 ### 7b. The /work filter tabs (added 2026-09-20)
 
 **The tabs are built from the data, never hardcoded.** A fixed list of four would show an empty Personal tab the moment that project is deleted, and would silently miss a category added later. The row derives from the categories actually present, in the order `04` §3 defines them, so deleting a project removes its tab when it was the last of its kind and nothing here needs editing when the set changes. The counts come from the same computation as the cards, so they cannot disagree with what is on screen.
@@ -292,6 +318,18 @@ A real `<button>` in a labelled group, not a link — it filters what is already
 **Card type is set for reading, not for compression** (2026-09-20). Card names dropped `display-condensed`: a 7% horizontal squeeze is legible at 9rem and costs real clarity at 1.6rem, and the utility was always documented as the partner to `display-hero`. Padding went to `p-7` and the gaps between name, tagline and tags widened with it. This is the section a visitor came for, so it is the one place where comfort outranks density.
 
 **The hover is the card coming alive.** Every cover sits in greyscale until touched; on hover the desaturation lifts all the way off, the image pushes in and drifts up behind its own crop, and a single pass of light crosses it. Colour arriving is the real signal and needs no shadow or outline to announce it — it says the project is a live thing rather than a screenshot of one. The previous hover only went to `grayscale(0.35)`, a half-measure that read as a rendering artefact rather than an intention.
+
+### 7d. The case-study lightbox (revised 2026-09-20)
+
+The lightbox requests a 1600px render where the thumbnail it opened from was 480px, so there is always a real wait. With nothing on screen during it the dialog opened to an empty box and read as a hang.
+
+**The loading state layers under the image rather than replacing it.** Removing the `<img>` while it loads and re-adding it on load would restart the download each time and collapse the figure to nothing in between, so the dialog would jump size on every arrow press. A spinner sits behind; the image fades in over it.
+
+**Neighbours are preloaded.** Stepping through a gallery is almost always sequential, so by the time an arrow is pressed the next image has usually been in flight for as long as the current one has been on screen — the wait disappears rather than being decorated. Both directions, because the arrow keys go both ways. Browser-only, and only ever triggered by opening the lightbox, so a visitor who never opens it downloads none of it.
+
+An image already fetched shows **no spinner at all**, because a flash of loading state for something painting from cache is worse than none. `(error)` clears the state too, so a blocked image ends as a broken-image icon rather than a spinner that never stops.
+
+Measured on a throttled connection (300 kbps, 300ms latency): opening the first image shows the spinner immediately and clears it on load; advancing to a preloaded neighbour shows no spinner and completes in 81ms.
 
 ---
 

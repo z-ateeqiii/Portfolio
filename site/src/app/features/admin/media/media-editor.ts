@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { imageUrl, projectFolder } from '../../../core/cloudinary/cloudinary.config';
-import { CloudinaryWidgetService } from '../../../core/cloudinary/upload-widget.service';
+import { uploadToCloudinary } from '../../../core/cloudinary/direct-upload';
 import { Media } from '../../../core/models';
 import { AdminService } from '../../../core/services/admin.service';
 import { mediaPath } from '../../../core/services/firestore-collection';
@@ -18,7 +18,7 @@ import { mediaPath } from '../../../core/services/firestore-collection';
 /**
  * Per-project media (05 §3.4, §4).
  *
- * Upload (via Cloudinary's own Upload Widget, cropping included), reorder
+ * Upload (direct multi-file, no crop step), reorder
  * (drag-and-drop), mark-as-featured, replace, remove — matching 04 §6.
  *
  * ─── alt text is required before an image can be saved ───────────────────────
@@ -66,20 +66,35 @@ interface Pending {
       >
       <h1 class="mt-2 font-display text-display-3 text-fg">Media — {{ slug() }}</h1>
 
-      <!-- Upload (05 §3.4) — Cloudinary's own Upload Widget, cropping built in.
-           Loaded at runtime, on demand: see CloudinaryWidgetService. -->
+      <!--
+        Upload (05 §3.4). A drop zone and a file picker over the same input —
+        no modal, no crop step, no handing the window to Cloudinary's UI.
+        Several files at once land straight in the pending list below, which
+        is where alt text is still required before anything is saved.
+      -->
       <div class="mt-6 max-w-3xl">
-        <button
-          type="button"
-          (click)="openUpload()"
-          class="rounded-sm border border-fg/40 px-4 py-2 text-caption text-fg hover:border-action hover:text-action"
+        <label
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          [class]="dropZoneClasses()"
         >
-          Upload images…
-        </button>
-        <p class="mt-2 text-caption text-fg-muted">
-          Opens Cloudinary's uploader. Crop to 16:9, or skip cropping for screenshots that
-          aren't.
-        </p>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            #fileInput
+            (change)="onPick($event)"
+          />
+          <span class="text-body text-fg">
+            {{ uploading() ? 'Uploading ' + uploadDone() + ' of ' + uploadTotal() + '…' : 'Drop images here' }}
+          </span>
+          <span class="mt-1 text-caption text-fg-muted">
+            {{ uploading() ? 'Keep this tab open until it finishes.' : 'or click to choose files — several at once is fine' }}
+          </span>
+        </label>
+
         @if (error(); as message) {
           <p class="mt-4 text-caption text-action" role="alert">{{ message }}</p>
         }
@@ -245,7 +260,6 @@ export class AdminMediaEditor {
   readonly slug = input<string>('');
 
   private readonly admin = inject(AdminService);
-  private readonly widget = inject(CloudinaryWidgetService);
 
   protected readonly media = signal<Media[]>([]);
   protected readonly pending = signal<Pending[]>([]);
@@ -282,23 +296,95 @@ export class AdminMediaEditor {
     this.reorderDirty.set(false);
   }
 
-  protected async openUpload(): Promise<void> {
+  protected readonly uploading = signal(false);
+  protected readonly dragging = signal(false);
+  protected readonly uploadTotal = signal(0);
+  protected readonly uploadDone = signal(0);
+
+  protected dropZoneClasses(): string {
+    const base =
+      'flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-md border ' +
+      'border-dashed px-6 py-8 text-center transition-colors duration-(--duration-base) ' +
+      'ease-out-strong';
+    return this.dragging()
+      ? `${base} border-action bg-action/5`
+      : `${base} border-fg/40 hover:border-action`;
+  }
+
+  protected onDragOver(event: DragEvent): void {
+    /** Without preventDefault the browser navigates to the dropped file. */
+    event.preventDefault();
+    this.dragging.set(true);
+  }
+
+  protected onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.dragging.set(false);
+  }
+
+  protected onDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.dragging.set(false);
+    void this.upload(Array.from(event.dataTransfer?.files ?? []));
+  }
+
+  protected onPick(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    void this.upload(Array.from(input.files ?? []));
+    /** Cleared so picking the same file twice still fires a change event. */
+    input.value = '';
+  }
+
+  /**
+   * Uploads the chosen files one after another, not in parallel.
+   *
+   * Sequential is the right trade here: a dozen simultaneous multipart POSTs
+   * from one browser is how an unsigned preset starts returning rate-limit
+   * errors, and the progress line ("Uploading 3 of 8") is only truthful if
+   * the count means something. Nothing about this is latency-sensitive —
+   * it is an admin screen uploading screenshots.
+   *
+   * One failure does not abandon the rest. The file that failed is named in
+   * the error and the remaining ones still upload, because losing a batch of
+   * seven because the eighth was a PDF would be worse than a partial result.
+   */
+  private async upload(files: File[]): Promise<void> {
+    const images = files.filter((file) => file.type.startsWith('image/'));
+    if (!images.length) {
+      if (files.length) this.error.set('Only image files can be uploaded.');
+      return;
+    }
+
     this.error.set('');
-    try {
-      await this.widget.openWidget(projectFolder(this.slug()), (result) => {
+    this.uploading.set(true);
+    this.uploadTotal.set(images.length);
+    this.uploadDone.set(0);
+
+    const failed: string[] = [];
+
+    for (const file of images) {
+      try {
+        const asset = await uploadToCloudinary(file, projectFolder(this.slug()));
         /**
-         * Lands in `pending`, not in Firestore. The record is only created once
-         * alt text exists — 04 §6 makes it required, and this is where that is
-         * actually enforced rather than hoped for.
+         * Lands in `pending`, not in Firestore. The record is only created
+         * once alt text exists — 04 §6 makes it required, and this is where
+         * that is actually enforced rather than hoped for. Unchanged by the
+         * move off the widget: the gate is a data rule, not a property of
+         * whichever uploader triggered it.
          */
         this.pending.set([
           ...this.pending(),
-          { url: result.url, publicId: result.publicId, alt: '', caption: '' },
+          { url: asset.url, publicId: asset.publicId, alt: '', caption: '' },
         ]);
-      });
-    } catch (e) {
-      this.error.set(e instanceof Error ? e.message : 'Could not open the uploader.');
+      } catch (e) {
+        failed.push(`${file.name} (${e instanceof Error ? e.message : 'upload failed'})`);
+      } finally {
+        this.uploadDone.update((n) => n + 1);
+      }
     }
+
+    this.uploading.set(false);
+    if (failed.length) this.error.set(`Could not upload: ${failed.join(', ')}`);
   }
 
   protected async save(item: Pending): Promise<void> {

@@ -1,11 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-/** The six marks the tech strip can draw. Text-only items pass no icon. */
-export type MarqueeIcon = 'angular' | 'typescript' | 'firebase' | 'cloudinary' | 'tailwind' | 'gsap';
-
 export interface MarqueeItem {
   readonly label: string;
-  readonly icon?: MarqueeIcon;
+  /**
+   * A Simple Icons path, when the item has a brand mark. Passed in as data
+   * rather than looked up here: the tech strip's items come from Firestore
+   * Skill records, and the strip should not need to know where a logo comes
+   * from or which ones exist.
+   */
+  readonly path?: string;
 }
 
 /**
@@ -64,45 +67,23 @@ export interface MarqueeItem {
                   run-on sentence. Items with an icon already have a mark and
                   do not need a second one.
                 -->
-                @if (!item.icon) {
+                <!--
+                  Text-only items get the same small orange square that opens
+                  every eyebrow and sits on every stack tag, so the identity
+                  strip reads in the site's existing rhythm rather than as a
+                  run-on sentence. Items with a brand mark already carry one.
+                -->
+                @if (item.path) {
+                  <svg
+                    class="size-5 shrink-0 text-action"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path [attr.d]="item.path" />
+                  </svg>
+                } @else {
                   <span class="size-1.5 shrink-0 border border-action" aria-hidden="true"></span>
-                }
-                @if (item.icon) {
-                  <span class="text-action" aria-hidden="true">
-                    @switch (item.icon) {
-                      @case ('angular') {
-                        <svg viewBox="0 0 24 24" class="size-5" fill="currentColor">
-                          <path d="M12 1.5 2.4 4.9l1.5 12.7L12 22.5l8.1-4.9 1.5-12.7L12 1.5Zm0 2.2 7.4 2.6-1.1 9.8L12 20l-6.3-3.9-1.1-9.8L12 3.7Zm0 2.4L7.6 16.2h1.8l.9-2.2h3.4l.9 2.2h1.8L12 6.1Zm0 3 1.2 3H10.8l1.2-3Z" />
-                        </svg>
-                      }
-                      @case ('typescript') {
-                        <svg viewBox="0 0 24 24" class="size-5" fill="currentColor">
-                          <path d="M3 3h18v18H3V3Zm2 2v14h14V5H5Zm2.6 4.6h5.2v1.5h-1.8v5.4H9.4v-5.4H7.6V9.6Zm6.3 5.2c.4.4 1 .7 1.6.7.5 0 .9-.2.9-.6 0-.4-.3-.6-1.1-.9-1.1-.4-1.9-.9-1.9-2 0-1.1.9-1.9 2.2-1.9.8 0 1.5.2 2 .6l-.7 1.2c-.4-.3-.8-.4-1.2-.4s-.8.2-.8.6c0 .4.4.5 1.2.9 1.1.4 1.8.9 1.8 2 0 1.3-1 2-2.4 2-1 0-1.9-.4-2.4-1l.8-1.2Z" />
-                        </svg>
-                      }
-                      @case ('firebase') {
-                        <svg viewBox="0 0 24 24" class="size-5" fill="currentColor">
-                          <path d="m4 17.7 2-13c.1-.5.7-.6 1-.2l2 3.7L4 17.7Zm1.6 1.1L12 22.5l6.4-3.7-1.8-11.2c-.1-.5-.7-.6-1-.2L5.6 18.8ZM9.7 9.6 12 5.2c.2-.4.8-.4 1 0l1.5 2.7-4.8 1.7Z" />
-                        </svg>
-                      }
-                      @case ('cloudinary') {
-                        <svg viewBox="0 0 24 24" class="size-5" fill="currentColor">
-                          <path d="M18.4 9.6A6.5 6.5 0 0 0 6.1 8.4 5 5 0 0 0 6.5 18.3h11.2a4.4 4.4 0 0 0 .7-8.7Zm-.7 7.2H6.5a3.5 3.5 0 0 1-.2-7l.6.1.2-.6a5 5 0 0 1 9.6 1.1l.1.7h.7a2.9 2.9 0 0 1 .2 5.7Z" />
-                        </svg>
-                      }
-                      @case ('tailwind') {
-                        <svg viewBox="0 0 24 24" class="size-5" fill="currentColor">
-                          <path d="M12 6c-2.7 0-4.3 1.3-5 4 1-1.3 2.2-1.8 3.5-1.5.8.2 1.3.8 1.9 1.4 1 1 2.2 2.1 4.6 2.1 2.7 0 4.3-1.3 5-4-1 1.3-2.2 1.8-3.5 1.5-.8-.2-1.3-.8-1.9-1.4C15.6 7.1 14.4 6 12 6Zm-5 6c-2.7 0-4.3 1.3-5 4 1-1.3 2.2-1.8 3.5-1.5.8.2 1.3.8 1.9 1.4 1 1 2.2 2.1 4.6 2.1 2.7 0 4.3-1.3 5-4-1 1.3-2.2 1.8-3.5 1.5-.8-.2-1.3-.8-1.9-1.4-1-1-2.2-2.1-4.6-2.1Z" />
-                        </svg>
-                      }
-                      @case ('gsap') {
-                        <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.6">
-                          <circle cx="12" cy="12" r="8.5" />
-                          <path d="M15.5 9.2a4.2 4.2 0 1 0 .6 4.1h-3.4" stroke-linecap="square" />
-                        </svg>
-                      }
-                    }
-                  </span>
                 }
                 <span class="mono-label text-fg-muted">{{ item.label }}</span>
               </li>

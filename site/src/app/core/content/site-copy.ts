@@ -94,7 +94,7 @@ export const COPY = {
   process: 'The problem comes first. The technology is whatever the problem turns out to need.',
 
   /** 02 §4.5 — "A short excerpt … ends with a link into /about". */
-  storyTeaser: 'Computers have been the one constant — the role kept changing.',
+  storyTeaser: 'Computers have been the one constant. The role kept changing.',
 
   /** 02 §4.6 — "One short, confident line … that there's more beneath the surface." */
   beyondTeaser: 'There is a layer behind the engineer: creating, selling, teaching.',

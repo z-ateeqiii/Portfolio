@@ -53,12 +53,12 @@ export const PROFILE: Seed<Profile> = {
   name: 'Muhammed Al-Ateeqi',
   heroStatement: 'Building practical software for problems I live with',
   heroSubline:
-    'I’m Muhammed, a software engineer and builder. I’m usually the one stuck in the problem myself — so I scope it, build the interface, wire it to real data, and ship it end to end.',
+    'I’m Muhammed, a software engineer and builder. I’m usually the one stuck in the problem myself, so I scope it, build the interface, wire it to real data, and ship it end to end.',
   positioning: 'Software Engineer & Builder',
   bioShort:
-    'Software engineer and builder who finds real problems and builds the software that solves them — five shipped projects, most designed, built and deployed solo.',
+    'Software engineer and builder who finds real problems and builds the software that solves them. Five shipped projects, most designed, built and deployed solo.',
   bioLong:
-    'Muhammed’s relationship with computers started with gaming as a kid, then video editing at 14, then programming in high school with C++. Through university he balanced coursework with freelancing, content creation, and building Ateeqi Tech — a laptop reselling business built on understanding customer needs, not just selling hardware. A personal setback interrupted that momentum for a period; he rebuilt from it by finishing his degree, leading his graduation project, and moving into professional software engineering.\n\nToday he works primarily in Angular and TypeScript, starting every project with the actual problem rather than the technology — from serverless operational dashboards used by real teams, to a digital menu he built for a café simply because the printed one was hard to use. He’s expanding into backend development next.',
+    'Muhammed’s relationship with computers started with gaming as a kid, then video editing at 14, then programming in high school with C++. Through university he balanced coursework with freelancing, content creation, and building Ateeqi Tech, a laptop reselling business. What made it work was understanding customer needs, not just selling hardware. A personal setback interrupted that momentum for a period; he rebuilt from it by finishing his degree, leading his graduation project, and moving into professional software engineering.\n\nToday he works primarily in Angular and TypeScript, starting every project with the actual problem rather than the technology. That ranges from serverless operational dashboards used by real teams to a digital menu he built for a café simply because the printed one was hard to use. He’s expanding into backend development next.',
   contactEmail: 'mu.alateeqi@gmail.com',
   contactLinkedIn: 'https://www.linkedin.com/in/zateeqi/',
   contactGitHub: 'https://github.com/z-ateeqiii',
@@ -82,13 +82,13 @@ export const PROJECTS: readonly ProjectSeed[] = [
     liveUrl: 'https://scholarship-operation-dashboard.vercel.app',
     githubUrl: 'https://github.com/z-ateeqiii/ScholarshipOperationDashboard',
     problem:
-      'The program ran dozens of lecture groups (52 at the time, tested up to 300) across Telegram, WhatsApp, and Drive links, tracked manually. When a customer asked something as simple as "where’s my group’s WhatsApp link" or "when does the recorded lecture go up," the operations team often couldn’t answer fast — and that delay was directly causing refunds. Lecturers, meanwhile, kept having to ask which groups were assigned to them and which needed follow-up.',
+      'The program ran dozens of lecture groups (52 at the time, tested up to 300) across Telegram, WhatsApp, and Drive links, tracked manually. When a customer asked something as simple as "where’s my group’s WhatsApp link" or "when does the recorded lecture go up," the operations team often couldn’t answer fast. That delay was directly causing refunds. Lecturers, meanwhile, kept having to ask which groups were assigned to them and which needed follow-up.',
     approach:
-      'The scope was deliberately kept small: this wasn’t going to be a large system, so a serverless architecture was the right fit rather than over-engineering infrastructure for a dataset the size of ~50–300 groups. The build was scoped to solve the actual bottleneck — getting every piece of scattered information (links, assignments, upload status) into one connected view — rather than becoming a general-purpose LMS.',
+      'The scope was deliberately kept small: this wasn’t going to be a large system, so a serverless architecture was the right fit rather than over-engineering infrastructure for a dataset the size of ~50–300 groups. The build was scoped to solve the actual bottleneck: getting every piece of scattered information (links, assignments, upload status) into one connected view, rather than becoming a general-purpose LMS.',
     build:
-      'Built solo in about a week using Angular, TypeScript, and Tailwind on the frontend with Firebase/Firestore as a lightweight serverless backend. Lecturers get their own dashboard showing which groups they’re teaching, what’s been covered, what’s pending, and which groups are missing follow-up on Telegram/WhatsApp. The moment a lecturer marks a recording as uploaded, that status is visible to the operations team immediately — replacing what used to live in scattered paper notes and spreadsheets. Adding a new group or lecturer takes one action ("Add New Group") instead of a manual, ad-hoc process.\n\nThe hardest part wasn’t the code — it was compressing a genuinely messy, multi-channel operational problem into a single screen that a non-technical operations team could use immediately, with zero training.',
+      'Built solo in about a week using Angular, TypeScript, and Tailwind on the frontend with Firebase/Firestore as a lightweight serverless backend. Lecturers get their own dashboard showing which groups they’re teaching, what’s been covered, what’s pending, and which groups are missing follow-up on Telegram/WhatsApp. The moment a lecturer marks a recording as uploaded, that status is visible to the operations team immediately, replacing what used to live in scattered paper notes and spreadsheets. Adding a new group or lecturer takes one action ("Add New Group") instead of a manual, ad-hoc process.\n\nThe hardest part wasn’t the code. It was compressing a genuinely messy, multi-channel operational problem into a single screen that a non-technical operations team could use immediately, with zero training.',
     aiDisclosure:
-      'AI tools were used as a thinking partner for brainstorming architecture and to accelerate implementation once the approach was clear. The problem understanding, architectural decisions, and final implementation were Muhammed’s — his existing Angular/Firebase experience is what let him verify and adjust the codebase directly.',
+      'AI tools were used as a thinking partner for brainstorming architecture and to accelerate implementation once the approach was clear. The problem understanding, architectural decisions, and final implementation were Muhammed’s. His existing Angular/Firebase experience is what let him verify and adjust the codebase directly.',
     outcome:
       'Questions that used to take minutes to resolve (which group, what link, what time) now resolve in seconds. Refund-driving support delays tied to lost information were eliminated. The system was stress-tested to 300 groups against an actual load of 52, so it has headroom to scale with the program.',
     featuredOnHome: true,
@@ -112,17 +112,17 @@ export const PROJECTS: readonly ProjectSeed[] = [
     liveUrl: 'https://st-employees-tutorial.vercel.app',
     githubUrl: 'https://github.com/z-ateeqiii/st-employees-portal',
     problem:
-      'New hires — engineers and customer-facing staff alike — had no structured onboarding. Every new employee needed existing engineers to stop their own work and explain the company from scratch: departments, course tracks (Arduino, Robotics with AI, Embedded Systems, IoT), age-group learning paths, branches — all of it lived in scattered, undocumented knowledge. It was costing the team real time and creating an inconsistent onboarding experience.',
+      'New hires had no structured onboarding, engineers and customer-facing staff alike. Every new employee needed existing engineers to stop their own work and explain the company from scratch: departments, course tracks (Arduino, Robotics with AI, Embedded Systems, IoT), age-group learning paths, branches. All of it lived in scattered, undocumented knowledge. It was costing the team real time and creating an inconsistent onboarding experience.',
     // No approach block: 03 §5 does not write one. The tier system (03 §3) lets
     // the template scale down, so the field stays absent rather than being
     // padded out of the Problem and Build text.
     build:
-      'Muhammed mapped every department, course track, and process himself, then turned that into a structured video library — recording orientation content himself and coordinating with top performers across teams to record their sections. Rather than building a heavy internal app for what was purely internal use, the videos were hosted unlisted on YouTube and organized through a JSON-driven structure, delivering a Coursera/Udemy-style guided experience without the infrastructure cost of a full LMS — a deliberately proportionate technical choice.',
+      'Muhammed mapped every department, course track, and process himself, then turned that into a structured video library, recording orientation content himself and coordinating with top performers across teams to record their sections. Rather than building a heavy internal app for what was purely internal use, the videos were hosted unlisted on YouTube and organized through a JSON-driven structure, delivering a Coursera/Udemy-style guided experience without the infrastructure cost of a full LMS, a deliberately proportionate technical choice.',
     // No AI disclosure: 03 §5 states none, and 03 §2.5 scopes that block to
     // projects where AI was actually used. Adding a boilerplate one "for
     // consistency" would be a claim about how the work was done.
     outcome:
-      'New employees now go through a structured, self-paced onboarding path instead of pulling engineers off their own work to explain the company from scratch. This also demonstrates something the Scholarship project doesn’t: Muhammed noticing an organizational/people problem — not just a technical one — and building the right-sized solution for it without being asked.',
+      'New employees now go through a structured, self-paced onboarding path instead of pulling engineers off their own work to explain the company from scratch. This also demonstrates something the Scholarship project doesn’t: Muhammed noticing an organizational or people problem, not just a technical one, and building the right-sized solution for it without being asked.',
     featuredOnHome: true,
   },
 
@@ -142,17 +142,17 @@ export const PROJECTS: readonly ProjectSeed[] = [
     // still missing. An absent link is honest; a guessed one is a broken
     // promise on the one page claiming the work exists.
     problem:
-      'The assessment’s real test wasn’t "can you use D3" — it was whether Muhammed could turn a raw, messy incident dataset into something a security team could actually read at a glance: which attack types are trending, which countries and sectors are targeted, where attacks originate, without digging through a spreadsheet.',
+      'The assessment’s real test wasn’t "can you use D3". It was whether Muhammed could turn a raw, messy incident dataset into something a security team could actually read at a glance: which attack types are trending, which countries and sectors are targeted, where attacks originate, without digging through a spreadsheet.',
     build:
-      'A full multi-view dashboard: bar charts and timelines for attack types, a sector breakdown, and a world map visualizing attack flow between initiator and target countries — plus a complete filterable data table with CSV export. All views share one reactive filter state (date range, free-text search, dropdowns), so every chart updates instantly together instead of each view filtering independently. Dark mode and responsive layout included.',
+      'A full multi-view dashboard: bar charts and timelines for attack types, a sector breakdown, and a world map visualizing attack flow between initiator and target countries, plus a complete filterable data table with CSV export. All views share one reactive filter state (date range, free-text search, dropdowns), so every chart updates instantly together instead of each view filtering independently. Dark mode and responsive layout included.',
     // Distinct from an AI *build* disclosure: this one is about the DATA
     // (03 §6.1, 04 §3). It has to render on the page, not sit in a footnote -
     // a cybersecurity dashboard that stays quiet about using dummy data
     // implies real threat intelligence by omission (01 §9, Rule 4).
     dataHonestyNote:
-      'The incident dataset itself is AI-generated dummy data, not live or real security data. The value being demonstrated is the ability to model, filter, and visualize complex data — not access to real threat intelligence.',
+      'The incident dataset itself is AI-generated dummy data, not live or real security data. The value being demonstrated is the ability to model, filter, and visualize complex data, not access to real threat intelligence.',
     outcome:
-      'Delivered as a complete, working multi-view analytics dashboard within the assessment window — shipped under real time pressure, not a take-home template.',
+      'Delivered as a complete, working multi-view analytics dashboard within the assessment window, shipped under real time pressure rather than as a take-home template.',
     featuredOnHome: false,
   },
 
@@ -174,12 +174,12 @@ export const PROJECTS: readonly ProjectSeed[] = [
     liveUrl: 'https://e-commerce-angular1.vercel.app/login',
     githubUrl: 'https://github.com/z-ateeqiii/eCommerceAngular',
     problem:
-      'As a capstone assignment, the brief was to build a complete eCommerce flow — browsing, cart, checkout — against a real backend rather than static or mocked data, which is what separates a capstone from a course exercise.',
+      'As a capstone assignment, the brief was to build a complete eCommerce flow covering browsing, cart, and checkout, against a real backend rather than static or mocked data, which is what separates a capstone from a course exercise.',
     // No approach block: compact tier folds it into Problem/Build (03 §3).
     build:
-      'Built entirely against FreshCart’s live, real REST API — actual network requests, JWT-based authentication, and real response handling, not a simplified teaching dataset. The app is server-side rendered via Express, going beyond the course’s baseline requirements. This is the project where the foundational REST API integration skill used across every other project in this set was first proven.',
+      'Built entirely against FreshCart’s live, real REST API, with actual network requests, JWT-based authentication, and real response handling rather than a simplified teaching dataset. The app is server-side rendered via Express, going beyond the course’s baseline requirements. This is the project where the foundational REST API integration skill used across every other project in this set was first proven.',
     outcome:
-      'A completed, deployed capstone demonstrating full front-to-back integration against a real external API, with SSR handled correctly. There isn’t a dramatic before/after story here the way there is with the operational dashboards — its value in this set is as evidence of solid fundamentals, not a business outcome.',
+      'A completed, deployed capstone demonstrating full front-to-back integration against a real external API, with SSR handled correctly. There isn’t a dramatic before/after story here the way there is with the operational dashboards. Its value in this set is as evidence of solid fundamentals, not a business outcome.',
     featuredOnHome: false,
   },
 
@@ -202,11 +202,11 @@ export const PROJECTS: readonly ProjectSeed[] = [
     // Trailing hyphen is part of the actual repository name, not a typo.
     githubUrl: 'https://github.com/z-ateeqiii/Nutella-',
     problem:
-      'Nobody asked for this. The café’s printed menu crammed 221 items across 16 categories onto a page — cluttered and slow to scan for both Arabic- and English-speaking customers. Muhammed noticed the friction as a regular and decided to solve it himself.',
+      'Nobody asked for this. The café’s printed menu crammed 221 items across 16 categories onto a page, leaving it cluttered and slow to scan for both Arabic- and English-speaking customers. Muhammed noticed the friction as a regular and decided to solve it himself.',
     build:
-      'Scraped and restructured the entire printed menu into a JSON-driven data model, then built a clean, QR-accessible digital menu organized by category — built bilingually from the start, with proper RTL layout for Arabic rather than a bolted-on translation. The site is genuinely in use at the café today — not a portfolio mockup, a real tool customers interact with.',
+      'Scraped and restructured the entire printed menu into a JSON-driven data model, then built a clean, QR-accessible digital menu organized by category. It was built bilingually from the start, with proper RTL layout for Arabic rather than a bolted-on translation. The site is genuinely in use at the café today. It is not a portfolio mockup but a real tool customers interact with.',
     outcome:
-      'Live at the café, with positive feedback from customers and staff. Of everything in this project set, this is the clearest evidence of Muhammed building a solution without being asked (per brief §17) — pure initiative, not a work assignment or paid engagement.',
+      'Live at the café, with positive feedback from customers and staff. Of everything in this project set, this is the clearest evidence of Muhammed building a solution without being asked (per brief §17). It was pure initiative, not a work assignment or paid engagement.',
     featuredOnHome: false,
   },
 
@@ -226,9 +226,9 @@ export const PROJECTS: readonly ProjectSeed[] = [
     liveUrl: 'https://z-ateeqiii.github.io/MagicTouch/',
     githubUrl: 'https://github.com/z-ateeqiii/MagicTouch',
     problem:
-      'A salon needed a bookable web presence without booking friction (forms, phone tag) costing them customers — and needed to be able to update prices and services themselves afterward, without calling a developer for every small change.',
+      'A salon needed a bookable web presence without booking friction (forms, phone tag) costing them customers. They also needed to be able to update prices and services themselves afterward, without calling a developer for every small change.',
     build:
-      'Built as a zero-dependency static site so it can be hosted anywhere with no build pipeline. Every service card generates its own prefilled WhatsApp message naming the exact service, duration, and price — booking is one tap, no typing. Voice calls are kept on a deliberately separate phone number from the WhatsApp booking line. All editable content (services, prices, contact details) lives in one plain data file so the client can update it without touching markup. One notable technical problem solved directly: the client’s only logo file was a screenshot with a fake transparency checkerboard baked in as real pixels — a Python script identifies and removes the checkerboard (including backdrop trapped inside letterforms) and rebuilds genuine transparency. Photos are pre-optimized from ~13MB of source images down to ~308KB of served WebP files.',
+      'Built as a zero-dependency static site so it can be hosted anywhere with no build pipeline. Every service card generates its own prefilled WhatsApp message naming the exact service, duration, and price, so booking is one tap with no typing. Voice calls are kept on a deliberately separate phone number from the WhatsApp booking line. All editable content (services, prices, contact details) lives in one plain data file so the client can update it without touching markup. One notable technical problem solved directly: the client’s only logo file was a screenshot with a fake transparency checkerboard baked in as real pixels. A Python script identifies and removes the checkerboard (including backdrop trapped inside letterforms) and rebuilds genuine transparency. Photos are pre-optimized from ~13MB of source images down to ~308KB of served WebP files.',
     outcome:
       'A fast, easily bookable static site a non-technical client can safely maintain themselves, with no ongoing hosting cost.',
     featuredOnHome: false,
@@ -247,7 +247,7 @@ export const PROJECTS: readonly ProjectSeed[] = [
     liveUrl: 'https://z-ateeqiii.github.io/CreativeDesign/',
     githubUrl: 'https://github.com/z-ateeqiii/CreativeDesign',
     problem:
-      'The studio had no web presence beyond Instagram — no single place showing its full service catalogue for a walk-in or passerby to reference.',
+      'The studio had no web presence beyond Instagram, and no single place showing its full service catalogue for a walk-in or passerby to reference.',
     build:
       'A static catalogue site organized by service category, paired with a printable QR card the studio can hand out or display in-store, linking straight to the site.',
     outcome: 'The studio now has a real, linkable web presence beyond its Instagram page.',
@@ -268,9 +268,9 @@ export const PROJECTS: readonly ProjectSeed[] = [
     liveUrl: 'https://z-ateeqiii.github.io/grandpas-kitchen/',
     githubUrl: 'https://github.com/z-ateeqiii/grandpas-kitchen',
     problem:
-      'A small, chef-owned restaurant had no digital menu — the kind of QR-accessible menu that avoids reprinting costs every time a price or dish changes.',
+      'A small, chef-owned restaurant had no digital menu, the kind of QR-accessible menu that avoids reprinting costs every time a price or dish changes.',
     build:
-      'Built mobile-first, meant to be opened straight from a QR code at the table. A v2 pass incorporated the client’s actual branding — a clean logo file and real photos of the chef and restaurant — rather than generic stock imagery, so the site reflects the actual place and person behind it.',
+      'Built mobile-first, meant to be opened straight from a QR code at the table. A v2 pass incorporated the client’s actual branding, a clean logo file and real photos of the chef and restaurant, rather than generic stock imagery, so the site reflects the actual place and person behind it.',
     outcome:
       'Live and deployed, purpose-built for the QR-at-the-table use case this kind of restaurant menu exists for.',
     featuredOnHome: false,
@@ -537,7 +537,7 @@ export const EXPERIENCE: readonly Seed<Experience>[] = [
     role: 'Software Engineer — Frontend',
     timeframe: 'Apr 2026 – Present',
     summary:
-      'Frontend development, internal applications, and business workflow tooling. Designed and built the Employee Portal Guide (Angular 21, Tailwind, RxJS, Signals) — an internal training and onboarding app. Designed and developed the Scholarship Management Platform (Angular, Firebase) supporting Instructor and Operations/Admin workflows. Implemented role-based access with route guards, reactive state with Angular Signals, a lazy-loaded modular architecture, and a fully responsive UI — delivered to production.',
+      'Frontend development, internal applications, and business workflow tooling. Designed and built the Employee Portal Guide (Angular 21, Tailwind, RxJS, Signals), an internal training and onboarding app. Designed and developed the Scholarship Management Platform (Angular, Firebase) supporting Instructor and Operations/Admin workflows. Implemented role-based access with route guards, reactive state with Angular Signals, a lazy-loaded modular architecture, and a fully responsive UI, all delivered to production.',
     tech: ['Angular 21', 'Tailwind', 'RxJS', 'Angular Signals', 'Firebase'],
     highlights: [
       'Designed and built the Employee Portal Guide (Angular 21, Tailwind CSS, RxJS, Angular Signals): an internal training and onboarding app structuring company knowledge into categories and guided workflows, reducing manual onboarding effort.',
