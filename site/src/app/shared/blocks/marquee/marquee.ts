@@ -1,4 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  computed,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 
 export interface MarqueeItem {
   readonly label: string;
@@ -36,6 +47,10 @@ export interface MarqueeItem {
  * main-thread work — a JS-driven ticker on a strip that never stops would be
  * the single most expensive thing on the page.
  *
+ * Pace is specified as a SPEED and the duration is derived from the measured
+ * content width, so two strips of very different lengths stacked on top of
+ * each other still travel at the same rate. See the `speed` input.
+ *
  * `prefers-reduced-motion` needs an explicit rule here rather than relying on
  * the global one in styles.css. That global rule collapses animations to
  * 0.01ms, which for a normal transition means "arrive instantly" — but for a
@@ -52,6 +67,7 @@ export interface MarqueeItem {
   template: `
     <div class="marquee" [attr.aria-label]="label()" role="group">
       <div
+        #track
         class="marquee-track"
         [class.marquee-reverse]="reverse()"
         [style.--marquee-duration]="duration()"
@@ -60,13 +76,6 @@ export interface MarqueeItem {
           <ul class="marquee-run" [attr.aria-hidden]="run === 1 ? 'true' : null">
             @for (item of items(); track item.label) {
               <li class="marquee-item">
-                <!--
-                  Text-only items get the same small orange square that opens
-                  every eyebrow and sits on every stack tag, so the identity
-                  strip reads in the site's existing rhythm rather than as a
-                  run-on sentence. Items with an icon already have a mark and
-                  do not need a second one.
-                -->
                 <!--
                   Text-only items get the same small orange square that opens
                   every eyebrow and sits on every stack tag, so the identity
@@ -101,10 +110,21 @@ export class UiMarquee {
   readonly label = input('');
 
   /**
-   * Seconds for one full pass. Longer strips need longer, or they travel
-   * faster for the same duration — the distance is the content's own width.
+   * Travel in pixels per second — a SPEED, not a duration (2026-09-20).
+   *
+   * It used to take seconds, and that was the bug. A CSS animation's duration
+   * is time for a fixed distance, but this strip's distance is its own content
+   * width, so two strips given similar durations run at wildly different
+   * speeds. Measured on Home at 1440px: the tech strip was 3,969px of content
+   * in 34s and the identity strip 1,279px in 42s — 117 px/s against 30 px/s,
+   * nearly four times faster, sitting directly above one another. Tuning the
+   * seconds by hand would only hold until a skill was added or renamed.
+   *
+   * Taking a speed makes the pace the thing that is specified and the duration
+   * the thing that is derived, so any two strips match by construction and a
+   * longer list simply takes longer to loop.
    */
-  readonly seconds = input(38);
+  readonly speed = input(30);
 
   /**
    * Runs right-to-left instead. Used so the two strips on Home travel in
@@ -113,5 +133,63 @@ export class UiMarquee {
    */
   readonly reverse = input(false);
 
-  protected readonly duration = computed(() => `${this.seconds()}s`);
+  private readonly destroyRef = inject(DestroyRef);
+
+  private readonly track = viewChild<ElementRef<HTMLElement>>('track');
+
+  /**
+   * One run's width in pixels, measured. Null until the browser has laid the
+   * strip out — which includes SSR, where there is no layout at all.
+   */
+  private readonly runWidth = signal<number | null>(null);
+
+  /**
+   * Seconds for one pass, from whichever width is known.
+   *
+   * The estimate is not decoration: SSR emits this strip fully formed, and a
+   * visitor on a slow connection watches it move for however long hydration
+   * takes. Without a fallback the strip would either not move or run at a
+   * default speed unrelated to its contents, then visibly change pace. The
+   * constants are the item's own box — 56px of padding, a 10px gap, a mark —
+   * plus a per-character width for the mono label, which is a fixed size at
+   * fixed tracking and so is very nearly constant. Checked against the served
+   * HTML: the estimate gives 132.43s and 42.68s where the browser then
+   * measures 132.4s and 42.7s, so there is no correction to see.
+   */
+  protected readonly duration = computed(() => {
+    const measured = this.runWidth();
+    const width = measured ?? this.estimateWidth();
+    return `${Math.max(width / this.speed(), 1).toFixed(2)}s`;
+  });
+
+  private estimateWidth(): number {
+    return this.items().reduce(
+      (total, item) => total + 66 + (item.path ? 20 : 6) + item.label.length * 10.1,
+      0,
+    );
+  }
+
+  constructor() {
+    /**
+     * Browser only, and re-measured rather than measured once: the width moves
+     * when the web font finishes loading, when the viewport changes, and when
+     * the items themselves change. A ResizeObserver covers all three without
+     * this component needing to know which one happened.
+     */
+    afterNextRender(() => {
+      const el = this.track()?.nativeElement;
+      if (!el) return;
+
+      const measure = () => {
+        /** The track holds the list twice, so half of it is one pass. */
+        const half = el.getBoundingClientRect().width / 2;
+        if (half > 0) this.runWidth.set(half);
+      };
+
+      measure();
+      const observer = new ResizeObserver(measure);
+      observer.observe(el);
+      this.destroyRef.onDestroy(() => observer.disconnect());
+    });
+  }
 }

@@ -42,6 +42,9 @@ export type StripScale = 'sm' | 'md' | 'lg';
  * The one thing the caller still MUST do is set `relative` on the section, or
  * the glow anchors to the nearest positioned ancestor instead — usually the
  * page, which puts it somewhere unintended.
+ *
+ * A section that genuinely must not leak asks for it with `contained`, which
+ * moves the glow rather than cutting it. See that input's own note.
  * ─────────────────────────────────────────────────────────────────────────────
  *
  * The host sits at `z-0` and every sibling that carries content needs to be
@@ -78,11 +81,45 @@ export class UiStripBackdrop {
    */
   readonly scale = input<StripScale>('md');
 
+  /**
+   * Pins the glow's VERTICAL edge to the host's, so its gradient reaches full
+   * transparency exactly at the section boundary instead of 224px past it
+   * (2026-09-20).
+   *
+   * The two axes are not the same problem, which is why this only moves one.
+   * A section runs the full width of the page, so its left and right edges are
+   * the screen's — horizontal spill is cut off by the viewport and nobody ever
+   * sees where it stopped. Its bottom edge is the top of the next section, and
+   * spill there lands directly on that content.
+   *
+   * It landed hard on Home: the hero's `lg` glow overhung the section by 255px
+   * and, being a positioned z-0 layer against static sections below it, painted
+   * ON TOP of both marquees and the whole Featured Work block — a screenshot at
+   * 1440×900 showed the orange wash running down over the project cards. Its
+   * own caller now also clips, but clipping a gradient that is still at ~65%
+   * alpha draws a hard line, so the geometry has to be right first and the clip
+   * is only the guarantee.
+   *
+   * Not the default: a mid-page section header still wants to bleed into the
+   * prose below it, which is the continuity this component exists to provide
+   * (see the note above about what clipping used to do to /about). This is for
+   * a section that owns its own frame — a full-bleed hero.
+   */
+  readonly contained = input(false);
+
   private static readonly ANCHORS: Record<StripAnchor, string> = {
     'top-right': '-top-56 -right-56',
     'top-left': '-top-56 -left-56',
     'bottom-right': '-bottom-56 -right-56',
     'bottom-left': '-bottom-56 -left-56',
+  };
+
+  /** Same corners, vertical offset removed. See `contained`. */
+  private static readonly ANCHORS_CONTAINED: Record<StripAnchor, string> = {
+    'top-right': 'top-0 -right-56',
+    'top-left': 'top-0 -left-56',
+    'bottom-right': 'bottom-0 -right-56',
+    'bottom-left': 'bottom-0 -left-56',
   };
 
   /**
@@ -102,14 +139,18 @@ export class UiStripBackdrop {
    * `[class]` binding, but keeping the whole set in one place means there is
    * only one thing to read when asking what classes this element has.
    */
+  private readonly anchorClasses = computed(() =>
+    this.contained()
+      ? UiStripBackdrop.ANCHORS_CONTAINED[this.anchor()]
+      : UiStripBackdrop.ANCHORS[this.anchor()],
+  );
+
   protected readonly glowClasses = computed(
-    () =>
-      `photo-strip-glow ${UiStripBackdrop.ANCHORS[this.anchor()]} ${UiStripBackdrop.SCALES[this.scale()]}`,
+    () => `photo-strip-glow ${this.anchorClasses()} ${UiStripBackdrop.SCALES[this.scale()]}`,
   );
 
   /** Same box as the glow, so the texture sits exactly where the light is. */
   protected readonly grainClasses = computed(
-    () =>
-      `photo-strip-grain ${UiStripBackdrop.ANCHORS[this.anchor()]} ${UiStripBackdrop.SCALES[this.scale()]}`,
+    () => `photo-strip-grain ${this.anchorClasses()} ${UiStripBackdrop.SCALES[this.scale()]}`,
   );
 }

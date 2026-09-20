@@ -95,8 +95,20 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
                 [attr.aria-pressed]="active() === tab.value"
                 [class]="tabClasses(tab.value)"
               >
+                <!--
+                  The same small square that opens every eyebrow and sits on
+                  every tag, filled when the tab is the active one and outlined
+                  when it is not. State is therefore carried by a SHAPE as well
+                  as by colour, which is what keeps it legible to anyone who
+                  cannot tell the orange from the grey.
+                -->
+                <span
+                  class="size-1.5 shrink-0 border border-current"
+                  [class.bg-current]="active() === tab.value"
+                  aria-hidden="true"
+                ></span>
                 <span class="capitalize">{{ tab.value }}</span>
-                <span class="opacity-60">{{ pad(tab.count) }}</span>
+                <span class="opacity-55">{{ pad(tab.count) }}</span>
               </button>
             }
           </div>
@@ -113,8 +125,8 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
                       [alt]="image.alt"
                       loading="lazy"
                       decoding="async"
-                      class="hover-reveal-media aspect-video w-full object-cover grayscale
-                             contrast-115 lg:h-full"
+                      class="hover-reveal-media aspect-[3/2] w-full object-cover grayscale contrast-115
+                             sm:aspect-video lg:h-full"
                     />
                     <!-- Viewfinder crop marks, desktop only: on a phone the
                          image is small enough that a frame across it reads as
@@ -133,11 +145,25 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
                       Featured
                     </p>
 
-                    <h2 class="display-condensed mt-5 text-display-2 font-display text-fg">
+                    <!--
+                      No display-condensed, matching Home's lead card and 07
+                      §7a's rule that card names are set for reading rather
+                      than compression. This heading was the last one still
+                      carrying it, and it was also the one card on the site
+                      where clicking the body did nothing: the utility is a
+                      scaleX, a transformed element becomes the containing
+                      block for absolutely positioned descendants, and the
+                      stretched link's overlay was therefore trapped inside the
+                      heading. Dropping it fixes the click and settles the
+                      inconsistency in one move. Caught by clicking each card
+                      in a real browser and reading back the URL — nothing
+                      about the markup looks wrong.
+                    -->
+                    <h2 class="mt-5 text-display-2 font-display text-fg">
                       <a
                         [routerLink]="['/work', lead.slug]"
-                        class="text-fg no-underline transition-colors duration-(--duration-base)
-                               ease-out-strong hover:text-action"
+                        class="stretched-link text-fg no-underline transition-colors
+                               duration-(--duration-base) ease-out-strong hover:text-action"
                         >{{ lead.name }}</a
                       >
                     </h2>
@@ -178,7 +204,7 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
             @for (project of rest(); track project.slug) {
               <ui-card [interactive]="true" [flush]="true">
                 @if (cover(project.slug); as image) {
-                  <div class="media-frame aspect-video w-full">
+                  <div class="media-frame aspect-[3/2] w-full sm:aspect-video">
                     <img
                       [src]="image.url"
                       [alt]="image.alt"
@@ -189,12 +215,12 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
                   </div>
                 }
 
-                <div class="flex flex-1 flex-col p-7">
+                <div class="flex flex-1 flex-col p-6 sm:p-7">
                   <h2 class="text-display-4 font-display text-fg">
                     <a
                       [routerLink]="['/work', project.slug]"
-                      class="text-fg no-underline transition-colors duration-(--duration-base)
-                             ease-out-strong hover:text-action"
+                      class="stretched-link text-fg no-underline transition-colors
+                             duration-(--duration-base) ease-out-strong hover:text-action"
                       >{{ project.name }}</a
                     >
                   </h2>
@@ -278,23 +304,36 @@ export class WorkIndex {
   });
 
   /**
-   * Active state is a filled orange pill; inactive is a hairline. Orange marks
-   * the one that is doing something, which is what 07 §2 reserves it for —
-   * and the fill is small enough to stay inside that rule's "never a large
-   * filled area" limit.
+   * Tabs are sharp rectangles, not pills (2026-09-20).
+   *
+   * They were `rounded-full` with a solid orange fill on the active one, and
+   * they were the only pill on the site: every other control — buttons, tags,
+   * inputs, skill marks — is `rounded-sm` with a hairline border and a mono
+   * uppercase label. A pill row above a grid of hard-cornered cards read as a
+   * component borrowed from somewhere else.
+   *
+   * The active fill went with the shape. 07 §2 keeps orange on borders, marks
+   * and controls rather than as a field, and a filled tab was the largest
+   * orange area on the page — louder than the featured card it sat above,
+   * which inverts the hierarchy the lead card exists to create. It is now a
+   * tinted panel behind orange text: unambiguous, and quieter than the work.
    *
    * Built as one string rather than several [class.x] bindings because the
    * border colour differs between states: two single-class utilities writing
    * the same property would be decided by Tailwind's emit order, which is the
    * bug that silently ate the flush cards' padding (07 §5a).
+   *
+   * `min-h-11` is the 44px touch target, kept from the pill version — the row
+   * wraps on a phone rather than scrolling, so every tab stays reachable
+   * without a horizontal gesture that has no affordance.
    */
   protected tabClasses(value: ProjectCategory | 'all'): string {
     const base =
-      'inline-flex min-h-11 items-center gap-2 rounded-full px-5 font-mono text-label uppercase ' +
-      'tracking-label transition-colors duration-(--duration-base) ease-out-strong';
+      'inline-flex min-h-11 items-center gap-2.5 rounded-sm border px-4 font-mono text-label ' +
+      'uppercase tracking-label transition-colors duration-(--duration-base) ease-out-strong';
     return this.active() === value
-      ? `${base} border border-action bg-action text-bg`
-      : `${base} border border-fg/20 text-fg-muted hover:border-action hover:text-action`;
+      ? `${base} border-action/70 bg-action/12 text-action`
+      : `${base} border-fg/15 text-fg-muted hover:border-action/50 hover:text-fg`;
   }
 
   protected select(value: ProjectCategory | 'all'): void {

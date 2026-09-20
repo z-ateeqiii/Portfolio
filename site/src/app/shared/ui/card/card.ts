@@ -17,6 +17,12 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
  * real focus target, so keyboard users get one predictable stop rather than a
  * card-sized hit area that no ring can describe.
  *
+ * A pointer still gets the whole card as a target, without changing any of
+ * that. `relative` is on every card so the link inside can carry the
+ * `stretched-link` utility (styles.css) and grow its own ::after to the card's
+ * bounds — one anchor, one tab stop, one focus ring on the words, and a hit
+ * area the size of the card. The card itself gains no role and no handler.
+ *
  * `accent` tints the border orange instead of the neutral hairline — the
  * featured-project treatment from the visual-identity redesign (2026-09-06).
  *
@@ -69,7 +75,7 @@ export class UiCard {
    * misaligned row.
    */
   private static readonly BASE =
-    'group flex h-full flex-col overflow-hidden rounded-md bg-surface';
+    'group relative flex h-full flex-col overflow-hidden rounded-md bg-surface';
 
   private static readonly BORDER: Record<'neutral' | 'accent', string> = {
     neutral: 'border border-fg/12 hover:border-fg/40 focus-within:border-fg/40',

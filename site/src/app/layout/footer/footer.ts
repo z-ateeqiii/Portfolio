@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { Profile } from '../../core/models';
+import { socialMark } from './social-icons';
 import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdrop';
 
 /**
@@ -70,7 +71,7 @@ import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdr
           <div>
             <p class="mono-label text-fg-muted">Elsewhere</p>
             <ul class="mt-4 flex flex-col items-start gap-1">
-              @for (channel of channels(); track channel.label; let i = $index) {
+              @for (channel of channels(); track channel.label) {
                 <li>
                   <a
                     [href]="channel.href"
@@ -81,18 +82,31 @@ import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdr
                            ease-out-strong hover:text-fg"
                   >
                     <!--
-                      The same three-shape rhythm the tags and eyebrows use,
-                      cycling by position. Decorative, so it is hidden from
-                      assistive tech and the link text carries the meaning.
+                      The channel's actual brand mark (07 §7c). These used to
+                      be the same three abstract shapes the tags and eyebrows
+                      cycle through, which worked as rhythm on a tag but not
+                      here: a diamond beside "LinkedIn" and a circle beside
+                      "Instagram" carry no meaning, so the row read as
+                      decoration rather than as a set of destinations. A
+                      recognisable mark is the one thing an icon in a footer
+                      is actually for.
+
+                      Decorative all the same — the link text is what names
+                      the destination, so the svg stays hidden from assistive
+                      tech and nothing is announced twice.
                     -->
-                    <span
-                      class="size-2.25 shrink-0 border border-action transition-transform
-                             duration-(--duration-base) ease-out-strong
-                             group-hover:rotate-90"
-                      [class.rotate-45]="i % 3 === 0"
-                      [class.rounded-full]="i % 3 === 2"
-                      aria-hidden="true"
-                    ></span>
+                    @if (mark(channel.label); as glyph) {
+                      <svg
+                        class="size-4.5 shrink-0 transition-transform duration-(--duration-base)
+                               ease-out-strong group-hover:-translate-y-0.5"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        [attr.fill-rule]="glyph.evenOdd ? 'evenodd' : null"
+                        aria-hidden="true"
+                      >
+                        <path [attr.d]="glyph.path" />
+                      </svg>
+                    }
                     <span class="sweep-underline">{{ channel.label }}</span>
                   </a>
                 </li>
@@ -112,6 +126,9 @@ import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdr
 })
 export class AppFooter {
   readonly profile = input<Profile | null>(null);
+
+  /** Exposed to the template; null for any channel with no mark. */
+  protected readonly mark = socialMark;
 
   protected readonly year = new Date().getFullYear();
 

@@ -714,6 +714,47 @@
 
 /* Card / panel lift. Pairs with a border-color change owned by the component
    (see UiCard) — this utility only supplies the movement. */
+/* ---------------------------------------------------------------------------
+   THE WHOLE CARD IS THE LINK (2026-09-20).
+
+   Put this on the ONE anchor inside a card that names its destination, and its
+   ::after grows to cover the card's nearest positioned ancestor — which
+   `ui-card` guarantees is the card itself. Clicking anywhere on the card then
+   follows that link.
+
+   Why this and not an <a> wrapped around the card: a card contains other
+   links (a live-site button, a repo link), and HTML forbids nesting anchors —
+   the parser silently closes the outer one, which produces a DOM that no
+   longer matches the template and a card that works in some places and not
+   others. This leaves the markup legal and the structure unchanged.
+
+   It also keeps ONE tab stop per card. The card is not a button, the link
+   inside it is, and the focus ring still draws around the words rather than
+   around a card-sized box that describes nothing — which is the reasoning
+   `ui-card` already documents for not being a control itself.
+
+   Anything else interactive inside the card must sit above the overlay:
+   give it `relative z-10`. Text selection inside the card is the known cost of
+   this pattern and is why it goes on cards, not on articles.
+
+   ONE TRAP, and it is silent: `position: absolute` resolves against the
+   nearest ancestor that is positioned OR TRANSFORMED. So a `display-condensed`
+   heading — which is a scaleX — between this link and its card captures the
+   overlay and shrinks it to the heading. The card then looks identical and
+   only the title is clickable. Put the transform on a span inside the link
+   instead, and verify a card by clicking its body, not by reading its markup. */
+@utility stretched-link {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Above the card's own decorative layers (media-frame's light sweep sits
+       at z-1 inside its own isolated context) and below anything deliberately
+       raised to z-10. */
+    z-index: 2;
+  }
+}
+
 @utility hover-lift {
   transition:
     transform var(--duration-base) var(--ease-out-strong),

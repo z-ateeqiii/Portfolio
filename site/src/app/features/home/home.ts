@@ -88,13 +88,35 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
         the one you only get once the browser chrome retracts — which put the
         actions under the address bar on first paint.
       -->
-      <section class="relative flex min-h-[95svh] w-full items-end bg-bg pt-28 pb-12">
+      <!--
+        overflow-clip, and it is load-bearing (2026-09-20).
+
+        This section paints two oversized layers — a parallaxed photo and a
+        glow much larger than the box it lights. Both are positioned, and a
+        positioned z-0 layer paints ABOVE the static sections that follow it in
+        the document, so whatever escaped this section landed on top of the
+        marquees and the Featured Work cards rather than behind them. Measured
+        at 1440x900: the glow overhung the hero by 255px and washed everything
+        below it orange.
+
+        Clip rather than hidden: hidden makes the box a scroll container, which
+        would also mean any sticky descendant starts sticking to THIS section
+        instead of the viewport. Nothing here is sticky today; clip means
+        nothing here can be broken by adding one tomorrow.
+
+        Clipping alone would only trade the bleed for a hard line, since the
+        glow is still near full strength where the section ends — so the
+        backdrop below is contained, which moves the gradient so it has already
+        faded out by that edge. The clip is the guarantee, not the fix.
+      -->
+      <section
+        class="relative flex min-h-[95svh] w-full items-end overflow-clip bg-bg pt-28 pb-12"
+      >
         <!--
-          The photo and its gradients are clipped by THIS wrapper, not by the
-          section. The parallax layer is translated on scroll and genuinely has
-          to be contained — but putting the clip on the section would also
-          slice the glow below, redrawing the hard seam the backdrop component
-          was changed to stop causing.
+          The photo and its scrim keep their own clip even though the section
+          now clips too. They are a unit: the scrim is sized to the photo, and
+          an inner wrapper is what guarantees the two stay aligned no matter
+          what the section's padding or min-height do to its box.
         -->
         <div class="absolute inset-0  overflow-hidden">
           <div
@@ -130,7 +152,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
      
         </div>
 
-        <ui-strip-backdrop anchor="bottom-left" scale="lg" />
+        <ui-strip-backdrop anchor="bottom-left" scale="lg" [contained]="true" />
 
         <div class="container-wide relative z-10 flex flex-col items-start gap-4 mb-15">
           <p class="mono-label text-action">
@@ -263,11 +285,10 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     -->
     @if (stackMarks().length) {
       <section class="border-y border-fg/12 py-7">
-        <ui-marquee
-          [items]="stackMarks()"
-          label="Technologies Muhammed works with"
-          [seconds]="34"
-        />
+        <!-- No pace given: both strips take the component's default speed,
+             which is what makes them read as one rhythm despite one carrying
+             four times as much content as the other. -->
+        <ui-marquee [items]="stackMarks()" label="Technologies Muhammed works with" />
       </section>
     }
 
@@ -277,7 +298,6 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
       <ui-marquee
         [items]="identityMarks"
         label="How Muhammed describes his work"
-        [seconds]="42"
         [reverse]="true"
       />
     </section>
@@ -309,13 +329,13 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
                         [alt]="cover.alt"
                         loading="lazy"
                         decoding="async"
-                        class="hover-reveal-media aspect-video w-full object-cover grayscale
-                               contrast-115 lg:h-full"
+                        class="hover-reveal-media aspect-[3/2] w-full object-cover grayscale contrast-115
+                               sm:aspect-video lg:h-full"
                       />
                     </div>
                   }
 
-                  <div class="flex flex-col justify-between gap-7 p-7 sm:p-10">
+                  <div class="flex flex-col justify-between gap-7 p-6 sm:p-10">
                     <div>
                       <p class="mono-label flex items-center gap-2.5 text-action">
                         <span class="size-1.5 shrink-0 bg-action" aria-hidden="true"></span>
@@ -325,8 +345,8 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
                       <h3 class="mt-5 text-display-2 font-display text-fg">
                         <a
                           [routerLink]="['/work', lead.slug]"
-                          class="text-fg no-underline transition-colors duration-(--duration-base)
-                                 ease-out-strong hover:text-action"
+                          class="stretched-link text-fg no-underline transition-colors
+                                 duration-(--duration-base) ease-out-strong hover:text-action"
                           >{{ lead.name }}</a
                         >
                       </h3>
@@ -356,7 +376,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
                   Desaturated, and un-desaturating on hover, matching /work.
                 -->
                 @if (featured().covers[project.slug]; as cover) {
-                  <div class="media-frame aspect-video w-full">
+                  <div class="media-frame aspect-[3/2] w-full sm:aspect-video">
                     <img
                       [src]="cover.url"
                       [alt]="cover.alt"
@@ -367,13 +387,13 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
                   </div>
                 }
 
-                <div class="flex flex-1 flex-col p-7">
+                <div class="flex flex-1 flex-col p-6 sm:p-7">
                   <div class="flex items-baseline justify-between gap-4">
                     <h3 class="text-display-4 font-display text-fg">
                       <a
                         [routerLink]="['/work', project.slug]"
-                        class="text-fg no-underline transition-colors duration-(--duration-base)
-                               ease-out-strong hover:text-action"
+                        class="stretched-link text-fg no-underline transition-colors
+                               duration-(--duration-base) ease-out-strong hover:text-action"
                         >{{ project.name }}</a
                       >
                     </h3>
@@ -671,6 +691,14 @@ export class Home implements OnInit {
    * Photo layer translates at 0.85× scroll, text stays at 1× (it's a sibling
    * layer, untouched) — hero only, transform-only, and skipped entirely under
    * prefers-reduced-motion, checked before a single scroll listener attaches.
+   *
+   * It stops once the hero has left the viewport, and parks the layer at its
+   * resting transform on the way out (2026-09-20). Containment is the
+   * section's job — it clips, so nothing was ever escaping geometrically — but
+   * there is no reason to keep writing a transform onto an element nobody can
+   * see, and a visitor who scrolls the whole page spends most of it in that
+   * state. `offsetHeight` is read once here rather than per frame, so this
+   * adds a comparison to the handler and no layout work.
    */
   private startParallax(): void {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -678,13 +706,16 @@ export class Home implements OnInit {
     const layer = this.photoLayer()?.nativeElement;
     if (!layer) return;
 
+    const hero = layer.closest('section');
     let ticking = false;
     this.scrollHandler = () => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
-        layer.style.transform = `translateY(${window.scrollY * -0.15}px)`;
         ticking = false;
+        const y = window.scrollY;
+        const past = hero ? y > hero.offsetHeight : false;
+        layer.style.transform = past ? '' : `translateY(${y * -0.15}px)`;
       });
     };
     window.addEventListener('scroll', this.scrollHandler, { passive: true });

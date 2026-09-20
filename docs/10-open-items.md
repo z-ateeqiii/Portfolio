@@ -34,7 +34,7 @@ Not blockers, but must be confirmed before the relevant content goes live (per `
 
 Flagged as open in earlier documents, still undecided:
 
-- [ ] **Contact page**: link-only (current default) or does it need an actual contact form? (`02` §14)
+- [x] **Contact page — decided 2026-09-20: both.** A real form ships alongside the mailto button rather than replacing it (`02` §9, §14). It posts JSON to Formspree (`https://formspree.io/f/xppwpwrn`) and handles the response in place, so the visitor is never handed off to Formspree's own thank-you page. Formspree and not a Cloud Function because Functions need the Blaze plan, which this project already declined once for Storage. The endpoint is public by design — it is a form ID, not a credential. Built as `features/contact/contact-form.ts`; verified end to end with one live submission (HTTP 200).
 - [ ] **`/beyond/social`**: does it ship with a curated video archive in v1, or just platform links + story text? Depends on media readiness (`02` §14, `04` §8, `08` §6)
 - [ ] **Resume format**: PDF-only download, or also an inline preview on the `/resume` route? (`02` §14)
 
@@ -401,12 +401,25 @@ Matched on the value's **shape**, not on a list of field names. A name list has 
 - [x] **Lightbox load feedback and neighbour preloading** (`07` §7d).
 - [x] **Full-site pass**: 12 routes driven in a real browser — zero console errors, zero broken images, zero horizontal overflow at any of them.
 
-**Still needs Muhammed, unchanged from the last batch**: the three freelance projects are still unseeded (5 projects live, not 8), `Project.category` is unseeded so the `/work` filter tabs stay hidden until it is set, and `bioShort` still says "five shipped projects" — a factual staleness this copy pass deliberately did not touch, since correcting a count is a content decision rather than a style one.
+**Still needs Muhammed, unchanged from the last batch**: the three freelance projects are still unseeded (5 projects live, not 8), `Project.category` is unseeded so the `/work` filter tabs stay hidden until it is set, and `bioShort` still says "five shipped projects" — a factual staleness this copy pass deliberately did not touch, since correcting a count is a content decision rather than a style one. *(Superseded 2026-09-20: the categories and two of the projects have since been seeded — see §4n.5.)*
+
+### 4n.5 Eight-item batch (2026-09-20)
+
+- [x] **Hero containment** (`07` §4a). The Hero's glow overhung its section by 255px and, being a positioned `z-0` layer against static sections below it, painted on top of both marquee strips and the whole Featured Work block. The section now sets `overflow-clip` and its backdrop takes a new `contained` flag that pins the glow's vertical edge to the section's, so the gradient is already transparent where the clip falls. Verified by toggling the backdrop and diffing screenshots: max channel delta 93 inside the Hero, 0 across every pixel below it. The parallax listener also stops writing once the Hero is off screen.
+- [x] **Marquee pace matched** (`07` §5b). The two strips ran at 117 px/s and 30 px/s because duration was specified and distance was content-derived. `ui-marquee` now takes a speed and derives the duration from the measured run width; both strips measure 30.0 px/s.
+- [x] **Mobile card covers** (`07` §7a). `3:2` below `sm`, `16:9` above. At 342px wide a 16:9 crop was a 191px band in which a desktop screenshot read as a smudge. `4:3` was tried and rejected for cropping a product's own name out of the image.
+- [x] **Filter tabs made sharp** (`07` §7b). The only pill on the site, with the largest orange fill on the page, became a hairline rectangle with a tinted active state and a filled/outlined square mark carrying the state alongside colour.
+- [x] **Whole card clickable** (`07` §7a), via a `stretched-link` utility rather than a wrapping anchor — one tab stop per card, unchanged markup. Uncovered a real bug: `display-condensed` is a `scaleX`, so the Work lead card's heading was capturing the overlay and that card's body was not clickable at all. That heading has dropped the utility, which also settles an inconsistency with Home's lead card and matches what `07` §7a already said.
+- [x] **Footer brand marks** (`07` §7c). Real LinkedIn/GitHub/Instagram/Facebook marks plus a drawn envelope, replacing abstract shapes. LinkedIn is absent from Simple Icons entirely and is inlined; the four package marks are copied rather than imported, because an eager import from the app shell promoted the whole 24-icon chunk into the initial bundle.
+- [x] **Contact form built** (§3, `02` §9). Formspree, posted as JSON and handled in place. Verified: validation surfaces every field error on a blind submit, the payload carries a `_subject` naming the site and sender, and one live submission returned HTTP 200.
+- [x] **Verified**: 11 routes at 1440/1024/390 — zero console errors, zero broken images, zero horizontal overflow at all 33 combinations. Initial bundle 383.30 → 389.06 kB raw, 107.92 → 109.30 kB transfer.
+
+**Still needs Muhammed**: Creative Nails and Grandpa's Kitchen are still unseeded (6 projects live), and `bioShort` still says "five shipped projects" — now wrong by one more, and still a content decision rather than a style one.
 
 ### Genuinely unresolved — needs Muhammed's decision, not a design call
 
 - [ ] **`Skill` and `Education` render nowhere on the public site.** Both are full entities with dashboard editors, both are exposed by `ContentService` (`skills()`, `education()`), and neither is resolved on a single public route — so anything entered there is invisible to visitors. This is pre-existing and predates this pass. It is not a design question: `02` §13 explicitly rules out standalone Skills/Certifications pages because they fragment the story, so the options are to surface them inside `/about` (where Experience already lives), to surface them somewhere else, or to remove the editors. Needs a content decision.
-- [ ] **The three freelance projects are still not seeded.** `/work` renders 5 projects; Magic Touch, Creative Nails and Grandpa's Kitchen are in `tools/seed/seed-freelance-batch.ts` and have never been run. The Work index heading and its project count are now derived from the data rather than hardcoding "Five", so seeding them needs no code change.
+- [ ] **Two freelance projects are still not seeded** (updated 2026-09-20). `/work` now renders 6 — Cyber50 was deleted and Al-Andalus Motors and Magic Touch were added — with `Project.category` seeded, so the filter tabs are live (All 06 / Company 02 / Freelance 03 / Personal 01). Creative Nails and Grandpa's Kitchen remain in `tools/seed/seed-freelance-batch.ts` and have never been run. Counts and tabs are derived from the data, so seeding them needs no code change.
 - [ ] **`design-reference/` is still untracked.** It contains a real personal photo of Muhammed (`uploads/pasted-…png`, also visible in both screenshots). Left out of every commit pending Muhammed's call on whether the repository is public.
 
 ---

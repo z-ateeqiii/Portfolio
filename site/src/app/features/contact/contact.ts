@@ -5,14 +5,19 @@ import { SeoService } from '../../core/seo/seo.service';
 import { SiteState } from '../../core/services/site-state';
 import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdrop';
 import { UiButton, UiEyebrow } from '../../shared/ui';
+import { ContactForm } from './contact-form';
 
 /**
  * Contact (02 §9).
  *
- * Link-only, no form. 02 §9 says "no contact form complexity required unless
- * later decided" and 10 §3 still has that decision open — so the simpler thing
- * ships, and a form can be added if it is ever actually wanted. Building one
- * now would be answering an open question by default.
+ * Links AND a form, as of 2026-09-20. 02 §9 said "no contact form complexity
+ * required unless later decided" and 10 §3 carried that as an open decision;
+ * it has now been decided, and the form was added rather than swapped in —
+ * see `ContactForm` for why both routes earn their place.
+ *
+ * Order is deliberate: address first, then the channels, then the form. The
+ * fastest route for someone who already knows how they want to reach out is
+ * the one that should not be scrolled past, and the form is for everyone else.
  *
  * Primary channels only: Email, LinkedIn, GitHub (brief §27, 02 §9). The social
  * profiles are reachable from the footer and from /beyond/social, so they are
@@ -24,7 +29,7 @@ import { UiButton, UiEyebrow } from '../../shared/ui';
 @Component({
   selector: 'app-contact',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [UiButton, UiEyebrow, UiStripBackdrop],
+  imports: [ContactForm, UiButton, UiEyebrow, UiStripBackdrop],
   template: `
     @let p = profile();
 
@@ -71,6 +76,19 @@ import { UiButton, UiEyebrow } from '../../shared/ui';
               </li>
             }
           </ul>
+
+          <div class="mt-16 border-t border-fg/12 pt-12">
+            <h2 class="mono-label text-fg-muted">Or send a message</h2>
+            <!-- Factual, and nothing more: it states where the form goes. Any
+                 line about how fast a reply comes would be a claim about
+                 Muhammed that no doc or content record makes. -->
+            <p class="mt-4 max-w-lg text-body text-fg-muted">
+              It reaches the same inbox as the address above.
+            </p>
+            <div class="mt-8 max-w-xl">
+              <app-contact-form />
+            </div>
+          </div>
 
           <!-- 02 §10: the resume is repeated here as one of its entry points. -->
           @if (p.resumeFile) {
