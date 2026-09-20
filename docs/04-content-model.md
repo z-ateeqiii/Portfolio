@@ -52,6 +52,7 @@ One record per project, ordered manually (curation over chronology, per brief §
 | `name` | string | |
 | `tagline` | string | One-line description for `/work` cards |
 | `tier` | enum | `featured` \| `standard` \| `compact` — controls depth shown (per `03` §3) |
+| `category` | enum | **Added 2026-09-09.** `company` \| `freelance` \| `personal` — powers the `/work` filter tabs. `company`: built while employed (Scholarship Dashboard, ST Employees Portal). `freelance`: real paid/unpaid client work (Magic Touch, Creative Nails, Grandpa's Kitchen, Nutella Digital Menu). `personal`: academic/self-directed, no client or employer (FreshCart) |
 | `order` | number | Manual curation order |
 | `role` | string | e.g. "Sole builder" |
 | `timeframe` | string | e.g. "Built in ~7 days" — kept as free text, not forced into start/end dates, since several projects only have a duration, not real calendar dates |

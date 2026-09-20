@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, input, si
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import { Project, ProjectTier } from '../../../core/models';
+import { Project, ProjectCategory, ProjectTier } from '../../../core/models';
 import { AdminService } from '../../../core/services/admin.service';
 import { DraftBar } from '../shared/draft-bar';
 
@@ -115,6 +115,29 @@ const EMPTY: ProjectForm = {
         }
       </fieldset>
 
+      <!-- Category (04 §3) — what kind of work it was, which drives the
+           /work filter tabs. Separate from tier on purpose: tier is how much
+           page a project earns, category is who it was for. -->
+      <fieldset class="mt-6 rounded-md border border-fg/12 p-4">
+        <legend class="px-2 font-mono text-label text-fg-muted uppercase">Category</legend>
+        @for (option of categories; track option.value) {
+          <label class="mt-2 flex gap-3">
+            <input
+              type="radio"
+              name="category"
+              [value]="option.value"
+              [ngModel]="form().category"
+              (ngModelChange)="update('category', $event)"
+              class="mt-1"
+            />
+            <span>
+              <span class="text-body text-fg capitalize">{{ option.value }}</span>
+              <span class="block text-caption text-fg-muted">{{ option.meaning }}</span>
+            </span>
+          </label>
+        }
+      </fieldset>
+
       <!-- featuredOnHome — impossible to miss, per 05 §3.3 -->
       <label class="flex items-start gap-3 rounded-md border border-fg/40 bg-surface p-4">
         <input
@@ -205,6 +228,16 @@ export class AdminProjectEditor {
       value: 'compact',
       meaning: 'Snapshot, Problem, Build, Outcome only — leave Approach empty.',
     },
+  ];
+
+  /**
+   * Wording taken from 04 §3's own definitions, so the dashboard and the
+   * content model cannot drift into disagreeing about what a category means.
+   */
+  protected readonly categories: { value: ProjectCategory; meaning: string }[] = [
+    { value: 'company', meaning: 'Built while employed.' },
+    { value: 'freelance', meaning: 'Real client work, paid or unpaid.' },
+    { value: 'personal', meaning: 'Academic or self-directed — no client or employer.' },
   ];
 
   protected readonly snapshotFields = [

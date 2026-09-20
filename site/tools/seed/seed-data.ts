@@ -74,6 +74,7 @@ export const PROJECTS: readonly ProjectSeed[] = [
     tagline:
       'Serverless full-stack operations dashboard for a scholarship program run in partnership with the Egyptian Engineers Syndicate',
     tier: 'featured',
+    category: 'company',
     order: 1,
     role: 'Sole builder',
     timeframe: 'Built in ~7 days',
@@ -100,6 +101,7 @@ export const PROJECTS: readonly ProjectSeed[] = [
     tagline:
       'Internal onboarding platform built for Smart Technology (Engineering Education / EdTech company)',
     tier: 'standard',
+    category: 'company',
     order: 2,
     role: 'Sole builder, self-initiated',
     // 03 §5's Snapshot gives no duration and no dates for this project. Left
@@ -161,6 +163,7 @@ export const PROJECTS: readonly ProjectSeed[] = [
     tagline:
       'eCommerce web application, built as the capstone project for the Angular course Muhammed was taking',
     tier: 'compact',
+    category: 'personal',
     order: 4,
     // 03 §6.2's Snapshot names no role and no duration. Left empty rather than
     // inferred from "capstone project" - 04 §1.2 renders around a gap, and a
@@ -187,6 +190,7 @@ export const PROJECTS: readonly ProjectSeed[] = [
     tagline:
       'QR-based digital menu for a café Muhammed frequents as a regular customer, built entirely unprompted',
     tier: 'compact',
+    category: 'freelance',
     order: 5,
     // Directly supported by 03 §6.3: "built entirely unprompted" and
     // "decided to solve it himself". This is the one project in the set whose
@@ -212,6 +216,7 @@ export const PROJECTS: readonly ProjectSeed[] = [
     name: 'Magic Touch',
     tagline: 'Freelance single-page site for Magic Touch, a beauty salon offering massage and wellness services',
     tier: 'compact',
+    category: 'freelance',
     order: 6,
     // 03 §6a.1 names no role/duration for any of the three freelance sites -
     // same restraint as FreshCart above: left empty rather than inferred.
@@ -234,6 +239,7 @@ export const PROJECTS: readonly ProjectSeed[] = [
     tagline:
       'Freelance catalogue/portfolio website for Creative Nails, a nail and skincare studio in Dahab, Egypt run by nail expert Lilo',
     tier: 'compact',
+    category: 'freelance',
     order: 7,
     role: '',
     timeframe: '',
@@ -254,6 +260,7 @@ export const PROJECTS: readonly ProjectSeed[] = [
     // treatment Cyber50's tagline above gives its own trailing sub-clause.
     tagline: 'Freelance digital menu/website for Grandpa’s Kitchen, a restaurant in Dahab, Egypt',
     tier: 'compact',
+    category: 'freelance',
     order: 8,
     role: '',
     timeframe: '',

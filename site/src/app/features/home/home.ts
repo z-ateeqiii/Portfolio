@@ -280,13 +280,64 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
           <ui-eyebrow index="01">Featured Work</ui-eyebrow>
           <h2 class="mt-5 max-w-2xl text-display-2 font-display text-fg">{{ copy.featuredWork }}</h2>
 
-          <div appReveal mode="grid" class="mt-10 grid gap-6 md:grid-cols-2">
-            @for (project of featured().projects; track project.slug) {
-              <ui-card
-                [interactive]="true"
-                [accent]="project.tier === 'featured'"
-                [flush]="true"
-              >
+          <!--
+            Same lead-plus-grid shape as /work, so the two pages read as one
+            system: the featured project takes a wide two-column card, the
+            rest sit in an even grid beneath it. Home shows a curated subset
+            rather than everything, so its grid stops at two columns where
+            /work goes to three.
+          -->
+          @if (homeLead(); as lead) {
+            <div class="mt-10">
+              <ui-card [interactive]="true" [accent]="true" [flush]="true">
+                <div class="grid lg:grid-cols-[1.35fr_1fr]">
+                  @if (featured().covers[lead.slug]; as cover) {
+                    <div class="media-frame">
+                      <img
+                        [src]="cover.url"
+                        [alt]="cover.alt"
+                        loading="lazy"
+                        decoding="async"
+                        class="hover-reveal-media aspect-video w-full object-cover grayscale
+                               contrast-115 lg:h-full"
+                      />
+                    </div>
+                  }
+
+                  <div class="flex flex-col justify-between gap-7 p-7 sm:p-10">
+                    <div>
+                      <p class="mono-label flex items-center gap-2.5 text-action">
+                        <span class="size-1.5 shrink-0 bg-action" aria-hidden="true"></span>
+                        Featured
+                      </p>
+
+                      <h3 class="mt-5 text-display-2 font-display text-fg">
+                        <a
+                          [routerLink]="['/work', lead.slug]"
+                          class="text-fg no-underline transition-colors duration-(--duration-base)
+                                 ease-out-strong hover:text-action"
+                          >{{ lead.name }}</a
+                        >
+                      </h3>
+
+                      <p class="mt-5 max-w-md text-body-lg text-fg-muted">{{ lead.tagline }}</p>
+                    </div>
+
+                    <ul class="flex flex-wrap gap-2">
+                      @for (tech of lead.stack; track tech; let i = $index) {
+                        <li><ui-tag [icon]="tagIcon(i)">{{ tech }}</ui-tag></li>
+                      }
+                    </ul>
+                  </div>
+                </div>
+              </ui-card>
+            </div>
+          }
+
+          @if (homeRest().length) {
+            <div appReveal mode="grid" class="mt-6 grid gap-6 md:grid-cols-2">
+              @for (project of homeRest(); track project.slug) {
+                <ui-card [interactive]="true" [flush]="true">
                 <!--
                   Cover image (04 §6's isFeatured), rendered only when a project
                   has one — a text-only card is the existing, already-correct
@@ -305,9 +356,9 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
                   </div>
                 }
 
-                <div class="flex flex-1 flex-col p-6">
+                <div class="flex flex-1 flex-col p-7">
                   <div class="flex items-baseline justify-between gap-4">
-                    <h3 class="display-condensed text-display-4 font-display text-fg">
+                    <h3 class="text-display-4 font-display text-fg">
                       <a
                         [routerLink]="['/work', project.slug]"
                         class="text-fg no-underline transition-colors duration-(--duration-base)
@@ -320,17 +371,18 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
                     }
                   </div>
 
-                  <p class="mt-3 text-body text-fg-muted">{{ project.tagline }}</p>
+                  <p class="mt-4 text-body text-fg-muted">{{ project.tagline }}</p>
 
-                  <ul class="mt-auto flex flex-wrap gap-2 pt-6">
+                  <ul class="mt-auto flex flex-wrap gap-2 pt-7">
                     @for (tech of project.stack; track tech; let i = $index) {
                       <li><ui-tag [icon]="tagIcon(i)">{{ tech }}</ui-tag></li>
                     }
                   </ul>
                 </div>
               </ui-card>
-            }
-          </div>
+              }
+            </div>
+          }
 
           <p class="mt-8">
             <a
@@ -453,6 +505,21 @@ export class Home implements OnInit {
    * touched. Each of the six is a real dependency or platform in use here, so
    * the strip is a statement that can be checked rather than a skills cloud.
    */
+  /**
+   * The lead card on Home, chosen by `tier` exactly as /work chooses its own —
+   * not by taking the first of `featuredOnHome`. Those are two different
+   * decisions: `featuredOnHome` says a project appears here at all, `tier`
+   * says how much room it earns (03 §3).
+   */
+  protected readonly homeLead = computed(
+    () => this.featured().projects.find((p) => p.tier === 'featured') ?? null,
+  );
+
+  protected readonly homeRest = computed(() => {
+    const lead = this.homeLead();
+    return this.featured().projects.filter((p) => p !== lead);
+  });
+
   protected readonly stackMarks: readonly MarqueeItem[] = [
     { label: 'Angular', icon: 'angular' },
     { label: 'TypeScript', icon: 'typescript' },

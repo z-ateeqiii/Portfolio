@@ -269,11 +269,27 @@ High-level only — full specs belong in implementation, not this planning docum
 - **Media framing** (superseding the earlier browser-chrome direction, 2026-09-07): screenshots and photos are **desaturated** (`grayscale` + slight contrast lift) and, where they anchor a page, overlaid with the **viewfinder** — a 1px white crop-mark rectangle, decorative and `pointer-events: none`. On a card, hovering releases the desaturation: colour returning is the reward, which lets the card respond without spending the orange accent on it. The viewfinder is desktop-only; across a phone-sized image it reads as clutter rather than as a photographic reference
 - **Disclosure rows** (`<details>`): native element, so keyboard support and screen-reader announcement come from the platform and the content is present before JavaScript. The toggle affordance is the same small orange square used everywhere else, rotated 45° when open — not a "+" glyph
 
+### 7b. The /work filter tabs (added 2026-09-20)
+
+**The tabs are built from the data, never hardcoded.** A fixed list of four would show an empty Personal tab the moment that project is deleted, and would silently miss a category added later. The row derives from the categories actually present, in the order `04` §3 defines them, so deleting a project removes its tab when it was the last of its kind and nothing here needs editing when the set changes. The counts come from the same computation as the cards, so they cannot disagree with what is on screen.
+
+**One tab is a label, not a filter**, so the row renders only when more than one category is present. `Project.category` is optional and every live document predates it, which means before seeding there are no category tabs and the page is simply unfiltered — correct rather than broken.
+
+**Filtering is a signal, not a route param.** `02` §5 rules out anything that makes a curated set look like an archive, and a filter that writes to the URL turns seven projects into a browsable query. It also keeps every project in the server-rendered HTML, so a crawler and a visitor without JavaScript both get the whole set rather than one slice.
+
+A real `<button>` in a labelled group, not a link — it filters what is already on the page and never navigates. The active tab carries `aria-pressed`, because colour alone is not a state for anyone who cannot see it.
+
+**The lead card resolves within the active tab.** Filtering to a category whose projects are all compact simply has no lead and renders as an even grid, which is better than promoting a compact project into a slot that expects a cover image, a role and a timeframe it does not have. `tier` still decides prominence; the filter only decides the candidate set.
+
+**Verified against the reveal directive.** `RevealDirective` captures its children once and sets them to `opacity: 0`, so a filter that swaps those children could plausibly strand a card invisible. Measured across every tab after scrolling the page: zero cards in the viewport below full opacity.
+
 ### 7a. Project cards (revised 2026-09-19)
 
 **Cards in a row line up, and so do their contents.** Grid items stretch by default, so the cards were always equal height — but their contents were not, and a project with a one-line tagline put its tags halfway up the card while its neighbour put them at the bottom. `UiCard` is now a flex column and the body claims the leftover space, so the tag lists share a baseline. This matters more as the set grows: at eight projects and rising, every difference in tagline length was another misaligned row.
 
 **The grid goes to three columns at `xl`.** Two was right for five projects; a two-wide column of eight is a scroll, not an index. Verified by cloning the grid to 18 cards in a live browser: 3/2/1 columns at 1440/1024/390, zero ragged rows, no horizontal overflow.
+
+**Card type is set for reading, not for compression** (2026-09-20). Card names dropped `display-condensed`: a 7% horizontal squeeze is legible at 9rem and costs real clarity at 1.6rem, and the utility was always documented as the partner to `display-hero`. Padding went to `p-7` and the gaps between name, tagline and tags widened with it. This is the section a visitor came for, so it is the one place where comfort outranks density.
 
 **The hover is the card coming alive.** Every cover sits in greyscale until touched; on hover the desaturation lifts all the way off, the image pushes in and drifts up behind its own crop, and a single pass of light crosses it. Colour arriving is the real signal and needs no shadow or outline to announce it — it says the project is a live thing rather than a screenshot of one. The previous hover only went to `grayscale(0.35)`, a half-measure that read as a rendering artefact rather than an intention.
 

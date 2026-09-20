@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import type { ProjectsWithCovers } from '../../../core/content/project-covers';
+import type { ProjectCategory } from '../../../core/models';
 import { SeoService } from '../../../core/seo/seo.service';
 import { UiStripBackdrop } from '../../../shared/blocks/strip-backdrop/strip-backdrop';
 import { RevealDirective } from '../../../shared/motion/reveal.directive';
@@ -70,6 +71,36 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
             </p>
           }
         </div>
+
+        <!--
+          FILTER TABS. Rendered only when there is more than one category
+          present, because a single tab is a label rather than a choice.
+
+          A real <button> in a tablist, not a link: this filters what is
+          already on the page and never navigates, so a link would promise a
+          destination it does not have. The active tab is marked with
+          aria-pressed so the state is announced, not just coloured — colour
+          alone is not a state for anyone who cannot see it.
+        -->
+        @if (tabs().length) {
+          <div
+            class="mt-10 flex flex-wrap gap-2"
+            role="group"
+            aria-label="Filter projects by category"
+          >
+            @for (tab of tabs(); track tab.value) {
+              <button
+                type="button"
+                (click)="select(tab.value)"
+                [attr.aria-pressed]="active() === tab.value"
+                [class]="tabClasses(tab.value)"
+              >
+                <span class="capitalize">{{ tab.value }}</span>
+                <span class="opacity-60">{{ pad(tab.count) }}</span>
+              </button>
+            }
+          </div>
+        }
 
         @if (featured(); as lead) {
           <div class="mt-14">
@@ -158,8 +189,8 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
                   </div>
                 }
 
-                <div class="flex flex-1 flex-col p-6">
-                  <h2 class="display-condensed text-display-4 font-display text-fg">
+                <div class="flex flex-1 flex-col p-7">
+                  <h2 class="text-display-4 font-display text-fg">
                     <a
                       [routerLink]="['/work', project.slug]"
                       class="text-fg no-underline transition-colors duration-(--duration-base)
@@ -168,13 +199,13 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
                     >
                   </h2>
 
-                  <p class="mt-3 text-body text-fg-muted">{{ project.tagline }}</p>
+                  <p class="mt-4 text-body text-fg-muted">{{ project.tagline }}</p>
 
                   @if (meta(project); as line) {
                     <p class="mono-label mt-4 text-fg-muted">{{ line }}</p>
                   }
 
-                  <ul class="mt-auto flex flex-wrap gap-2 pt-6">
+                  <ul class="mt-auto flex flex-wrap gap-2 pt-7">
                     @for (tech of project.stack; track tech; let j = $index) {
                       <li><ui-tag [icon]="tagIcon(j)">{{ tech }}</ui-tag></li>
                     }
@@ -210,16 +241,96 @@ export class WorkIndex {
    * Reading position 0 as "featured" would silently promote whatever happened
    * to sort first if the curation order ever changed.
    */
+  /**
+   * Which tab is active. A signal, not a route param: 02 §5 rules out anything
+   * that makes the set look like an archive, and a filter that writes to the
+   * URL turns "seven curated projects" into a browsable query. It also means
+   * the server-rendered HTML always contains every project, so a crawler and a
+   * visitor with no JavaScript both see the whole set rather than one slice.
+   */
+  protected readonly active = signal<ProjectCategory | 'all'>('all');
+
+  /**
+   * Tabs are BUILT FROM THE DATA, never hardcoded.
+   *
+   * A fixed list of four tabs would show an empty Personal tab the moment that
+   * project is deleted, and would silently miss a category added later. This
+   * derives the list from the projects actually present and in the order 04 §3
+   * defines them, so deleting a project removes its tab when it was the last
+   * of its kind, and nothing has to be edited here when the set changes.
+   *
+   * `category` is optional on Project, so before it is seeded every project is
+   * uncategorised, no category tab has any members, and the row collapses to
+   * "All" alone — which is correct rather than broken.
+   */
+  protected readonly tabs = computed(() => {
+    const projects = this.projects().projects;
+    const order: readonly ProjectCategory[] = ['company', 'freelance', 'personal'];
+    const present = order
+      .map((value) => ({ value, count: projects.filter((p) => p.category === value).length }))
+      .filter((tab) => tab.count > 0);
+
+    /** One tab is not a filter, it is a label — so the row only appears when
+     *  there is an actual choice to make. */
+    return present.length > 1
+      ? [{ value: 'all' as const, count: projects.length }, ...present]
+      : [];
+  });
+
+  /**
+   * Active state is a filled orange pill; inactive is a hairline. Orange marks
+   * the one that is doing something, which is what 07 §2 reserves it for —
+   * and the fill is small enough to stay inside that rule's "never a large
+   * filled area" limit.
+   *
+   * Built as one string rather than several [class.x] bindings because the
+   * border colour differs between states: two single-class utilities writing
+   * the same property would be decided by Tailwind's emit order, which is the
+   * bug that silently ate the flush cards' padding (07 §5a).
+   */
+  protected tabClasses(value: ProjectCategory | 'all'): string {
+    const base =
+      'inline-flex min-h-11 items-center gap-2 rounded-full px-5 font-mono text-label uppercase ' +
+      'tracking-label transition-colors duration-(--duration-base) ease-out-strong';
+    return this.active() === value
+      ? `${base} border border-action bg-action text-bg`
+      : `${base} border border-fg/20 text-fg-muted hover:border-action hover:text-action`;
+  }
+
+  protected select(value: ProjectCategory | 'all'): void {
+    this.active.set(value);
+  }
+
+  /** Everything in the active tab, still in curation order. */
+  protected readonly visible = computed(() => {
+    const projects = this.projects().projects;
+    const active = this.active();
+    return active === 'all' ? projects : projects.filter((p) => p.category === active);
+  });
+
+  /**
+   * The lead card is chosen by `tier`, not by taking `visible()[0]`.
+   *
+   * Ordering and prominence are two different decisions: `order` says where a
+   * project sits in the list, `tier` says how much real estate it earns (03 §3).
+   * Reading position 0 as "featured" would silently promote whatever happened
+   * to sort first if the curation order ever changed.
+   *
+   * It is resolved WITHIN the active tab. Filtering to a category whose
+   * projects are all compact simply has no lead and renders as an even grid —
+   * better than promoting a compact project into a slot that expects a cover
+   * image, a role and a timeframe it does not have.
+   */
   protected readonly featured = computed(
-    () => this.projects().projects.find((p) => p.tier === 'featured') ?? null,
+    () => this.visible().find((p) => p.tier === 'featured') ?? null,
   );
 
   protected readonly rest = computed(() => {
     const lead = this.featured();
-    return this.projects().projects.filter((p) => p !== lead);
+    return this.visible().filter((p) => p !== lead);
   });
 
-  protected readonly count = computed(() => this.projects().projects.length);
+  protected readonly count = computed(() => this.visible().length);
 
   /** A project's cover image (04 §6's isFeatured), if one has been set. */
   protected cover(slug: string) {

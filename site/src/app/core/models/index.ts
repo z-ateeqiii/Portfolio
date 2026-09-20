@@ -12,7 +12,7 @@ export type { Education, EducationType } from './education';
 export type { Experience } from './experience';
 export type { Media, MediaType } from './media';
 export type { HeroImage, Profile } from './profile';
-export type { Project, ProjectTier } from './project';
+export type { Project, ProjectCategory, ProjectTier } from './project';
 export type { ProofPoint } from './proof-point';
 export type { Skill, SkillCategory, SkillLevel } from './skill';
 export type { SocialPlatform, SocialPlatformName } from './social-platform';

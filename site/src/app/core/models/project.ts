@@ -4,6 +4,16 @@ import { Editable } from './content-status';
 export type ProjectTier = 'featured' | 'standard' | 'compact';
 
 /**
+ * What kind of work this was (04 §3, added 2026-09-19) — powers the /work
+ * filter tabs.
+ *
+ * Orthogonal to `tier`, and deliberately so: `tier` is how much page a project
+ * earns, `category` is who it was for. A freelance site can be compact and a
+ * company project featured, but neither fact implies the other.
+ */
+export type ProjectCategory = 'company' | 'freelance' | 'personal';
+
+/**
  * Project (04 §3). One document per project at /projects/{slug} (06 §3.1).
  *
  * `problem` / `approach` / `build` / `outcome` map 1:1 onto the six-block
@@ -19,6 +29,22 @@ export interface Project extends Editable {
   /** One-line description for /work cards. */
   readonly tagline: string;
   readonly tier: ProjectTier;
+
+  /**
+   * OPTIONAL, because the field is newer than the documents.
+   *
+   * Every published Project in Firestore predates it, so a live record simply
+   * does not have one until it is seeded or set in the dashboard. Declaring it
+   * required would make TypeScript agree it is always present while the actual
+   * data disagrees — the same class of lie that made `publishedAt` look like a
+   * Date after a TransferState round trip.
+   *
+   * The /work filter is built from the categories actually present, so an
+   * uncategorised project appears under "All" and nowhere else, and a category
+   * nothing uses grows no tab. Nothing breaks before it is seeded; there is
+   * just one tab.
+   */
+  readonly category?: ProjectCategory;
   /** Manual curation order — curation over chronology (brief §12). */
   readonly order: number;
   readonly role: string;
