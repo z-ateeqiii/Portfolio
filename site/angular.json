@@ -34,7 +34,9 @@
               "allowedHosts": [
                 "localhost",
                 "127.0.0.1",
-                "*.vercel.app"
+                "*.vercel.app",
+                "muhammed-alateeqi.com",
+                "www.muhammed-alateeqi.com"
               ]
             },
             "ssr": {

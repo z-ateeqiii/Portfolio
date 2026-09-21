@@ -110,6 +110,16 @@ write(join(out, 'config.json'), {
       headers: { 'cache-control': 'public, max-age=31536000, immutable' },
       continue: true,
     },
+    // The root goes to the function BEFORE the filesystem is consulted
+    // (2026-09-21). With only the catch-all below, `/` on the live domain was
+    // answered at the edge and never reached the function: its X-Vercel-Id
+    // showed one hop (`fra1`) where every other route showed two
+    // (`fra1::iad1`), and the body was byte-identical to `index.csr.html`
+    // — an empty client-side shell with no <h1>, cached and ignoring query
+    // strings. The function itself returns something else entirely for `/`,
+    // so that response was not coming from it. Routing `/` explicitly, ahead
+    // of the filesystem step, leaves nothing else able to answer it.
+    { src: '^/$', dest: '/ssr?__pathname=/' },
     // Fonts, favicon and bundles are served straight from the CDN.
     { handle: 'filesystem' },
     // Everything else — pages, /sitemap.xml, /robots.txt — is rendered.
