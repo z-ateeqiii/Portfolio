@@ -33,13 +33,13 @@ import { UiEyebrow } from '../../../shared/ui';
       <header class="relative pt-20 pb-12">
         <ui-strip-backdrop anchor="top-right" scale="sm" />
 
-        <div class="container-content stagger-in-lead relative">
+        <div class="container-page stagger-in-lead relative">
           <ui-eyebrow>Beyond Code</ui-eyebrow>
           <h1 class="display-condensed mt-5 text-display-hero font-display text-fg">Business</h1>
         </div>
       </header>
 
-      <div class="container-content pb-24">
+      <div class="container-page pb-24">
         @for (venture of ventures(); track venture.id) {
           <h2 class="display-condensed text-display-2 font-display text-fg">{{ venture.name }}</h2>
 

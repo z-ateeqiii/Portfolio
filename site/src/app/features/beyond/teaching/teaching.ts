@@ -35,7 +35,7 @@ import { UiEyebrow, UiTag } from '../../../shared/ui';
       <header class="relative pt-20 pb-12">
         <ui-strip-backdrop anchor="top-right" scale="sm" />
 
-        <div class="container-content stagger-in-lead relative">
+        <div class="container-page stagger-in-lead relative">
           <ui-eyebrow>Beyond Code</ui-eyebrow>
           <h1 class="display-condensed mt-5 text-display-hero font-display text-fg">Teaching</h1>
 
@@ -43,7 +43,7 @@ import { UiEyebrow, UiTag } from '../../../shared/ui';
         </div>
       </header>
 
-      <div class="container-content pb-24">
+      <div class="container-page pb-24">
         <div class="rule-strip"></div>
 
         <!-- brief §21: what this experience is evidence of. Presented as what

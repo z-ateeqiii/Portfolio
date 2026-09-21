@@ -71,7 +71,7 @@ import { ExperienceList } from './experience-list';
       <header class="relative pt-20 pb-12">
         <ui-strip-backdrop anchor="top-right" scale="sm" />
 
-        <div class="container-content stagger-in-lead relative">
+        <div class="container-page stagger-in-lead relative">
           <ui-eyebrow>About</ui-eyebrow>
           <h1 class="display-condensed mt-5 text-display-hero font-display text-fg">
             The long version
@@ -84,7 +84,7 @@ import { ExperienceList } from './experience-list';
       </header>
 
       @if (p) {
-        <div class="container-content pb-24">
+        <div class="container-page pb-24">
           <!-- The journey arc (brief §8) as a visual spine beside the prose.
                07 §7 allows sequence markers here because this genuinely is an
                ordered timeline rather than decorative numbering. Each stage now

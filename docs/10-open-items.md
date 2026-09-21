@@ -417,6 +417,13 @@ Matched on the value's **shape**, not on a list of field names. A name list has 
 
 **Still needs Muhammed**: Creative Nails and Grandpa's Kitchen are still unseeded (6 projects live), and `bioShort` still says "five shipped projects" — now wrong by one more, and still a content decision rather than a style one.
 
+### 4n.6 Container symmetry (2026-09-21)
+
+- [x] **One page-level container, no exceptions** (`07` §4). `container-wide` (78rem) and `container-content` (58rem) became a single `container-page` at 78rem, across 12 files and 28 usages, covering the header, the footer and every section wrapper. Both old containers were centred, so on every narrow page the footer's edges stood 10rem outside the content directly above it — the page and its chrome read as different layouts. Named without a size on purpose: "wide" invites a "narrow" beside it, which is how the split arose.
+- [x] **Reading comfort kept, separately.** `prose-measure` caps a paragraph at 68 characters rather than by page width, so the frame can widen without lengthening a line. About's prose measures 587px (~65 characters) inside a 1248px frame — the same "wide frame, text column on one side" arrangement the case-study body already used.
+- [x] **The contact form was a casualty and is fixed.** Widening the container took its inputs to 1134px. The panel still fills the frame, which is correct and is what makes its edges line up with the rest of the page; the fields inside it are capped at 36rem, by the same rule as prose.
+- [x] **Verified at 1440/1024/390** across Home, Work, a case study, About, Beyond Code, its three sub-pages and Contact: header, footer and every section wrapper report identical left/right edges — 0px delta in 27 of 27 combinations — and the rendered text edges (header wordmark, eyebrow, `h1`, footer wordmark, footer rule) all land on the same pixel. Initial bundle 389.24 → 389.09 kB raw.
+
 ### Genuinely unresolved — needs Muhammed's decision, not a design call
 
 - [ ] **`Skill` and `Education` render nowhere on the public site.** Both are full entities with dashboard editors, both are exposed by `ContentService` (`skills()`, `education()`), and neither is resolved on a single public route — so anything entered there is invisible to visitors. This is pre-existing and predates this pass. It is not a design question: `02` §13 explicitly rules out standalone Skills/Certifications pages because they fragment the story, so the options are to surface them inside `/about` (where Experience already lives), to surface them somewhere else, or to remove the editors. Needs a content decision.

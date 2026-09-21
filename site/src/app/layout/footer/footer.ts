@@ -35,7 +35,7 @@ import { UiStripBackdrop } from '../../shared/blocks/strip-backdrop/strip-backdr
   template: `
     <ui-strip-backdrop anchor="bottom-left" scale="sm" />
 
-    <div class="container-wide relative flex flex-col gap-10 py-14">
+    <div class="container-page stagger-in-lead relative flex flex-col gap-10 py-14">
       @if (profile(); as p) {
         <p class="display-condensed text-display-2 font-display text-fg">{{ p.name }}</p>
       }

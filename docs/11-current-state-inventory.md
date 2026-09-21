@@ -238,7 +238,7 @@ Size/weight scale, all fluid (`clamp()`) except the reading sizes:
 
 ### Layout / spacing
 
-- Two container widths: `--container-content: 44rem` (Story, case studies, contact — narrow reading column), `--container-wide: 78rem` (Home sections, Work grid).
+- Two container widths: `--container-content: 44rem` (Story, case studies, contact — narrow reading column), `--container-wide: 78rem` (Home sections, Work grid). *(Superseded 2026-09-21: both were replaced by a single `container-page` at 78rem — see `07` §4. Left as written because this document is a dated snapshot, not a live reference.)*
 - **No custom spacing scale defined.** The file's own comment explains why: Tailwind's default 4px base already expresses the docs' target 8px rhythm (8/16/24/32/48/64/96 → 2/4/6/8/12/16/24 in Tailwind's units) exactly, so redefining `--spacing` was deliberately skipped to avoid silently changing what every existing utility class means. Not drift — a documented decision.
 - Two hairline-border alpha values in active use, chosen from a measured WCAG 1.4.11 contrast table in the CSS file's own comments: `border-fg/12` (card edges — decorative, card is identified by its surface-color shift, not the border) vs `border-fg/40` (control edges — inputs, selects, secondary buttons, where the border is the only thing identifying the control).
 

@@ -44,7 +44,7 @@ import { UiButton } from '../../shared/ui';
   imports: [RouterLink, RouterLinkActive, UiButton],
   host: { class: 'sticky top-0 z-40 border-b border-fg/12 bg-bg/85 backdrop-blur-sm' },
   template: `
-    <div class="container-wide flex items-center justify-between gap-6 py-4">
+    <div class="container-page flex items-center justify-between gap-6 py-4">
       <!-- Logo/name always returns Home (02 §3). -->
       <a
         routerLink="/"
@@ -114,7 +114,7 @@ import { UiButton } from '../../shared/ui';
       <nav
         id="mobile-nav"
         aria-label="Primary"
-        class="container-wide flex flex-col gap-1 border-t border-fg/12 pb-6 sm:hidden"
+        class="container-page flex flex-col gap-1 border-t border-fg/12 pb-6 sm:hidden"
       >
         @for (item of links; track item.path; let i = $index) {
           <a

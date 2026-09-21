@@ -28,7 +28,7 @@ import { UiCard, UiEyebrow } from '../../../shared/ui';
     <section class="relative py-20">
       <ui-strip-backdrop anchor="top-right" scale="md" />
 
-      <div class="container-wide relative">
+      <div class="container-page relative">
         <div class="stagger-in-lead">
           <ui-eyebrow>Beyond Code</ui-eyebrow>
           <h1 class="mt-5 max-w-3xl text-display-1 font-display text-fg">{{ copy.beyondHub }}</h1>

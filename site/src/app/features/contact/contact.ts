@@ -33,10 +33,10 @@ import { ContactForm } from './contact-form';
   template: `
     @let p = profile();
 
-    <section class="relative py-20">
+    <section class="relative py-10">
       <ui-strip-backdrop anchor="bottom-right" scale="md" />
 
-      <div class="container-content stagger-in-lead relative">
+      <div class="container-page stagger-in-lead relative">
         <ui-eyebrow>Contact</ui-eyebrow>
         <h1 class="display-condensed mt-5 text-display-hero font-display text-fg">Get in touch</h1>
 
@@ -85,7 +85,7 @@ import { ContactForm } from './contact-form';
             <p class="mt-4 max-w-lg text-body text-fg-muted">
               It reaches the same inbox as the address above.
             </p>
-            <div class="mt-8 max-w-xl">
+            <div class="mt-8 w-full">
               <app-contact-form />
             </div>
           </div>

@@ -46,7 +46,7 @@ import { UiCard, UiEyebrow, UiTag } from '../../../shared/ui';
     <section class="relative py-20">
       <ui-strip-backdrop anchor="top-right" scale="md" />
 
-      <div class="container-wide relative">
+      <div class="container-page relative">
         <div class="stagger-in-lead flex flex-wrap items-end justify-between gap-6">
           <div>
             <ui-eyebrow index="02">Selected Work</ui-eyebrow>

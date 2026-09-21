@@ -163,7 +163,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
         <ui-strip-backdrop anchor="bottom-left" scale="lg" [contained]="true" />
 
-        <div class="container-wide relative z-10 flex flex-col items-start gap-4 mb-15">
+        <div class="container-page relative z-10 flex flex-col items-start gap-4 mb-15">
           <p class="mono-label text-action">
             Role {{ pad(heroTitleIndex() + 1) }} / {{ pad(p!.heroTitles!.length) }}
           </p>
@@ -236,7 +236,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
       <section class="relative flex min-h-[78vh] items-end pt-20 pb-16 sm:pt-28">
         <!-- <ui-strip-backdrop anchor="bottom-left" scale="lg" /> -->
 
-        <div class="container-wide stagger-in-lead relative flex flex-col items-start gap-7">
+        <div class="container-page stagger-in-lead relative flex flex-col items-start gap-7">
           <p class="mono-label text-action">{{ p.positioning }}</p>
 
           <h1 class="max-w-4xl text-display-1 font-display text-fg">{{ p.heroStatement }}</h1>
@@ -261,7 +261,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
     <!-- 2. Proof Strip (02 §4.2) — optional, and currently empty by design. -->
     @if (provenProofPoints().length) {
-      <section class="container-wide pb-16">
+      <section class="container-page pb-16">
         <div class="rule-strip"></div>
         <ul appReveal mode="children" class="mt-8 flex flex-wrap gap-x-12 gap-y-6">
           @for (point of provenProofPoints(); track point.id) {
@@ -284,7 +284,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
       actually built on, and the identity terms are the ones already in the
       brief and in Profile.positioning; nothing here was written for the strip.
 
-      Full-bleed rather than inside container-wide, because a strip that stops
+      Full-bleed rather than inside container-page, because a strip that stops
       at a container edge reads as a component and a strip that runs off both
       sides reads as motion passing through the page.
 
@@ -316,7 +316,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
       <section class="relative py-16">
         <!-- <ui-strip-backdrop anchor="top-right" scale="sm" /> -->
 
-        <div class="container-wide relative">
+        <div class="container-page relative">
           <ui-eyebrow index="01">Featured Work</ui-eyebrow>
           <h2 class="mt-5 max-w-2xl text-display-2 font-display text-fg">{{ copy.featuredWork }}</h2>
 
@@ -439,7 +439,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     <!-- 4. How I Work (02 §4.4) — condensed from brief §10, not the full list.
          The four movements stagger as a grid: they are a sequence, and arriving
          in sequence says so without numbering them. -->
-    <section class="container-wide py-16">
+    <section class="container-page py-16">
       <ui-eyebrow index="02">How I Work</ui-eyebrow>
       <h2 class="mt-5 max-w-2xl text-display-2 font-display text-fg">{{ copy.process }}</h2>
 
@@ -462,7 +462,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
 
     <!-- 5. Story Teaser (02 §4.5) — a short excerpt, bridging into /about. -->
     @if (storyExcerpt(); as excerpt) {
-      <section appReveal mode="children" class="container-wide py-16">
+      <section appReveal mode="children" class="container-page py-16">
         <ui-eyebrow index="03">Story</ui-eyebrow>
         <h2 class="mt-5 max-w-2xl text-display-2 font-display text-fg">{{ copy.storyTeaser }}</h2>
         <p class="mt-6 max-w-2xl text-body-lg text-fg-muted">{{ excerpt }}</p>
@@ -478,7 +478,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
     }
 
     <!-- 6. Beyond Code Teaser (02 §4.6) — one line and a door, not a section. -->
-    <section appReveal mode="children" class="container-wide py-16">
+    <section appReveal mode="children" class="container-page py-16">
       <ui-eyebrow index="04">Beyond Code</ui-eyebrow>
       <p class="mt-5 max-w-2xl text-display-3 font-display text-fg">{{ copy.beyondTeaser }}</p>
       <p class="mt-8">
@@ -497,7 +497,7 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
       <section class="relative py-16">
         <!-- <ui-strip-backdrop anchor="bottom-right" scale="sm" /> -->
 
-        <div class="container-wide relative">
+        <div class="container-page relative">
           <ui-eyebrow index="05">Contact</ui-eyebrow>
           <h2 class="mt-5 max-w-2xl text-display-2 font-display text-fg">{{ copy.contact }}</h2>
           <div class="mt-8 flex flex-wrap items-center gap-4">

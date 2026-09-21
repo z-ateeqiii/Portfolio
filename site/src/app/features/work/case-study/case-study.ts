@@ -69,7 +69,7 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
       <section class="relative py-20">
         <ui-strip-backdrop anchor="top-right" scale="sm" />
 
-        <div class="container-content stagger-in-lead relative">
+        <div class="container-page stagger-in-lead relative">
           <ui-eyebrow>404</ui-eyebrow>
           <h1 class="display-condensed mt-5 text-display-1 font-display text-fg">
             This case study isn’t here.
@@ -96,15 +96,18 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
              the stagger-in utilities in styles.css), distinct from the
              scroll-triggered appReveal directive used further down this page.
 
-             This header deliberately breaks out of container-content to the
-             wide container: it is the one full-bleed moment on a page that is
-             otherwise a single reading column, which is what makes the switch
-             to prose below it feel like arriving somewhere. -->
+             The header sits in the same page container as everything else
+             (07 §4). It used to break out of a narrower one to a wider one,
+             which is how the site ended up with two container widths and a
+             footer that could only line up with one of them. The arrival
+             that break-out was reaching for comes from the glow, the
+             oversized name and the side panel — none of which needed the
+             frame to move. -->
         <header class="relative pb-16">
           <ui-strip-backdrop anchor="bottom-right" scale="md" />
 
           <div
-            class="container-wide relative grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:items-center"
+            class="container-page relative grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:items-center"
           >
             <div>
               <div class="stagger-in-lead">
@@ -180,18 +183,19 @@ import { UiButton, UiEyebrow, UiStatusDot, UiTag } from '../../../shared/ui';
         </header>
 
         <!--
-          The body uses the SAME container as the header above it, not the
-          narrower reading container. Both are centred, so a 58rem body inside
-          a 78rem header stepped inward by 10rem on a wide screen — the section
-          eyebrows visibly indented from the project name they belong to.
+          One frame, top to bottom. This block and the header above it share
+          the page container, which is now the only one on the site (07 §4).
+          When there were two, both were centred, so a 58rem body inside a
+          78rem header stepped inward by 10rem on a wide screen and the section
+          eyebrows sat visibly indented from the project name they belong to.
 
-          Alignment comes from a shared frame; readability comes from the
+          Alignment comes from that shared frame; readability comes from the
           prose-measure utility on the paragraphs, which caps them at 68
           characters and leaves them left-aligned against it. That is the
           reference's own arrangement: a wide frame with the text column on
           one side of it.
         -->
-        <div class="container-wide">
+        <div class="container-page">
 
         <!-- Media (04 §6). Nothing is seeded yet, so this renders nothing —
              missing media never blocks a case study going live (brief §32).

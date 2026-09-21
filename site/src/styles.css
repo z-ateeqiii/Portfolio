@@ -125,19 +125,23 @@
   --tracking-wordmark: 0.38em; /* the name itself, and nothing else */
 
   /* --- Layout (07 §4) ---
-     `container-content` is the FRAME of a secondary page, not the measure of
-     its prose. Those are two different jobs and conflating them is what made
-     /about read as a narrow strip against the reference's proportions: the
-     frame was sized to the paragraph, so the eyebrow, title, rules and lists
-     were all pinched to a reading measure they never needed.
+     ONE page-level container width, and there is no second one.
 
-     The reference draws the distinction itself — a 1440px case-study frame
-     with a ~620px text column inside it. So the frame widens here and the
-     paragraph measure moves to `prose-measure` below, which caps by CHARACTER
-     count rather than by page width. Widening the frame therefore cannot make
-     a line of prose longer. */
-  --container-content: 58rem; /* secondary-page frame: About, case studies */
-  --container-wide: 78rem; /* Home sections, Work grid */
+     There used to be two — a 58rem frame for About, Contact and the Beyond
+     pages, and a 78rem one for Home, Work and the case studies — and the
+     header and footer could only match one of them. On every narrow page the
+     footer's edges stood 10rem outside the content directly above it, which
+     reads as the page and its chrome belonging to different layouts. A single
+     width is the only thing that makes that alignment structural rather than
+     something to re-check per page.
+
+     Reading comfort is a SEPARATE job and is solved separately, by
+     `prose-measure` below: it caps a paragraph by character count, so the
+     frame can be any width without ever making a line of prose longer. That
+     separation is what makes one container possible — conflating the two is
+     what produced the narrow frame in the first place, which pinched every
+     eyebrow, title, rule and list to a measure only the paragraphs needed. */
+  --container-page: 78rem;
 
   /* --- Motion (07 §5) — durations are a system, not a per-component guess.
          Every use must respect prefers-reduced-motion (enforced globally below). */
@@ -290,16 +294,14 @@
 
 /* --- Layout primitives (07 §4) --- */
 
-@utility container-content {
+/* The page frame. Header, footer and every section wrapper on every page use
+   this and nothing else, which is what guarantees the footer's edges line up
+   with the content above them without anyone checking. Deliberately not named
+   for a size: a name like "wide" invites a "narrow" to be added beside it,
+   which is exactly how the two-container split happened. */
+@utility container-page {
   width: 100%;
-  max-width: var(--container-content);
-  margin-inline: auto;
-  padding-inline: --spacing(6);
-}
-
-@utility container-wide {
-  width: 100%;
-  max-width: var(--container-wide);
+  max-width: var(--container-page);
   margin-inline: auto;
   padding-inline: --spacing(6);
 }
@@ -310,11 +312,14 @@
   border: 1px solid --alpha(var(--color-fg) / 12%);
 }
 
-/* The reading measure (07 §4).
+/* The reading measure (07 §4) — the inner wrapper that goes around long-form
+   prose INSIDE the page container, never instead of it.
    Capped in `ch`, so it tracks the font rather than the layout: 68 characters
    sits inside the 65-75 band ui-ux-pro-max gives for body text, and stays
    there no matter how wide the frame around it grows. `min()` keeps it honest
-   on a narrow screen, where 68ch would otherwise exceed the viewport. */
+   on a narrow screen, where 68ch would otherwise exceed the viewport.
+   This is what lets there be exactly one container width: the frame no longer
+   has to be narrow for the text inside it to be readable. */
 @utility prose-measure {
   max-width: min(100%, 68ch);
 }

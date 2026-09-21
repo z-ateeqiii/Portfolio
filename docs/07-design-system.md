@@ -113,9 +113,13 @@ Templates pick a step through the `mono-wordmark` / `mono-label` / `mono-mark` u
 ## 4. Layout & Spacing
 
 - **Base spacing unit**: 8px scale (8/16/24/32/48/64/96...) — predictable rhythm, easy to reason about across a project this size
-- **Container**: two frame widths — `container-content` (58rem) for secondary pages, `container-wide` (78rem) for Home, the Work grid and the case-study frame
+- **Container — corrected 2026-09-19**: one consistent page-level container width across every page, used by the header, footer, and every section wrapper without exception — this is what keeps every page's edges symmetric with the header/footer above and below it. The earlier two-width split (a narrow column for Story/Case Study, a wider one for Home/Work) caused visible misalignment where the footer didn't match the content above it on narrower pages. The original reading-comfort goal is preserved differently: only the long-form prose blocks themselves (About's `bioLong` paragraphs, the journey narrative) get an inner, narrower max-width wrapper for line length — the outer page container stays identical everywhere
 
-**The frame and the measure are two different things** (corrected 2026-09-07). `container-content` was 44rem and was doing both jobs at once: it sized the page frame *and* capped the paragraph. The result was that every element on `/about` — eyebrow, title, rules, the experience list — was pinched to a reading measure none of them needed, and the page read as a narrow strip against the reference's proportions.
+**Built 2026-09-21.** One utility, `container-page` (78rem, 24px side padding), replaced `container-wide` and `container-content` across 12 files and 28 usages. It is deliberately not named for a size: a name like "wide" invites a "narrow" beside it, which is how the split happened in the first place. A form's fields take the same inner-wrapper treatment as prose and for the same reason — on Contact the panel fills the frame and aligns with the page while the inputs inside it stay at 36rem, because widening the container had taken them to 1134px.
+
+**Verified** at 1440/1024/390 across Home, Work, a case study, About, Beyond Code, all three Beyond sub-pages and Contact: header, footer and every section wrapper report identical left/right edges — 0px delta in 27 of 27 combinations — and the rendered text edges (header wordmark, page eyebrow, `h1`, footer wordmark, footer rule) all land on the same pixel on every page.
+
+**The frame and the measure are two different things** (corrected 2026-09-07, and the reason a single frame is possible at all). `container-content` was 44rem and was doing both jobs at once: it sized the page frame *and* capped the paragraph. The result was that every element on `/about` — eyebrow, title, rules, the experience list — was pinched to a reading measure none of them needed, and the page read as a narrow strip against the reference's proportions.
 
 They are now separate:
 
@@ -124,7 +128,7 @@ They are now separate:
 
 The reference draws exactly this distinction: a 1440px case-study frame with a ~620px text column inside it.
 
-**A page's header and its body must share one container.** Both are centred, so a 58rem body inside a 78rem header steps inward by 10rem on a wide screen and the section headings visibly indent from the page title they belong to. The case study hit this and now uses `container-wide` throughout, with `prose-measure` doing the reading work.
+**A page's header and its body must share one container** — which, since 2026-09-21, is the only container there is. When there were two, both were centred, so a 58rem body inside a 78rem header stepped inward by 10rem on a wide screen and the section headings visibly indented from the page title they belong to. The case study hit that first; unifying the container settled it everywhere, with `prose-measure` doing the reading work.
 
 **Page rhythm**, so secondary pages do not each invent their own: header `pt-20 pb-12`, body ending `pb-24`, eyebrow to title `mt-5`.
 

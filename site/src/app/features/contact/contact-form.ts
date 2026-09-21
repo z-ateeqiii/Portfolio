@@ -45,10 +45,21 @@ const ENDPOINT = 'https://formspree.io/f/xppwpwrn';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule],
   template: `
+    <!--
+      The PANEL fills the page container and the FIELDS inside it do not, which
+      is the same arrangement 07 §4 uses for prose: one frame for the whole
+      site, an inner measure for the thing that needs a comfortable width.
+
+      It matters here because the page container widened to a single sitewide
+      value. The panel simply grew with it, which is correct — its edges now
+      line up with everything else on the page. The inputs did too, and a name
+      field 1134px wide is not a form anyone wants to fill in: the eye has to
+      travel the whole width to find a caret that is three characters long.
+    -->
     <form
       #form="ngForm"
       (ngSubmit)="submit(form)"
-      class="rounded-md border border-fg/12 bg-surface p-6 sm:p-8"
+      class="w-full rounded-md border border-fg/12 bg-surface p-6 sm:p-8"
       novalidate
     >
       <!--
@@ -67,82 +78,84 @@ const ENDPOINT = 'https://formspree.io/f/xppwpwrn';
         [(ngModel)]="honeypot"
       />
 
-      <label class="block">
-        <span class="mono-label text-fg-muted">Name</span>
-        <input
-          #nameCtl="ngModel"
-          name="name"
-          type="text"
-          autocomplete="name"
-          required
-          [(ngModel)]="name"
-          [class]="fieldClasses(nameCtl.invalid && nameCtl.touched)"
-        />
-        @if (nameCtl.invalid && nameCtl.touched) {
-          <span class="mt-2 block text-caption text-action">Please add your name.</span>
-        }
-      </label>
+      <div class="max-w-xl">
+        <label class="block">
+          <span class="mono-label text-fg-muted">Name</span>
+          <input
+            #nameCtl="ngModel"
+            name="name"
+            type="text"
+            autocomplete="name"
+            required
+            [(ngModel)]="name"
+            [class]="fieldClasses(nameCtl.invalid && nameCtl.touched)"
+          />
+          @if (nameCtl.invalid && nameCtl.touched) {
+            <span class="mt-2 block text-caption text-action">Please add your name.</span>
+          }
+        </label>
 
-      <label class="mt-6 block">
-        <span class="mono-label text-fg-muted">Email</span>
-        <input
-          #emailCtl="ngModel"
-          name="email"
-          type="email"
-          autocomplete="email"
-          required
-          email
-          [(ngModel)]="email"
-          [class]="fieldClasses(emailCtl.invalid && emailCtl.touched)"
-        />
-        @if (emailCtl.invalid && emailCtl.touched) {
-          <span class="mt-2 block text-caption text-action">
-            Please use an address I can reply to.
-          </span>
-        }
-      </label>
+        <label class="mt-6 block">
+          <span class="mono-label text-fg-muted">Email</span>
+          <input
+            #emailCtl="ngModel"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            email
+            [(ngModel)]="email"
+            [class]="fieldClasses(emailCtl.invalid && emailCtl.touched)"
+          />
+          @if (emailCtl.invalid && emailCtl.touched) {
+            <span class="mt-2 block text-caption text-action">
+              Please use an address I can reply to.
+            </span>
+          }
+        </label>
 
-      <label class="mt-6 block">
-        <span class="mono-label text-fg-muted">Message</span>
-        <textarea
-          #messageCtl="ngModel"
-          name="message"
-          rows="5"
-          required
-          [(ngModel)]="message"
-          [class]="fieldClasses(messageCtl.invalid && messageCtl.touched)"
-        ></textarea>
-        @if (messageCtl.invalid && messageCtl.touched) {
-          <span class="mt-2 block text-caption text-action">Please write a message.</span>
-        }
-      </label>
+        <label class="mt-6 block">
+          <span class="mono-label text-fg-muted">Message</span>
+          <textarea
+            #messageCtl="ngModel"
+            name="message"
+            rows="5"
+            required
+            [(ngModel)]="message"
+            [class]="fieldClasses(messageCtl.invalid && messageCtl.touched)"
+          ></textarea>
+          @if (messageCtl.invalid && messageCtl.touched) {
+            <span class="mt-2 block text-caption text-action">Please write a message.</span>
+          }
+        </label>
 
-      <button
-        type="submit"
-        [disabled]="busy()"
-        class="mt-8 inline-flex min-h-11 items-center justify-center rounded-sm bg-action px-6
+        <button
+          type="submit"
+          [disabled]="busy()"
+          class="mt-8 inline-flex min-h-11 items-center justify-center rounded-sm bg-action px-6
                py-3 text-body font-medium text-bg transition-colors duration-(--duration-base)
                ease-out-strong hover:bg-action-hover disabled:pointer-events-none
                disabled:opacity-50"
-      >
-        {{ busy() ? 'Sending…' : 'Send message' }}
-      </button>
+        >
+          {{ busy() ? 'Sending…' : 'Send message' }}
+        </button>
 
-      <!--
+        <!--
         One live region for both outcomes, so a screen reader is told what
         happened without the focus moving out from under anyone mid-typing.
         polite rather than assertive: the result matters, but not enough to cut
         across whatever is being read at the time.
       -->
-      <p class="mt-6 text-body" aria-live="polite">
-        @if (sent()) {
-          <!-- Confirms delivery and stops there. A reply time would be an
+        <p class="mt-6 text-body" aria-live="polite">
+          @if (sent()) {
+            <!-- Confirms delivery and stops there. A reply time would be an
                invented commitment on Muhammed's behalf. -->
-          <span class="text-fg">Thanks — your message has been sent.</span>
-        } @else if (error(); as problem) {
-          <span class="text-action">{{ problem }}</span>
-        }
-      </p>
+            <span class="text-fg">Thanks — your message has been sent.</span>
+          } @else if (error(); as problem) {
+            <span class="text-action">{{ problem }}</span>
+          }
+        </p>
+      </div>
     </form>
   `,
 })
