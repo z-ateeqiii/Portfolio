@@ -8,6 +8,7 @@ import {
   TitleStrategy,
   provideRouter,
   withComponentInputBinding,
+  withInMemoryScrolling,
   withViewTransitions,
 } from '@angular/router';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
@@ -36,7 +37,32 @@ export const appConfig: ApplicationConfig = {
      * reimplement all three, and would sit between the visitor and the content
      * while it ran — which 07 §5 rules out.
      */
-    provideRouter(routes, withComponentInputBinding(), withViewTransitions()),
+    /**
+     * Scroll behaviour on navigation (2026-09-22).
+     *
+     * Without this the router left scroll position alone entirely — its
+     * default is `'disabled'` — so a Navbar or Footer link opened the next
+     * page at whatever height the last one was left at, clamped to the new
+     * page's length. Measured: /about → /work from y=3740 landed at y=2482;
+     * /beyond → /contact from y=842 landed at y=842.
+     *
+     * `'enabled'` rather than `'top'`, because the two differ on history:
+     * both send a new navigation to the top, but only `'enabled'` returns
+     * Back and Forward to where the visitor actually was. `'top'` would fix
+     * the links and break the back button. It also sets
+     * `history.scrollRestoration` to `'manual'`, handing scroll entirely to
+     * the router so the browser's own restoration cannot fight it.
+     *
+     * The scroll to the top is only instant because `html` no longer sets
+     * `scroll-behavior: smooth` — see the note in styles.css. With it, this
+     * same config animated every navigation for ~900ms.
+     */
+    provideRouter(
+      routes,
+      withComponentInputBinding(),
+      withViewTransitions(),
+      withInMemoryScrolling({ scrollPositionRestoration: 'enabled' }),
+    ),
     provideClientHydration(withEventReplay()),
 
     /**

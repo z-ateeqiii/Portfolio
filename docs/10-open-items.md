@@ -433,6 +433,13 @@ Matched on the value's **shape**, not on a list of field names. A name list has 
 
 **Needs Muhammed in the Vercel dashboard**: confirm Root Directory is `site` — `.vercel/output` is resolved against it, and with it left at the repository root Vercel looks beside `docs/` and finds nothing. Output Directory must stay empty.
 
+### 4n.8 Scroll position on navigation (2026-09-22)
+
+- [x] **Navbar and Footer links opened the next page mid-scroll.** The router had no scroll configuration, so `scrollPositionRestoration` was at its default of `'disabled'` and navigation left scroll position alone, clamped to the new page's length (/about → /work from y=3740 landed at y=2482). Now `withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })` — `'enabled'` rather than `'top'`, because only `'enabled'` returns Back and Forward to where the visitor was.
+- [x] **`scroll-behavior: smooth` removed from `html`.** The router's scroll-to-top calls `scrollTo` with no behaviour of its own and inherited it: measured frame by frame, every navigation glided for ~900ms across 33 frames. On the public site it served one link (the skip link). Navigation now jumps to the top in a single frame.
+- [x] **The earlier reload bug is fixed by the same change.** It had been diagnosed (`history.scrollRestoration` left at `'auto'`) but never fixed. The router now sets it to `'manual'`; a reload from the very bottom stays at y=0 for the whole load.
+- [x] **Verified**: 5 navbar/footer clicks from scrolled positions all land at y=0; Back restores each page to exactly where it was left (900, 796, 600, 2337, 1500) and Forward restores too; mobile menu and project-card links land at the top; 33 route/width combinations clean.
+
 ### Genuinely unresolved — needs Muhammed's decision, not a design call
 
 - [ ] **`Skill` and `Education` render nowhere on the public site.** Both are full entities with dashboard editors, both are exposed by `ContentService` (`skills()`, `education()`), and neither is resolved on a single public route — so anything entered there is invisible to visitors. This is pre-existing and predates this pass. It is not a design question: `02` §13 explicitly rules out standalone Skills/Certifications pages because they fragment the story, so the options are to surface them inside `/about` (where Experience already lives), to surface them somewhere else, or to remove the editors. Needs a content decision.

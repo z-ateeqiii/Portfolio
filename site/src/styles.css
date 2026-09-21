@@ -180,10 +180,23 @@
     background-color: var(--color-bg);
     color-scheme: dark;
     -webkit-text-size-adjust: 100%;
-    /* In-page anchors glide rather than jump. The reduced-motion block below
-       resets this to `auto`, so a visitor who asked for less motion still gets
-       an instant jump. */
-    scroll-behavior: smooth;
+    /* NO `scroll-behavior: smooth` here, deliberately (removed 2026-09-22).
+
+       It used to be set so in-page anchors would glide. On the public site
+       that is exactly one link — the skip link to #main — and the cost landed
+       on every page navigation instead. The router's scroll-to-top on a link
+       click calls `window.scrollTo` with no behaviour of its own, so it
+       inherits this property: measured frame by frame, going from /about to
+       /work animated for ~900ms across 33 frames, the new page visibly
+       rolling up from wherever the old one was left. Back/forward was not
+       affected, because the router passes `behavior: 'instant'` for restored
+       positions — only the common case was.
+
+       A glide on one skip link does not justify that. Keyboard focus
+       scrolling is instant now too, which is the better default for anyone
+       using a screen magnifier. The `scroll-behavior: auto` line in the
+       reduced-motion block below stays; it still covers any element that
+       sets its own. */
 
     /* WCAG 2.2 AA, "Focus Not Obscured (Minimum)" — flagged High severity by
        ui-ux-pro-max, and the site was failing it. The header is sticky and
