@@ -6,7 +6,7 @@ export type StripScale = 'sm' | 'md' | 'lg';
 /**
  * The photo-strip backdrop — the atmospheric layer behind a section (07 §5a).
  *
- * Two elements, always together: a blurred orange glow anchored off one corner,
+ * Two elements, always together: a soft orange glow anchored off one corner,
  * and a film-grain overlay across the whole area. Both are decorative and both
  * are `pointer-events: none`.
  *
@@ -145,8 +145,27 @@ export class UiStripBackdrop {
       : UiStripBackdrop.ANCHORS[this.anchor()],
   );
 
+  /**
+   * The glow's softness profile, one per size (styles.css, above
+   * photo-strip-glow-sm). A blur used to supply it; the gradients that replace
+   * the blur were fitted per size, because the same blur softened a small glow
+   * far more than a large one.
+   *
+   * Written out in full rather than as `photo-strip-glow-${scale}`: Tailwind
+   * finds the utilities to generate by scanning source for literal class
+   * names, and an interpolated one would never be emitted — the glow would
+   * render with no background at all, silently.
+   */
+  private static readonly PROFILES: Record<StripScale, string> = {
+    sm: 'photo-strip-glow-sm',
+    md: 'photo-strip-glow-md',
+    lg: 'photo-strip-glow-lg',
+  };
+
   protected readonly glowClasses = computed(
-    () => `photo-strip-glow ${this.anchorClasses()} ${UiStripBackdrop.SCALES[this.scale()]}`,
+    () =>
+      `photo-strip-glow ${UiStripBackdrop.PROFILES[this.scale()]} ${this.anchorClasses()} ` +
+      UiStripBackdrop.SCALES[this.scale()],
   );
 
   /** Same box as the glow, so the texture sits exactly where the light is. */

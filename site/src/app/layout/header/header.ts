@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { UiButton } from '../../shared/ui';
@@ -42,7 +42,7 @@ import { UiButton } from '../../shared/ui';
   selector: 'app-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive, UiButton],
-  host: { class: 'sticky top-0 z-40 border-b border-fg/12 bg-bg/85 backdrop-blur-sm' },
+  host: { '[class]': 'hostClasses()' },
   template: `
     <div class="container-page flex items-center justify-between gap-6 py-4">
       <!-- Logo/name always returns Home (02 §3). -->
@@ -172,4 +172,33 @@ export class AppHeader {
    * rather than hidden, which keeps its links out of the tab order.
    */
   protected readonly open = signal(false);
+
+  /**
+   * The frosted header gives up its blur while the mobile menu is open
+   * (2026-09-22).
+   *
+   * Reported: on an iPhone, opening the menu and then scrolling froze the
+   * page. A `backdrop-filter` has to re-render everything behind it on every
+   * scroll frame, and what sits behind this header is the site's glow layers,
+   * which blend with the page. Opening the menu makes the blurred header 4.9x
+   * taller (76px to 369px), so the area WebKit re-filters per frame grows with
+   * it. The glows' own blur filters, the main cost, were removed separately
+   * (styles.css, above photo-strip-glow-sm); this takes away the rest.
+   *
+   * Honest limit: this part could not be measured here. The only WebKit
+   * available renders in software, where a backdrop blur costs about the same
+   * as anything else, so removing it showed no change. It is here because the
+   * GPU path on iOS is where backdrop-filter over blended layers is known to
+   * be expensive, and because while the menu is open a solid panel is the
+   * better surface anyway — the links sit on it, not on a smear of the page.
+   *
+   * One computed string rather than a static class plus `[class.x]` toggles:
+   * `bg-bg/85` and `bg-bg` both write `background-color`, and two utilities
+   * fighting over one property are decided by Tailwind's emit order.
+   */
+  protected readonly hostClasses = computed(() =>
+    this.open()
+      ? 'sticky top-0 z-40 border-b border-fg/12 bg-bg'
+      : 'sticky top-0 z-40 border-b border-fg/12 bg-bg/85 backdrop-blur-sm',
+  );
 }

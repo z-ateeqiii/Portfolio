@@ -440,6 +440,13 @@ Matched on the value's **shape**, not on a list of field names. A name list has 
 - [x] **The earlier reload bug is fixed by the same change.** It had been diagnosed (`history.scrollRestoration` left at `'auto'`) but never fixed. The router now sets it to `'manual'`; a reload from the very bottom stays at y=0 for the whole load.
 - [x] **Verified**: 5 navbar/footer clicks from scrolled positions all land at y=0; Back restores each page to exactly where it was left (900, 796, 600, 2337, 1500) and Forward restores too; mobile menu and project-card links land at the top; 33 route/width combinations clean.
 
+### 4n.9 iPhone scroll freeze, and the favicon (2026-09-22)
+
+- [x] **Glow blur filters removed** (`07` §4b-i). The dominant rendering cost in WebKit. Replaced with gradients fitted to the original blurred render per glow size and breakpoint. WebKit frames in a 3-second touch scroll, same-page comparison: 12 → 16 with the menu closed, 10 → 16 with it open.
+- [x] **Header backdrop blur off while the mobile menu is open.** Suspected iOS-specific trigger; not measurable here (software-rendered WebKit).
+- [x] **Favicon.** The file committed as `favicon.ico` was a 1254×1254 PNG renamed to `.ico`, 1,448,410 bytes, downloaded on every visit and drawn at 16–32px. Now a real ICO — 16, 32 and 48px, each resampled directly from the full-resolution artwork — 8,270 bytes.
+- [ ] **Decision needed: the film grain.** After the blur, the next measured cost is the grain: removing it takes WebKit from 16 to 27–29 frames. Scoping it smaller, rasterising its SVG noise to a PNG and stopping its animation each gained nothing. But the grain is a core part of the visual identity (`07` §4a), and the measurement comes from a software-rendered WebKit that repaints fixed layers every frame where an iPhone's compositor would not — so how much of that cost is real on the phone is unknown. Not removed; needs a real-device check (Safari Web Inspector, Timelines) or a design call.
+
 ### Genuinely unresolved — needs Muhammed's decision, not a design call
 
 - [ ] **`Skill` and `Education` render nowhere on the public site.** Both are full entities with dashboard editors, both are exposed by `ContentService` (`skills()`, `education()`), and neither is resolved on a single public route — so anything entered there is invisible to visitors. This is pre-existing and predates this pass. It is not a design question: `02` §13 explicitly rules out standalone Skills/Certifications pages because they fragment the story, so the options are to surface them inside `/about` (where Experience already lives), to surface them somewhere else, or to remove the editors. Needs a content decision.

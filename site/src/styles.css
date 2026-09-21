@@ -448,24 +448,121 @@
   position: absolute;
   pointer-events: none;
   border-radius: 9999px;
-  filter: blur(50px);
+  /* NO `filter: blur()` (removed 2026-09-22) — see the note above
+     photo-strip-glow-sm. The softness is now baked into each size's gradient,
+     which is set by the size utilities below and deliberately NOT here: two
+     utilities writing `background` to one element would be decided by
+     Tailwind's emit order, the trap documented on ui-card. */
   mix-blend-mode: screen;
   opacity: 0.85;
-  /* `closest-side`, not the default `farthest-corner`, and centred.
-     The gradient has to be fully transparent BEFORE it reaches any edge of its
-     box, or the box shows as a hard-edged rectangle. With the old off-centre
-     `circle at 40% 60%`, 68% of the farthest-corner distance was still short
-     of the near edge, so the left and bottom sides of every section glow cut
-     off mid-colour — clearly visible on /about, and invisible in the markup.
-     `closest-side` ties the gradient's end to the nearest edge by definition,
-     so this cannot regress if a box is ever resized. */
+  animation: glow-breathe var(--duration-ambient-glow) var(--ease-out-soft) infinite;
+}
+
+/* ---------------------------------------------------------------------------
+   THE GLOW'S SOFTNESS IS BAKED IN, NOT BLURRED (2026-09-22).
+
+   Every glow used to be a radial gradient under `filter: blur(50px)` (the
+   ambient one, 90px). On iPhone, opening the menu and scrolling froze the
+   page. Chrome's device emulation did not reproduce it — no long tasks, 17ms
+   frames — because the cost is in WebKit's renderer, not in JavaScript. In a
+   real WebKit build the site drew 6-9 frames in a 3-second touch scroll where
+   a plain page drew 142. Removing ingredients one at a time, three runs each:
+   the blur filters were the cost. Removing blend modes, the breathing
+   animation or the grain animation changed nothing measurable, and keeping
+   the blur while stopping the animation was no better than baseline — WebKit
+   re-filters as content scrolls under the glow, animated or not.
+
+   So the blur is gone and every other ingredient — the blend mode, the
+   opacity, the breathing, the grain — is unchanged. What replaces it is not a
+   guess: each profile below was fitted to a screenshot of the ORIGINAL
+   blurred glow, rendered in isolation at that size, by reading its brightness
+   out along a radius and solving for the alpha that reproduces it.
+
+   Why there is more than one profile: a blur is fixed in pixels while these
+   boxes are sized in viewport units, so the smaller the glow, the harder the
+   same blur softened it. A small glow on a phone (blur/radius 0.39) came out
+   with a centre 52% dimmer than its gradient; a large one on a desktop (0.13)
+   barely changed. One profile cannot match both, which is exactly what went
+   wrong on the first attempt — a single phone profile made the Hero's LARGE
+   glow too dark on mobile. So the profile follows the glow's size, and the
+   small and medium ones soften further below the sm breakpoint. The large
+   glow's blur ratio is nearly the same on every screen, so it needs one.
+
+   What cannot be reproduced is the faint tail a blur throws past the box
+   edge; these boxes cannot grow without adding scroll height near the
+   footer. The ambient glow below can, and does.
+--------------------------------------------------------------------------- */
+@utility photo-strip-glow-sm {
   background: radial-gradient(
     circle closest-side at 50% 50%,
-    --alpha(var(--color-action) / 55%) 0%,
-    --alpha(var(--color-glow) / 70%) 38%,
+    --alpha(var(--color-action) / 48.2%) 0%,
+    --alpha(var(--color-glow) / 60.7%) 38%,
+    --alpha(var(--color-glow) / 50.9%) 50%,
+    --alpha(var(--color-glow) / 41.1%) 60%,
+    --alpha(var(--color-glow) / 31.3%) 70%,
+    --alpha(var(--color-glow) / 21.5%) 80%,
+    --alpha(var(--color-glow) / 13.5%) 90%,
     transparent 100%
   );
-  animation: glow-breathe var(--duration-ambient-glow) var(--ease-out-soft) infinite;
+
+  @media (width < 40rem) {
+    background: radial-gradient(
+    circle closest-side at 50% 50%,
+    --alpha(var(--color-action) / 36.1%) 0%,
+    --alpha(var(--color-glow) / 46.6%) 38%,
+    --alpha(var(--color-glow) / 39.9%) 50%,
+    --alpha(var(--color-glow) / 34.4%) 60%,
+    --alpha(var(--color-glow) / 28.2%) 70%,
+    --alpha(var(--color-glow) / 22.1%) 80%,
+    --alpha(var(--color-glow) / 16.6%) 90%,
+    transparent 100%
+  );
+  }
+}
+
+@utility photo-strip-glow-md {
+  background: radial-gradient(
+    circle closest-side at 50% 50%,
+    --alpha(var(--color-action) / 49.8%) 0%,
+    --alpha(var(--color-glow) / 63.2%) 38%,
+    --alpha(var(--color-glow) / 52.8%) 50%,
+    --alpha(var(--color-glow) / 42.9%) 60%,
+    --alpha(var(--color-glow) / 31.9%) 70%,
+    --alpha(var(--color-glow) / 21.5%) 80%,
+    --alpha(var(--color-glow) / 12.9%) 90%,
+    transparent 100%
+  );
+
+  @media (width < 40rem) {
+    background: radial-gradient(
+    circle closest-side at 50% 50%,
+    --alpha(var(--color-action) / 43.1%) 0%,
+    --alpha(var(--color-glow) / 54.6%) 38%,
+    --alpha(var(--color-glow) / 45.4%) 50%,
+    --alpha(var(--color-glow) / 38.0%) 60%,
+    --alpha(var(--color-glow) / 30.1%) 70%,
+    --alpha(var(--color-glow) / 22.1%) 80%,
+    --alpha(var(--color-glow) / 15.3%) 90%,
+    transparent 100%
+  );
+  }
+}
+
+/* One profile at every width: the large glow's blur-to-radius ratio is about
+   0.13 on a desktop and 0.15 on a phone, and the fitted profiles for the two
+   differed by under 1%. */
+@utility photo-strip-glow-lg {
+  background: radial-gradient(
+    circle closest-side at 50% 50%,
+    --alpha(var(--color-action) / 51.0%) 0%,
+    --alpha(var(--color-glow) / 65.0%) 38%,
+    --alpha(var(--color-glow) / 54.0%) 50%,
+    --alpha(var(--color-glow) / 43.6%) 60%,
+    --alpha(var(--color-glow) / 32.5%) 70%,
+    --alpha(var(--color-glow) / 21.5%) 80%,
+    --alpha(var(--color-glow) / 12.3%) 90%,
+    transparent 100%
+  );
 }
 
 /* ---------------------------------------------------------------------------
@@ -509,28 +606,55 @@
    stronger would compete with the per-section glows layered above it. */
 @utility page-ambient-glow {
   position: absolute;
-  bottom: -30vh;
+  /* The box is 5vh larger on every side than it used to be, around the same
+     centre (2026-09-22). The blur this replaces threw a soft tail past the
+     box edge; without a blur, the only way to draw that tail is to give the
+     gradient room for it. This is the one glow where that is safe: it sits
+     inside the fixed, overflow-hidden ambient layer, so a bigger box cannot
+     change the page's height or anything else's layout. 5vh was chosen by
+     fitting — 0, 5, 10, 15, 20 and 25vh were each fitted and compared against
+     the blurred original, and 5vh matched best. */
+  bottom: calc(-30vh - 5vh);
   left: 50%;
-  width: 140vw;
-  height: 90vh;
-  margin-left: -70vw;
+  width: calc(140vw + 10vh);
+  height: calc(90vh + 10vh);
+  margin-left: calc(-70vw - 5vh);
   pointer-events: none;
   border-radius: 9999px;
-  filter: blur(90px);
+  /* No `filter: blur(90px)` — see the note above photo-strip-glow-sm. The
+     profile below was fitted to the blurred original at 1440x900 and checked
+     at 1920x1080, 1366x768 and 1280x720 (max channel difference 5-7); the
+     phone profile at 430x932, 390x844 and 360x780 (4-6). */
   mix-blend-mode: screen;
-  /* Low, and deliberately so. This is the base light level of the whole site,
-     under every page at once — at 0.4 it stopped reading as ambience and
-     became a bright band across the bottom of the viewport, which made the
-     space below the Hero's actions look like a large empty stripe rather than
-     ordinary section spacing. Measured in a screenshot, not by eye. */
   opacity: 0.26;
   background: radial-gradient(
     ellipse closest-side at 50% 50%,
-    --alpha(var(--color-action) / 32%) 0%,
-    --alpha(var(--color-glow) / 42%) 40%,
+    --alpha(var(--color-action) / 29.4%) 0%,
+    --alpha(var(--color-action) / 27.8%) 20%,
+    --alpha(var(--color-glow) / 35.5%) 40%,
+    --alpha(var(--color-glow) / 29.3%) 50%,
+    --alpha(var(--color-glow) / 22.6%) 60%,
+    --alpha(var(--color-glow) / 16.5%) 70%,
+    --alpha(var(--color-glow) / 10.4%) 80%,
+    --alpha(var(--color-glow) / 6.1%) 90%,
     transparent 100%
   );
   animation: glow-breathe calc(var(--duration-ambient-glow) * 1.6) var(--ease-out-soft) infinite;
+
+  @media (width < 40rem) {
+    background: radial-gradient(
+      ellipse closest-side at 50% 50%,
+      --alpha(var(--color-action) / 27.1%) 0%,
+      --alpha(var(--color-action) / 25.5%) 20%,
+      --alpha(var(--color-glow) / 31.7%) 40%,
+      --alpha(var(--color-glow) / 25.7%) 50%,
+      --alpha(var(--color-glow) / 19.5%) 60%,
+      --alpha(var(--color-glow) / 13.4%) 70%,
+      --alpha(var(--color-glow) / 8.6%) 80%,
+      --alpha(var(--color-glow) / 4.2%) 90%,
+      transparent 100%
+    );
+  }
 }
 
 /* The "viewfinder" crop-mark rectangle over a photo/screenshot. Decorative

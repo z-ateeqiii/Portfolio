@@ -174,6 +174,18 @@ Section glows still exist, layered above it for emphasis. The ambient one is del
 
 **Why the grain lives with the glow rather than over the whole page**: `mix-blend-mode: overlay` against pure black resolves to black, because overlay doubles the backdrop when it is below 0.5 and twice zero is zero. Film grain is therefore only ever visible where something has already lit the area. Pairing it with a glow is not a stylistic preference; it is the only place it renders at all.
 
+### 4b-i. Glows are pre-softened gradients, not blurs (2026-09-22)
+
+**No glow on the site uses `filter: blur()`.** Reported: on an iPhone, opening the menu and scrolling froze the page. Chrome's device emulation did not reproduce it (no long tasks, 17ms frames); a real WebKit build did — 6–9 frames in a 3-second touch scroll against 142 for a plain page. Removing ingredients one at a time, three runs each, the blur filters were the cost, and WebKit re-filtered as content scrolled under the glow whether or not the glow was animating.
+
+The softness the blur supplied is now baked into each gradient, and the values are fitted, not guessed: the original blurred glow was rendered in isolation, its brightness read out along a radius, and the alpha solved for at each stop. A blur is fixed in pixels while glows are sized in viewport units, so the same blur softened a small glow on a phone far more than a large one on a desktop (a centre 52% dimmer at blur/radius 0.39, barely changed at 0.13). Profiles therefore follow the glow's size — `photo-strip-glow-sm/-md/-lg` — with sm and md softening further below the sm breakpoint. The ambient glow's box grew 5vh on every side to draw the tail a blur threw past its edge; that is safe only because it lives in the fixed, overflow-hidden ambient layer. Section glows cannot grow without adding scroll height near the footer, so their faint outer tail is the one thing not reproduced.
+
+Everything else is unchanged — the blend modes, the opacities, the breathing, the grain. Checked by capturing each page with the original look restored and the new one live in the same page load, every animation frozen at the same phase: mean channel difference 0.2–1.8, and no more than about 1% of pixels changing by over 8/255 on any of seven page/viewport cases.
+
+**The header drops its backdrop blur while the mobile menu is open.** Opening the menu makes the blurred header 4.9x taller over layers that blend with the page, which is where `backdrop-filter` is known to be expensive on the iOS GPU path. This part could not be measured here — the available WebKit renders in software — and is noted as such.
+
+**Rule for anything new:** no `filter: blur()` on large or scroll-exposed layers. If something needs to look soft, give its gradient the softness.
+
 ### 4c. The Hero (revised 2026-09-07)
 
 **The contrast strip was built and then removed.** The idea was the reference's: a second copy of the photo, undarkened and clipped to a vertical band, painted above the headline so the giant word ran behind it and re-emerged. Rendered, it did not read the way it does in the reference — it cut SOFTWARE mid-word and the rest never came back, so the one line a visitor must be able to read was the one thing on the page they could not.
