@@ -84,6 +84,22 @@ Notes:
 
 - Firebase Hosting (or a platform with equivalent SSR support) — keeps the whole stack under one provider, one deploy pipeline, one thing to maintain long-term, which matters for a project meant to stay maintainable for years (brief §37, point 10)
 
+**Vercel, packaged explicitly — added 2026-09-21.** Firebase stayed Firestore + Auth (see §3.2), and hosting went to Vercel. Vercel's automatic Angular detection does not work for this build and must not be relied on: with `outputMode: "server"` the build emits `dist/site/browser` containing `index.csr.html` and **no `index.html`**, plus a self-contained Express server in `dist/site/server`. The preset deployed only the browser folder, so no serverless function was ever created and there was no `index.html` for the CDN to fall back to — every route including `/` returned Vercel's own 404 NOT_FOUND.
+
+`site/scripts/vercel-output.mjs` builds the Vercel Build Output API v3 tree by hand, and `npm run build` is `ng build && node scripts/vercel-output.mjs` so the step cannot be skipped. `site/vercel.json` pins `buildCommand` to `npm run build` so a dashboard setting cannot drift away from it. When a build leaves `.vercel/output` behind, Vercel deploys exactly that and stops guessing:
+
+- `.vercel/output/static/` — the browser bundle, served by the CDN
+- `.vercel/output/functions/ssr.func/` — the server bundle plus a launcher that imports `reqHandler` from `server.mjs`
+- `.vercel/output/config.json` — long-cache headers for hashed bundles, then `handle: filesystem` for real files, then everything else rewritten to the function
+
+The rewrite passes the original path as `__pathname` and the launcher restores it before Express sees it. That is load-bearing rather than cosmetic: `server.ts` resolves `/work/:slug` against Firestore to choose 200 or 404 (§4), and `/sitemap.xml` and `/robots.txt` are answered by their own Express routes (§6). All three need the real path.
+
+**`security.allowedHosts` must list the deploy host.** It shipped as `[]` from the Angular scaffold, and an empty array allows nothing — every request fails the SSRF check and falls back to client-side rendering, which silently costs server-rendered HTML and the SEO tags on a site whose premise is being readable and indexable (brief §29). It is now `localhost`, `127.0.0.1`, `*.vercel.app`. **A custom domain has to be added here**, or it will serve a 59-byte empty shell.
+
+Verified locally by driving the built function the way Vercel does, with `/ssr?__pathname=/<path>` and a `*.vercel.app` Host: `/`, `/work`, `/about`, `/contact` and a case study all return 200 with full server-rendered HTML (50–164 kB); an unknown slug returns 404; `/sitemap.xml` and `/robots.txt` return their real content; and unlisted hosts are still rejected, so the SSRF protection is configured rather than disabled.
+
+Replicated from `z-ateeqiii/al-andalus-vehicles`, where the same approach is already in production — only the dist path differs.
+
 ---
 
 ## 4. Routing
