@@ -12,7 +12,26 @@ import { publishedSlugs, robotsHandler, sitemapHandler } from './seo-routes';
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
-const angularApp = new AngularNodeAppEngine();
+/**
+ * Proxy headers Angular may read (2026-09-21).
+ *
+ * By default Angular trusts only `x-forwarded-host` and `x-forwarded-proto`,
+ * and ANY other `x-forwarded-*` header on a request makes it silently fall
+ * back to client-side rendering — a 200 with the empty `index.csr.html`
+ * shell, no error, just a console warning. Vercel's edge adds
+ * `x-forwarded-for` (and can add `x-forwarded-port`) to every request, so
+ * with the default every page on the live domain was served as a 15,001-byte
+ * shell with no <h1>, even after the domain was allowed. Reproduced locally
+ * by adding that one header to an otherwise-rendering request.
+ *
+ * These four are exactly the list z-ateeqiii/al-andalus-vehicles uses in
+ * production. They are safe to trust here because Vercel's edge sets them
+ * itself; the host they carry is still checked against `allowedHosts`, and
+ * port and proto are still format-validated by Angular.
+ */
+const angularApp = new AngularNodeAppEngine({
+  trustProxyHeaders: ['x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port', 'x-forwarded-for'],
+});
 
 /**
  * SEO endpoints (06 §6). Registered before the static handler and before
