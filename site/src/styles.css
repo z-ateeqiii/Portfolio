@@ -755,6 +755,45 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   THE PARALLAX LAYER FADES OUT AT ITS OWN BOTTOM (2026-09-20).
+
+   A translate-based parallax needs the moving layer to be bigger than the
+   frame it moves inside. The Hero's photo layer is `inset-0` — exactly its
+   frame's size — so translating it up by 0.15 x scrollY uncovers its own
+   bottom by exactly that much: measured 15px at scrollY 100, 45px at 300,
+   120px at 800. The strip underneath is the section's black, and the photo
+   ends on a dead-straight horizontal line across the full width.
+
+   This predates the Hero containment change and was not caused by it. With
+   the old uncontained glow restored in the live DOM the layer still slid 45px
+   off its own bottom at scrollY 300 — the bleeding glow was painting orange
+   over the strip, so the line only became visible once the glow stopped
+   escaping the section.
+
+   ─── Why a mask and not more layer ───────────────────────────────────────────
+   The usual fix is to oversize the moving layer, and it cannot be used here.
+   The source photo is 1024x410 in an 1885x979 box, so `background-size: cover`
+   scales it by HEIGHT: the rendered image is exactly the box height, with no
+   vertical slack and 559px of horizontal overflow. Making the box taller makes
+   `cover` scale the image up with it, which re-frames the hero — a 36% taller
+   box renders the photo 36% larger. There is no more photograph below to slide
+   into view; any slack would have to be invented by zooming.
+
+   So the edge is softened instead of hidden. The mask travels WITH the layer,
+   so wherever the layer's bottom happens to be, the last 12% of it has already
+   ramped to nothing and there is no step to see. It needs no clamp, no coupling
+   to the parallax factor, and it holds at any viewport or hero height.
+
+   At rest it costs almost nothing, because it overlaps the vertical scrim that
+   is already there: the bottom 12% of the photo sits under 87-98% of black
+   before this mask touches it.
+--------------------------------------------------------------------------- */
+@utility hero-photo-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+}
+
 @utility hover-lift {
   transition:
     transform var(--duration-base) var(--ease-out-strong),

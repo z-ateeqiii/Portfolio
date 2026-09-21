@@ -119,9 +119,18 @@ import { UiButton, UiCard, UiEyebrow, UiTag } from '../../shared/ui';
           what the section's padding or min-height do to its box.
         -->
         <div class="absolute inset-0  overflow-hidden">
+          <!--
+            hero-photo-fade is what stops this layer drawing a hard line across
+            the page while it moves. Being inset-0 it is exactly the size of the
+            frame it parallaxes inside, so it slides off its own bottom edge;
+            the utility ramps its last 12% to nothing, and there is no step left
+            to see. The full reasoning, including why the layer cannot simply be
+            made taller, is on the utility in styles.css.
+          -->
           <div
             #photoLayer
-            class="absolute inset-0 bg-cover bg-center grayscale contrast-115 brightness-[1]"
+            class="hero-photo-fade absolute inset-0 bg-cover bg-center grayscale contrast-115
+                   brightness-[1]"
             [style.background-image]="'url(' + heroPhotoUrl() + ')'"
             [attr.role]="'img'"
             [attr.aria-label]="p!.heroImage!.alt"
