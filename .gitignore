@@ -33,3 +33,30 @@ ui-debug.log
 *-firebase-adminsdk-*.json
 src/environments/environment.local.ts
 site/src/environments/environment.local.ts
+
+# Build-time reference material — never part of the running app.
+#
+# Neither of these is imported, resolved or read by anything under site/: the
+# only mentions are prose in code comments citing where a rule came from, and
+# `angular.json`, both tsconfigs, `package.json` and `.postcssrc.json` contain
+# zero references to either path. Removing them cannot affect a build.
+#
+# `design-reference/` is the exported Claude Design visual system (see `07`
+# §0.1). It also contains a real personal photo of Muhammed, which is the
+# reason it was kept out of every commit while the repository's visibility was
+# undecided — ignoring it now makes that decision permanent rather than a
+# habit. `10` §3 carried this as an open item and it is closed there.
+#
+# `.claude/skills/` holds the ui-ux-pro-max design-intelligence skill, which is
+# tooling for the agent working on the repo, not a dependency of the site.
+# `temp-skill/` is a second, older copy of that same skill.
+#
+# The skills pattern needs `**/` because the only copy lives at
+# `site/.claude/`, not at the repo root. A gitignore pattern with a slash
+# anywhere but the end is anchored to the directory holding the .gitignore, so
+# a bare `.claude/skills/` silently matched nothing here. Scoped to `skills/`
+# rather than all of `.claude/`, so a `settings.json` can still be tracked
+# later if the project ever wants shared agent settings in version control.
+design-reference/
+**/.claude/skills/
+temp-skill/
